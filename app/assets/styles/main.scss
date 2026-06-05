@@ -1,0 +1,6 @@
+/* Точка входа глобальных стилей (порядок: токены → база). Без UI-фреймворков. */
+@use 'variables/colors';
+@use 'variables/spacing';
+@use 'variables/rounding';
+@use 'base/fonts';
+@use 'base/global';

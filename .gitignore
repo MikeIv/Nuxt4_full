@@ -1,0 +1,35 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Cursor — полностью локально (rules, commands, mcp.json)
+.cursor/
+.cursorrules
+CURSOR_RULES_EXPORT.md
+.vscode
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Планирование — рабочие файлы сессии (в git: PROJECT.md, шаблоны)
+.planning/brief.md
+.planning/plan.md
+.planning/state.md

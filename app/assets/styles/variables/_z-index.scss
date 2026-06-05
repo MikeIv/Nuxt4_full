@@ -1,0 +1,19 @@
+@use 'sass:map';
+
+$z-layers: (
+  'modal': 1000,
+  'dropdown': 100,
+  'header': 50,
+  'default': 1,
+);
+
+@function z($name) {
+  $v: map.get($z-layers, $name);
+
+  @if $v == null {
+    @warn "Неизвестный слой z-index: #{$name}";
+    @return null;
+  }
+
+  @return $v;
+}

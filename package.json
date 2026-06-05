@@ -1,0 +1,49 @@
+{
+  "name": "nuxt4-full",
+  "description": "Fullstack learning sandbox: Nuxt 4, Nitro, Prisma, auth, mini-SaaS capstone",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "prepare": "husky",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "stylelint": "stylelint \"**/*.{vue,css}\" --allow-empty-input",
+    "stylelint:fix": "stylelint \"**/*.{vue,css}\" --fix --allow-empty-input",
+    "lint:all": "eslint . && pnpm format:check && stylelint \"**/*.{vue,css}\" --allow-empty-input"
+  },
+  "dependencies": {
+    "nuxt": "^4.4.5",
+    "vue": "^3.5.34"
+  },
+  "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "unrs-resolver"
+    ]
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "@types/node": "^25.7.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.4",
+    "postcss": "^8.5.14",
+    "postcss-html": "^1.8.1",
+    "prettier": "^3.8.3",
+    "sass": "^1.99.0",
+    "stylelint": "^17.11.0",
+    "stylelint-config-recommended-vue": "^1.6.1",
+    "stylelint-order": "^8.1.1",
+    "typescript": "~5.8.3",
+    "vue-tsc": "^3.2.8"
+  }
+}

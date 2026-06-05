@@ -1,0 +1,19 @@
+@use '../variables/resolutions' as bp;
+
+@mixin from-mobile {
+  @media (min-width: #{bp.$mobile}) {
+    @content;
+  }
+}
+
+@mixin from-tablet {
+  @media (min-width: #{bp.$tablet}) {
+    @content;
+  }
+}
+
+@mixin from-desktop {
+  @media (min-width: #{bp.$desktopMin}) {
+    @content;
+  }
+}

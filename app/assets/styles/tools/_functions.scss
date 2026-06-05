@@ -1,0 +1,8 @@
+@use 'sass:math';
+
+/* px → rem, база 16px (как в Booking_ukr) */
+@function rem($px) {
+  $base: 16;
+
+  @return math.div($px, $base) * 1rem;
+}

@@ -1,0 +1,13 @@
+/* Минимальная палитра — расширять под FoodSity / макеты */
+:root {
+  --fs-color-bg: #fff;
+  --fs-color-surface: #f6f6f6;
+  --fs-color-text: #1a1a1a;
+  --fs-color-text-muted: #666;
+  --fs-color-border: #e0e0e0;
+  --fs-color-primary: #2a6ebb;
+  --fs-color-primary-strong: #1e5390;
+  --fs-color-error: #c62828;
+
+  --fs-font-sans: system-ui, -apple-system, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
+}
