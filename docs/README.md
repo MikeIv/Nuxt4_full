@@ -11,9 +11,9 @@ Fullstack-песочница для прокачки backend на Nuxt 4 + Nitro
 
 ## Быстрый старт
 
-1. Завершить [deployment-plan.md](deployment-plan.md) (этапы C–F).
-2. Открыть [roadmap-12-weeks.md](roadmap-12-weeks.md) → **Неделя 1**.
-3. Вести прогресс в `.planning/state.md` (локально, из `state-template.md`).
+1. ~~Развёртывание~~ — [deployment-plan.md](deployment-plan.md) этапы A–F **завершены**.
+2. Открыть [roadmap-12-weeks.md](roadmap-12-weeks.md) → **[Неделя 1](roadmap-12-weeks.md#неделя-1--nitro-и-первый-backend)**.
+3. Вести прогресс в `.planning/state.md` (из `state-template.md`).
 
 ## Remote
 

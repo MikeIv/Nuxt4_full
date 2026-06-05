@@ -27,8 +27,3 @@ CURSOR_RULES_EXPORT.md
 .env
 .env.*
 !.env.example
-
-# Планирование — рабочие файлы сессии (в git: PROJECT.md, шаблоны)
-.planning/brief.md
-.planning/plan.md
-.planning/state.md

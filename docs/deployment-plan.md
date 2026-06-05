@@ -3,20 +3,20 @@
 Проект создан из шаблона `d:\_WEB\_Work\_NUXT4_Template\`.
 Remote: https://github.com/MikeIv/Nuxt4_full.git
 
-**Done when:** проект развёрнут локально, связан с remote, `dev` / `build` / `lint:all` проходят, можно начинать [неделю 1](roadmap-12-weeks.md#неделя-1--nitro-и-первый-backend).
+**Done when:** ~~проект развёрнут локально, связан с remote, `dev` / `build` / `lint:all` проходят~~ **выполнено.** Следующий шаг: [неделя 1](roadmap-12-weeks.md#неделя-1--nitro-и-первый-backend).
 
 ---
 
 ## Обзор этапов
 
-| Этап | Содержание                                   | Статус  |
-| ---- | -------------------------------------------- | ------- |
-| A    | Подготовка: remote, копия шаблона, workspace | готово  |
-| B    | Адаптация: rebrand, PROJECT.md, docs         | готово  |
-| C    | Git init + push на GitHub                    | готово  |
-| D    | `.env`, `pnpm install`, build, lint          | готово  |
-| E    | Cursor rules (локально)                      | готово  |
-| F    | Definition of Done                           | ожидает |
+| Этап | Содержание                                   | Статус |
+| ---- | -------------------------------------------- | ------ |
+| A    | Подготовка: remote, копия шаблона, workspace | готово |
+| B    | Адаптация: rebrand, PROJECT.md, docs         | готово |
+| C    | Git init + push на GitHub                    | готово |
+| D    | `.env`, `pnpm install`, build, lint          | готово |
+| E    | Cursor rules в репозитории                   | готово |
+| F    | Definition of Done                           | готово |
 
 ---
 
@@ -125,12 +125,12 @@ git config --get core.hooksPath   # → .husky/_
 
 ## Этап F — Definition of Done
 
-- [ ] Проект из шаблона, rebrand выполнен
-- [ ] `origin` → `MikeIv/Nuxt4_full`, push выполнен
-- [ ] `pnpm dev` / `build` / `lint:all` — OK
-- [ ] Документация в `docs/` на месте
-- [ ] В `.planning/PROJECT.md` указана **текущая неделя** (старт: неделя 1)
-- [ ] Следующие шаги: Docker + Prisma (неделя 3) — не делать раньше времени
+- [x] Проект из шаблона, rebrand выполнен
+- [x] `origin` → `MikeIv/Nuxt4_full`, push выполнен
+- [x] `pnpm dev` / `build` / `lint:all` — OK
+- [x] Документация в `docs/` на месте
+- [x] В `.planning/PROJECT.md` указана **текущая неделя** (старт: неделя 1)
+- [x] Следующие шаги: Docker + Prisma (неделя 3) — не делать раньше времени
 
 ---
 
