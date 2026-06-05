@@ -30,16 +30,15 @@ pnpm dev
 
 ## Скрипты
 
-| Команда         | Назначение                         |
-| --------------- | ---------------------------------- |
-| `pnpm dev`      | Dev-сервер (http://localhost:3000) |
-| `pnpm build`    | Production-сборка                  |
-| `pnpm lint:all` | ESLint + Prettier + Stylelint      |
-
-| `pnpm preview` | Просмотр production-сборки |
-| `pnpm lint` | ESLint |
-| `pnpm format:check` | Prettier (check) |
-| `pnpm stylelint` | Stylelint для Vue/CSS |
+| Команда             | Назначение                         |
+| ------------------- | ---------------------------------- |
+| `pnpm dev`          | Dev-сервер (http://localhost:3000) |
+| `pnpm build`        | Production-сборка                  |
+| `pnpm preview`      | Просмотр production-сборки         |
+| `pnpm lint`         | ESLint                             |
+| `pnpm lint:all`     | ESLint + Prettier + Stylelint      |
+| `pnpm format:check` | Prettier (check)                   |
+| `pnpm stylelint`    | Stylelint для Vue/CSS              |
 
 Подробнее о линтерах и структуре — [`AGENTS.md`](AGENTS.md).
 

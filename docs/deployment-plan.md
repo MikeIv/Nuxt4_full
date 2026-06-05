@@ -13,7 +13,7 @@ Remote: https://github.com/MikeIv/Nuxt4_full.git
 | ---- | -------------------------------------------- | ------- |
 | A    | Подготовка: remote, копия шаблона, workspace | готово  |
 | B    | Адаптация: rebrand, PROJECT.md, docs         | готово  |
-| C    | Git init + push на GitHub                    | ожидает |
+| C    | Git init + push на GitHub                    | готово  |
 | D    | `.env`, `pnpm install`, build, lint          | ожидает |
 | E    | Cursor rules (локально)                      | ожидает |
 | F    | Definition of Done                           | ожидает |
@@ -76,8 +76,8 @@ git push -u origin main
 
 ### Чеклист C
 
-- [ ] `git init`, remote `origin` настроен
-- [ ] Initial commit запушен на `main`
+- [x] `git init`, remote `origin` настроен
+- [x] Initial commit запушен на `main`
 
 ---
 
