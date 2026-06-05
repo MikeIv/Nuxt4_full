@@ -18,8 +18,7 @@ logs
 .fleet
 .idea
 
-# Cursor — полностью локально (rules, commands, mcp.json)
-.cursor/
+# Legacy / export (не используем в этом проекте)
 .cursorrules
 CURSOR_RULES_EXPORT.md
 .vscode

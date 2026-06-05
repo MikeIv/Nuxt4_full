@@ -56,6 +56,4 @@ Nuxt 4.4, Vue 3, TypeScript, Nitro, SCSS, ESLint + Prettier + Stylelint, Husky.
 
 ## Cursor Agent
 
-Правила локально из `d:\_WEB\_Work\_Cursor-rules-template\` (`INSTALL-NUXT-VUE.md`). Каталог `.cursor/` в `.gitignore`.
-
-Справка: [`AGENTS.md`](AGENTS.md)
+Правила в репозитории: [`.cursor/rules/`](.cursor/rules/) (контекст — [`90-project-context.mdc`](.cursor/rules/90-project-context.mdc)). Справка: [`AGENTS.md`](AGENTS.md).

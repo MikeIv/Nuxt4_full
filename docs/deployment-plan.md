@@ -14,8 +14,8 @@ Remote: https://github.com/MikeIv/Nuxt4_full.git
 | A    | Подготовка: remote, копия шаблона, workspace | готово  |
 | B    | Адаптация: rebrand, PROJECT.md, docs         | готово  |
 | C    | Git init + push на GitHub                    | готово  |
-| D    | `.env`, `pnpm install`, build, lint          | ожидает |
-| E    | Cursor rules (локально)                      | ожидает |
+| D    | `.env`, `pnpm install`, build, lint          | готово  |
+| E    | Cursor rules (локально)                      | готово  |
 | F    | Definition of Done                           | ожидает |
 
 ---
@@ -101,25 +101,25 @@ git config --get core.hooksPath   # → .husky/_
 
 ### Чеклист D
 
-- [ ] `.env` создан (не в git)
-- [ ] `pnpm dev` — главная открывается
-- [ ] `pnpm build` — без ошибок
-- [ ] `pnpm lint:all` — зелёный
+- [x] `.env` создан (не в git)
+- [x] `pnpm dev` — главная открывается
+- [x] `pnpm build` — без ошибок
+- [x] `pnpm lint:all` — зелёный
 
 ---
 
-## Этап E — Cursor rules (локально)
+## Этап E — Cursor rules
 
-Каталог `.cursor/` в `.gitignore`. Установка из `d:\_WEB\_Work\_Cursor-rules-template\` (`INSTALL-NUXT-VUE.md`):
+Каталог `.cursor/` **в git** (rules, commands, `mcp.json`). Источник синхронизации: `d:\_WEB\_Work\_Cursor-rules-template\` (`INSTALL-NUXT-VUE.md`):
 
 - `.cursor/rules/*` (workflow + nuxt-template)
-- обновить `90-project-context.mdc` под Nuxt4_full
-- опционально `.cursor/mcp.json` (nuxt + context7)
+- `90-project-context.mdc` — контекст Nuxt4_full
+- `.cursor/mcp.json` (nuxt + context7)
 
 ### Чеклист E
 
-- [ ] Cursor rules установлены
-- [ ] `90-project-context.mdc` описывает Nuxt4_full
+- [x] Cursor rules установлены
+- [x] `90-project-context.mdc` описывает Nuxt4_full
 
 ---
 

@@ -1,0 +1,92 @@
+---
+description: Контекст Nuxt4_full — fullstack learning sandbox, GitHub, roadmap
+alwaysApply: true
+---
+
+# Nuxt4_full — контекст проекта
+
+## Продукт
+
+- **Пакет:** `nuxt4-full` (`package.json`)
+- **Назначение:** fullstack-песочница для прокачки backend (Nitro → Prisma → auth → деплой)
+- **Capstone:** mini-SaaS «Task Board»
+- **Remote:** https://github.com/MikeIv/Nuxt4_full.git
+- **SSR:** по умолчанию Nuxt (не отключать без задачи)
+
+## Обучение
+
+| Документ | Путь |
+| -------- | ---- |
+| Roadmap 12 недель | `docs/roadmap-12-weeks.md` |
+| Развёртывание A–F | `docs/deployment-plan.md` |
+| Контекст сессий | `.planning/PROJECT.md` |
+
+**Текущая фаза:** развёртывание завершено → **Неделя 1** (Nitro, первый `server/api/*`).
+
+## Стек
+
+| Слой | Сейчас | План |
+| ---- | ------ | ---- |
+| Framework | Nuxt 4.4, Vue 3.5 | — |
+| Модули | `@nuxt/eslint` | + Nuxt UI (нед. 10) |
+| Backend | Nitro (каркас) | `server/api/*` |
+| БД | — | PostgreSQL + Prisma (нед. 3) |
+| Auth | — | nuxt-auth-utils (нед. 5) |
+| Стили | SCSS, CSS Modules (`$style`) | — |
+| Язык | TypeScript strict | — |
+| Пакеты | pnpm 11.x | — |
+| API | `NUXT_PUBLIC_API_BASE` пустой → same-origin | `useApi` / `useApiFetch` / `serverApi` |
+
+## Структура
+
+```
+app/pages/, layouts/, composables/useApi.ts, assets/styles/
+server/api/          # добавлять с недели 1
+server/utils/        # prisma, auth, validate — по roadmap
+shared/types, shared/utils
+docs/                # deployment-plan, roadmap
+types/nuxt-public.d.ts
+scripts/pre-commit.mjs
+```
+
+## Команды
+
+```bash
+cp .env.example .env   # один раз
+pnpm install
+pnpm dev               # :3000 или следующий свободный порт
+pnpm build
+pnpm lint:all
+```
+
+## Соглашения
+
+- **Платформа:** GitHub (`MikeIv/Nuxt4_full`) — не GitLab / `gh` для MR этого репо
+- **Правила агента:** `.cursor/` в репозитории; обновления workflow — из `d:\_WEB\_Work\_Cursor-rules-template\`
+- Workflow: `00-workflow-core` … `06-fundamental-principles`
+- Стек Nuxt: `nuxt-template.mdc`
+- Verify / security: `04-verify-and-done.mdc`
+- MCP: `.cursor/mcp.json` — Nuxt, Context7
+- Коммиты — только по явной просьбе; pre-commit: Husky + lint-staged
+
+## API
+
+- `NUXT_PUBLIC_API_BASE` **пустой** → запросы на same-origin (`server/api/*`)
+- Клиент: только `useApi` / `useApiFetch`, не сырой `fetch` в компонентах
+- Не коммитить `.env`
+
+## Не трогать без согласования
+
+- Prisma, Docker, PostgreSQL — **не раньше [недели 3](docs/roadmap-12-weeks.md#неделя-3--docker-postgresql-prisma)**
+- Глобальная смена `srcDir`, ESLint/Husky pipeline
+- Массовое изменение SCSS-токенов `--fs-*` без задачи
+- `useApi` / `useApiFetch` / `serverApi` — рабочая основа; не рефакторить «на старте»
+
+## Планирование
+
+- `.planning/PROJECT.md` — постоянный контекст
+- Задача M+: `cp .planning/brief-template.md .planning/brief.md`
+
+## Шаблон-источник кода
+
+`d:\_WEB\_Work\_NUXT4_Template\`
