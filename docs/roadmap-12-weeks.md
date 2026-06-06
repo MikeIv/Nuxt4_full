@@ -60,33 +60,31 @@
 
 ### Теория (2–3 ч)
 
-Порядок тем **совпадает с практикой**. Шаги 1–3 — сделаны; теория 4–7 — впереди.
+Порядок тем **совпадает с практикой**. Неделя 1 — сделана (шаги 1–7 + рекомендуемые).
 
 1. **Тема:** ✅ Контракт — `shared/types/health.ts`
 2. **Тема:** ✅ Thin handler — `health.get.ts` + `server/utils/health.ts`
 3. **Тема:** ✅ End-to-end — `useApiFetch` + SSR
-4. **Тема:** POST — `health.post.ts` (`readBody`)
-5. **Тема:** `server/middleware/log.ts` (middleware → handler)
-6. **Тема:** `runtimeConfig` — довести до идеала (apiBase, `nuxt-public.d.ts`)
-7. **Тема:** `docs/architecture.md` — актуализировать схему
-
-**Рекомендуется:** `server/plugins/00-boot.ts`, `server/utils/apiResponse.ts` — `ok(data)`
+4. **Тема:** ✅ POST — `health.post.ts` (`readBody`)
+5. **Тема:** ✅ `server/middleware/log.ts` (middleware → handler)
+6. **Тема:** ✅ `runtimeConfig` — apiBase, `nuxt-public.d.ts`, `runtimeConfig.ts`
+7. **Тема:** ✅ `docs/architecture.md` — актуализировать схему
+8. **Тема:** ✅ `server/plugins/00-boot.ts` (рекомендуется)
+9. **Тема:** ✅ `server/utils/apiResponse.ts` — `ok(data)` (рекомендуется)
 
 ### Практика
 
-**Сделано (шаги 1–3)** — дальше по порядку ментора. Подсказки: [/roadmap](/roadmap) → «Неделя 1».
+**Сделано** — подсказки: [/roadmap](/roadmap) → «Неделя 1».
 
-**Осталось**
-
-4. [ ] **POST `/api/health`** — `server/api/health.post.ts`, `readBody`, ответ или подтверждение
-5. [ ] **Middleware** — `server/middleware/log.ts`, method + path
-6. [ ] **runtimeConfig** — финализация apiBase, `.env.example`, `types/nuxt-public.d.ts`
-7. [ ] **`docs/architecture.md`** — Client → useApiFetch → Middleware → API → Utils → _(DB)_
-
-**Рекомендуется**
-
-- [ ] `server/plugins/00-boot.ts`
-- [ ] `server/utils/apiResponse.ts` — `ok(data)`
+1. [x] Контракт `shared/types/health.ts`
+2. [x] Thin handler `health.get.ts` + `server/utils/health.ts`
+3. [x] Health на главной (`useApiFetch` + SSR)
+4. [x] POST `/api/health`
+5. [x] Middleware `server/middleware/log.ts`
+6. [x] `runtimeConfig` + типизация
+7. [x] `docs/architecture.md`
+8. [x] `server/plugins/00-boot.ts` (рекомендуется)
+9. [x] `server/utils/apiResponse.ts` — `ok(data)` (рекомендуется)
 
 ### Структура (неделя 1)
 
@@ -96,10 +94,12 @@
 ✅ 1. shared/types/health.ts
 ✅ 2. server/utils/health.ts + server/api/health.get.ts
 ✅ 3. app/pages/index.vue (useApiFetch)
-→ 4. server/api/health.post.ts
-→ 5. server/middleware/log.ts
-→ 6. nuxt.config.ts + types/nuxt-public.d.ts + .env.example
-→ 7. docs/architecture.md (актуализировать)
+✅ 4. server/api/health.post.ts
+✅ 5. server/middleware/log.ts
+✅ 6. nuxt.config.ts + types/nuxt-public.d.ts + .env.example + runtimeConfig.ts
+✅ 7. docs/architecture.md
+✅ 8. server/plugins/00-boot.ts (рекомендуется)
+✅ 9. server/utils/apiResponse.ts (рекомендуется)
 ```
 
 **Дерево файлов** (итог недели):
@@ -114,21 +114,22 @@ app/pages/index.vue
 nuxt.config.ts
 types/nuxt-public.d.ts
 docs/architecture.md
-server/utils/apiResponse.ts          # рекомендуется
-server/plugins/00-boot.ts            # рекомендуется
+server/utils/runtimeConfig.ts
+server/utils/apiResponse.ts
+server/plugins/00-boot.ts
 ```
 
 `shared/` не переносить в `app/` — официальный isomorphic-слой Nuxt 4.
 
 ### Done when
 
-- [ ] Есть GET и POST `/api/health`
-- [ ] Health отображается на главной странице
-- [ ] Работает middleware-логгер
-- [ ] Понимаешь **public** / **private** в `runtimeConfig`
-- [ ] Актуален `docs/architecture.md`
-- [ ] Понимаешь структуру: `app/`, `server/`, `shared/types/`, `server/utils/`
-- [ ] Handlers тонкие — бизнес-логика только в `server/utils/`
+- [x] Есть GET и POST `/api/health`
+- [x] Health отображается на главной странице
+- [x] Работает middleware-логгер
+- [x] Понимаешь **public** / **private** в `runtimeConfig`
+- [x] Актуален `docs/architecture.md`
+- [x] Понимаешь структуру: `app/`, `server/`, `shared/types/`, `server/utils/`
+- [x] Handlers тонкие — бизнес-логика только в `server/utils/`
 
 ### Промпты Cursor
 

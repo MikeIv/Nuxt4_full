@@ -7,7 +7,6 @@ import type { HealthPostBody, HealthPostResponse, HealthResponse } from '#shared
  * Вся логика здесь — handler остаётся максимально тонким
  */
 export function getHealthPayload(): HealthResponse {
-  warnIfExampleSecretMissing()
   const config = useServerRuntimeConfig()
 
   return {

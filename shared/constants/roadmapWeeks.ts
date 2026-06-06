@@ -72,8 +72,8 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 1,
     title: 'Nitro и первый backend',
-    theme: 'шаги 1–7 ✓ — опционально: boot plugin, apiResponse',
-    goal: 'Понять backend Nuxt 4 (Nitro): типизированные API, end-to-end frontend ↔ backend, правильная архитектура. Обязательные шаги 1–7 сделаны; рекомендуемые: 00-boot.ts, apiResponse.ok().',
+    theme: 'неделя 1 ✓ (включая boot plugin и apiResponse)',
+    goal: 'Понять backend Nuxt 4 (Nitro): типизированные API, end-to-end frontend ↔ backend, правильная архитектура. Шаги 1–7 и рекомендуемые 00-boot.ts, apiResponse.ok() — сделаны.',
     theory: theorySteps([
       {
         topic: '✅ Контракт: `shared/types/health.ts`',
@@ -111,13 +111,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Сделано. GET/POST потоки, дерево server/, роли shared/types/, runtimeConfig. Client → middleware → api → utils → (DB).',
       },
       {
-        topic: '[Рекомендуется] `server/plugins/00-boot.ts`',
-        description: 'Один раз при старте Nitro — отличие plugin от middleware/log.ts.',
+        topic: '✅ `server/plugins/00-boot.ts`',
+        description:
+          'Сделано. defineNitroPlugin — лог при старте Nitro (dev). Отличие от middleware/log.ts (на каждый запрос).',
       },
       {
-        topic: '[Рекомендуется] `server/utils/apiResponse.ts` — ok(data)',
+        topic: '✅ `server/utils/apiResponse.ts` — ok(data)',
         description:
-          'Начало единого формата { data } — полноценно на нед. 2. Health на нед. 1 остаётся плоским объектом.',
+          'Сделано. ok<T>(data) => { data }. Полноценно на нед. 2; health остаётся плоским объектом.',
       },
     ]),
     practice: practiceSteps(1, [
@@ -161,7 +162,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         what: 'Финализировать apiBase, nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
         where:
           'nuxt.config.ts, types/nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
-        how: 'useServerRuntimeConfig в utils. warnIfExampleSecretMissing в dev. version в health из config.',
+        how: 'useServerRuntimeConfig в utils. warnIfExampleSecretMissing в 00-boot.ts (dev). version в health из config.',
         verify:
           'useRuntimeConfig() на клиенте — только public.*. TS без ошибок на config.public.appVersion.',
       },
@@ -173,18 +174,18 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Объясняешь путь /api/health без открытия кода.',
       },
       {
-        label: '[Рекомендуется] Boot plugin 00-boot.ts',
+        label: '✅ Boot plugin 00-boot.ts',
         what: 'Лог один раз при старте Nitro.',
         where: 'server/plugins/00-boot.ts',
-        how: 'defineNitroPlugin, dev-only console.log.',
-        verify: 'Сообщение при pnpm dev; не на каждый запрос.',
+        how: 'defineNitroPlugin + useServerRuntimeConfig; dev-only console.log.',
+        verify: 'Сообщение [nitro] boot при pnpm dev; не на каждый запрос.',
       },
       {
-        label: '[Рекомендуется] apiResponse.ok(data)',
+        label: '✅ apiResponse.ok(data)',
         what: 'Заготовка единого формата ответа под нед. 2.',
         where: 'server/utils/apiResponse.ts',
         how: 'ok<T>(data: T) => ({ data }).',
-        verify: 'Файл компилируется; health не обязан использовать ok().',
+        verify: 'typecheck OK; health не использует ok().',
       },
     ]),
     doneWhen: doneWhen(1, [

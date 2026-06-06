@@ -39,11 +39,11 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 
 Контракты: `shared/types/health.ts` — `HealthResponse`, `HealthPostBody`, `HealthPostResponse`.
 
-| Слой           | Неделя 1                                                            |
-| -------------- | ------------------------------------------------------------------- |
-| **Middleware** | `log.ts` — на **каждый** HTTP-запрос (включая `/api/health`)        |
-| **Plugins**    | `server/plugins/` — опционально (`00-boot.ts`, один раз при старте) |
-| **Utils**      | Логика без привязки к HTTP; handlers только вызывают utils          |
+| Слой           | Неделя 1                                                       |
+| -------------- | -------------------------------------------------------------- |
+| **Middleware** | `log.ts` — на **каждый** HTTP-запрос (включая `/api/health`)   |
+| **Plugins**    | `00-boot.ts` — один раз при старте Nitro (dev: `[nitro] boot`) |
+| **Utils**      | Логика без привязки к HTTP; handlers только вызывают utils     |
 
 ### Цепочка по неделям
 
@@ -108,13 +108,13 @@ server/
 │   └── log.ts             # [nitro] method path
 ├── utils/
 │   ├── health.ts          # getHealthPayload, POST helpers
+│   ├── apiResponse.ts     # ok<T>(data) — обёртка { data }
 │   ├── runtimeConfig.ts   # useServerRuntimeConfig (public + private)
 │   └── serverApi.ts       # HTTP-клиент Nitro к external API
-├── plugins/               # рекомендуется: 00-boot.ts (ещё не добавлен)
+├── plugins/
+│   └── 00-boot.ts         # [nitro] boot + warnIfExampleSecretMissing (dev)
 └── routes/                # вне /api — позже
 ```
-
-**Рекомендуется (нед. 1–2):** `server/utils/apiResponse.ts` — `ok<T>(data)` для единого `{ data }`.
 
 ### Thin handler (эталон)
 
