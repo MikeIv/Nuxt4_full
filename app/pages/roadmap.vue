@@ -80,7 +80,12 @@ const activeWeekProgress = computed(() => {
         :aria-labelledby="`tab-${activeWeekId}`"
         :class="$style.panelWrap"
       >
-        <RoadmapWeekPanel :week="activeWeek" :is-done="isDone" @toggle="toggle" />
+        <RoadmapWeekPanel
+          :key="activeWeekId"
+          :week="activeWeek"
+          :is-done="isDone"
+          @toggle="toggle"
+        />
       </div>
     </div>
   </div>

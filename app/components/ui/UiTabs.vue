@@ -7,20 +7,15 @@ export interface UiTabItem {
   complete?: boolean
 }
 
+const model = defineModel<string>({ required: true })
+
 const props = defineProps<{
   items: UiTabItem[]
-  modelValue: string
   ariaLabel?: string
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string]
-}>()
-
 function selectTab(value: string): void {
-  if (value !== props.modelValue) {
-    emit('update:modelValue', value)
-  }
+  model.value = value
 }
 
 function onKeydown(event: KeyboardEvent, index: number): void {
@@ -60,12 +55,12 @@ function onKeydown(event: KeyboardEvent, index: number): void {
         :key="item.value"
         type="button"
         role="tab"
-        :aria-selected="modelValue === item.value"
+        :aria-selected="model === item.value"
         :aria-controls="`panel-${item.value}`"
-        :tabindex="modelValue === item.value ? 0 : -1"
+        :tabindex="model === item.value ? 0 : -1"
         :class="[
           $style.tab,
-          modelValue === item.value && $style.tabActive,
+          model === item.value && $style.tabActive,
           item.complete && $style.tabComplete,
         ]"
         @click="selectTab(item.value)"
@@ -149,36 +144,28 @@ function onKeydown(event: KeyboardEvent, index: number): void {
   color: var(--fs-figma-gradient-auth-from);
 }
 
-$tab-complete: 51 174 39; // --fs-color-success (#33ae27)
-$tab-complete-text: color-mix(in srgb, var(--fs-color-success) 72%, #0a0a0a);
+// --fs-color-success (#33ae27)
+$tab-complete-r: 51;
+$tab-complete-g: 174;
+$tab-complete-b: 39;
 $tab-complete-text-strong: color-mix(in srgb, var(--fs-color-success) 58%, #0a0a0a);
 
-.tabComplete {
-  border-color: rgb($tab-complete / 0.22);
-  background: rgb($tab-complete / 0.1);
-  color: $tab-complete-text;
-
-  &:hover {
-    background: rgb($tab-complete / 0.14);
-    color: $tab-complete-text-strong;
-  }
+// Выполненная, но не выбранная — как обычная вкладка, зелёный только badge
+.tabComplete:not(.tabActive) .badge {
+  background: rgba($tab-complete-r, $tab-complete-g, $tab-complete-b, 0.14);
+  color: $tab-complete-text-strong;
 }
 
+// Выбранная выполненная неделя — полная зелёная стилизация
 .tabComplete.tabActive {
-  border-color: rgb($tab-complete / 0.32);
-  background: rgb($tab-complete / 0.14);
+  border-color: rgba($tab-complete-r, $tab-complete-g, $tab-complete-b, 0.32);
+  background: rgba($tab-complete-r, $tab-complete-g, $tab-complete-b, 0.14);
   box-shadow: none;
   color: $tab-complete-text-strong;
-}
 
-.tabComplete .badge,
-.tabComplete.tabActive .badge {
-  background: rgb($tab-complete / 0.18);
-  color: $tab-complete-text-strong;
-}
-
-.tabComplete.tabActive .badge {
-  background: rgb($tab-complete / 0.22);
-  color: color-mix(in srgb, var(--fs-color-success) 50%, #0a0a0a);
+  .badge {
+    background: rgba($tab-complete-r, $tab-complete-g, $tab-complete-b, 0.22);
+    color: color-mix(in srgb, var(--fs-color-success) 50%, #0a0a0a);
+  }
 }
 </style>
