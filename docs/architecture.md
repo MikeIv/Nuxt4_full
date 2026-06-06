@@ -2,148 +2,168 @@
 
 Соглашения по папкам и слоям. Зафиксировано после ревью ментора + официальная модель Nuxt 4.
 
+**Неделя 1 (факт):** health GET/POST, middleware, thin handlers, `useApiFetch` на главной, `runtimeConfig` + типизация.
+
 ---
 
 ## Обзор потока данных
 
+### GET `/api/health` (главная страница)
+
 ```
-Client (app/pages)
-    │  useApiFetch<HealthResponse>  (SSR + client)
+Client (app/pages/index.vue)
+    │  useApiFetch<HealthResponse>('/api/health')  — SSR + client
     ▼
-Nitro  server/middleware/log.ts     ← каждый запрос
+Nitro  server/middleware/log.ts          ← каждый запрос: [nitro] method path
     ▼
-       server/api/health.get.ts     ← thin handler
+       server/api/health.get.ts          ← thin handler
     ▼
-       server/utils/health.ts
+       server/utils/health.ts             ← getHealthPayload()
+       server/utils/runtimeConfig.ts     ← private config (server-only)
     │
     ▼  (неделя 3+)
     Prisma  →  PostgreSQL
 ```
 
-**Middleware** (`server/middleware/`) — на каждый HTTP-запрос (log.ts: method + path).
-**Plugins** (`server/plugins/`) — один раз при старте Nitro (boot log, проверка env).
-**Utils** — переиспользуемая логика без привязки к HTTP.
+### POST `/api/health` (учебный)
 
-### Цепочка по неделям (ментор + roadmap)
+```
+Client (curl / Postman)
+    ▼
+server/middleware/log.ts
+    ▼
+server/api/health.post.ts                ← readBody → buildHealthPostResponse()
+    ▼
+server/utils/health.ts                   ← readHealthPostBody, getHealthPayload
+```
 
-| Этап    | Слой                                           |
-| ------- | ---------------------------------------------- |
-| Нед. 1  | Client → Nitro (`server/api`) → `server/utils` |
-| Нед. 3+ | + Prisma → PostgreSQL                          |
-| Нед. 5+ | + auth middleware, session                     |
+Контракты: `shared/types/health.ts` — `HealthResponse`, `HealthPostBody`, `HealthPostResponse`.
+
+| Слой           | Неделя 1                                                            |
+| -------------- | ------------------------------------------------------------------- |
+| **Middleware** | `log.ts` — на **каждый** HTTP-запрос (включая `/api/health`)        |
+| **Plugins**    | `server/plugins/` — опционально (`00-boot.ts`, один раз при старте) |
+| **Utils**      | Логика без привязки к HTTP; handlers только вызывают utils          |
+
+### Цепочка по неделям
+
+| Этап    | Слой                                                |
+| ------- | --------------------------------------------------- |
+| Нед. 1  | Client → middleware → `server/api` → `server/utils` |
+| Нед. 3+ | + Prisma → PostgreSQL                               |
+| Нед. 5+ | + auth middleware, session                          |
 
 ---
 
 ## Корень репозитория
 
-| Путь         | Назначение                                                               |
-| ------------ | ------------------------------------------------------------------------ |
-| `app/`       | `srcDir` — pages, layouts, composables, assets (обрабатываются сборкой)  |
-| `server/`    | Nitro: `api/`, `routes/`, `middleware/`, `plugins/`, `utils/`            |
-| `shared/`    | **Isomorphic code** — типы и utils для client **и** server (`#shared/*`) |
-| `types/`     | Augmentation Nuxt / глобальные `.d.ts` (не бизнес-контракты API)         |
-| `public/`    | Статика as-is: favicon, robots.txt, файлы без трансформации              |
-| `scripts/`   | Dev-tooling в корне: pre-commit, lint helpers (не в `app/`)              |
-| `docs/`      | Планы, roadmap, эта архитектура                                          |
-| `.planning/` | Контекст для Cursor Agent                                                |
-| `.cursor/`   | Rules, commands, MCP                                                     |
+| Путь      | Назначение                                                           |
+| --------- | -------------------------------------------------------------------- |
+| `app/`    | `srcDir` — pages, layouts, composables, assets                       |
+| `server/` | Nitro: `api/`, `routes/`, `middleware/`, `plugins/`, `utils/`        |
+| `shared/` | Isomorphic code — типы и utils для client **и** server (`#shared/*`) |
+| `types/`  | Augmentation Nuxt (`nuxt-public.d.ts`), не бизнес-контракты API      |
+| `public/` | Статика as-is                                                        |
+| `docs/`   | Планы, roadmap, этот файл                                            |
 
-`server/` и `shared/` остаются **в корне** — так задумано в Nuxt 4 при `srcDir: 'app/'`.
+`server/` и `shared/` — **в корне**, не внутри `app/` (Nuxt 4 + `srcDir: 'app/'`).
 
 ---
 
-## Почему `shared/` не убираем
+## `shared/` — isomorphic-слой
 
-В Nuxt 4 каталог `shared/` — **официальный** слой isomorphic-кода с алиасом `#shared`.
+Алиас **`#shared`**. Примеры недели 1:
 
-Примеры в проекте:
+| Файл                                  | Назначение                                               |
+| ------------------------------------- | -------------------------------------------------------- |
+| `shared/types/health.ts`              | `HealthResponse`, `HealthPostBody`, `HealthPostResponse` |
+| `shared/types/api.ts`                 | Общие HTTP-типы (заготовка)                              |
+| `shared/utils/normalizeApiBaseUrl.ts` | `apiBase` для `useApi` и `serverApi`                     |
+| `shared/constants/roadmapWeeks.ts`    | Данные страницы `/roadmap`                               |
 
-- `shared/types/api.ts` — форма ответа API для client и server
-- `shared/utils/normalizeApiBaseUrl.ts` — одна логика base URL на клиенте (`useApi`) и на сервере (`serverApi`)
-
-**Не дублировать** те же типы в `app/` и `server/` отдельно.
-**Не переносить** `shared/` внутрь `app/` — сломается convention Nuxt.
+Не дублировать контракты API в `app/` и `server/` отдельно.
 
 ---
 
 ## Слои типов
 
-| Каталог         | Когда использовать                                                |
-| --------------- | ----------------------------------------------------------------- |
-| `types/`        | Module augmentation (`nuxt-public.d.ts`), ambient globals         |
-| `shared/types/` | Контракты API client ↔ server (`HealthResponse`, `ApiError`)      |
-| `server/types/` | Server-only типы (Prisma helpers, internal DTO) — **с недели 3+** |
+| Каталог         | Когда использовать                                                      |
+| --------------- | ----------------------------------------------------------------------- |
+| `types/`        | `declare module 'nuxt/schema'` — `RuntimeConfig`, `PublicRuntimeConfig` |
+| `shared/types/` | Контракты API client ↔ server                                           |
+| `server/types/` | Server-only — **с недели 3+**                                           |
 
-Правило: если тип нужен и в `useApiFetch<T>`, и в handler — он в `shared/types/`.
+Правило: тип нужен в `useApiFetch<T>` и в handler → `shared/types/`.
 
 ---
 
-## `server/` — что куда класть
+## `server/` — неделя 1
 
 ```
 server/
-├── api/           # REST: health.get.ts → GET /api/health (thin handlers)
-├── routes/        # Маршруты вне /api (webhooks, well-known)
-├── middleware/    # На каждый запрос
-├── plugins/       # Старт Nitro (00-boot-log.ts)
-└── utils/         # Логика: health.ts, apiResponse.ts, позже prisma, auth
+├── api/
+│   ├── health.get.ts      # GET /api/health
+│   └── health.post.ts     # POST /api/health
+├── middleware/
+│   └── log.ts             # [nitro] method path
+├── utils/
+│   ├── health.ts          # getHealthPayload, POST helpers
+│   ├── runtimeConfig.ts   # useServerRuntimeConfig (public + private)
+│   └── serverApi.ts       # HTTP-клиент Nitro к external API
+├── plugins/               # рекомендуется: 00-boot.ts (ещё не добавлен)
+└── routes/                # вне /api — позже
 ```
+
+**Рекомендуется (нед. 1–2):** `server/utils/apiResponse.ts` — `ok<T>(data)` для единого `{ data }`.
 
 ### Thin handler (эталон)
 
-Handler только:
+```ts
+// server/api/health.get.ts
+export default defineEventHandler(async (): Promise<HealthResponse> => {
+  return getHealthPayload()
+})
+```
 
-1. Читает вход (`getQuery`, `readBody`, method guard)
-2. Вызывает `server/utils/*`
-3. Возвращает типизированный ответ
-
-Бизнес-логика, форматирование, доступ к env — в utils.
-
-### Позже (по roadmap)
-
-- `server/services/` — orchestration (несколько utils / Prisma)
-- `server/types/` — internal server types
+1. Вход — `getQuery`, `readBody`, method guard
+2. Вызов `server/utils/*`
+3. Типизированный return из `#shared/types/`
 
 ---
 
 ## Frontend (`app/`)
 
-| Путь           | Назначение                        |
-| -------------- | --------------------------------- |
-| `pages/`       | File-based routing                |
-| `layouts/`     | Обёртки страниц                   |
-| `components/`  | Auto-import UI                    |
-| `composables/` | `useApi`, `useRoadmapProgress`, … |
-| `assets/`      | SCSS, шрифты — через сборку Vite  |
+| Путь                    | Назначение                                               |
+| ----------------------- | -------------------------------------------------------- |
+| `pages/index.vue`       | Health Check через `useApiFetch<HealthResponse>`         |
+| `pages/roadmap.vue`     | Интерактивный roadmap                                    |
+| `composables/useApi.ts` | `useApi`, `useApiFetch` + `runtimeConfig.public.apiBase` |
 
-HTTP с UI — **только** `useApi` / `useApiFetch<T>`, не сырой `fetch`.
-
----
-
-## Статика: `public/` vs `app/assets/`
-
-|           | `public/`       | `app/assets/`       |
-| --------- | --------------- | ------------------- |
-| Обработка | Нет, URL as-is  | Vite (hash, import) |
-| Примеры   | favicon, robots | SCSS, Gilroy/Inter  |
+HTTP с UI — только `useApi` / `useApiFetch<T>`, не сырой `fetch`.
 
 ---
 
 ## Конфигурация и секреты
 
-- `NUXT_PUBLIC_*` — только то, что безопасно в браузере
-- Секреты — private `runtimeConfig` + `.env` (не в git)
-- Health/version — без stack trace, без DATABASE_URL и токенов
+| Источник                 | Содержимое                                               |
+| ------------------------ | -------------------------------------------------------- |
+| `nuxt.config.ts`         | `runtimeConfig.public` + private `exampleSecret`         |
+| `types/nuxt-public.d.ts` | Типы `apiBase`, `appVersion`, `appName`, `exampleSecret` |
+| `.env.example`           | Шаблон `NUXT_PUBLIC_*` и `NUXT_EXAMPLE_SECRET`           |
+
+- **`NUXT_PUBLIC_*`** → видно в браузере (`useRuntimeConfig().public`)
+- **Private** (`exampleSecret`) → только server (`useServerRuntimeConfig` в utils)
+- Health-ответы — без секретов, stack trace, `DATABASE_URL`
 
 ---
 
 ## Чего избегать
 
-- «God handlers» — вся логика в одном `*.get.ts`
+- God handlers — логика в `*.get.ts` / `*.post.ts`
 - Дублирование типов API вне `shared/types/`
-- Сырой `fetch` в компонентах
+- Сырой `fetch` в SFC
 - Prisma / Docker до [недели 3](roadmap-12-weeks.md#неделя-3--docker-postgresql-prisma)
-- Перенос `server/` или `shared/` внутрь `app/` без явной задачи
+- Перенос `server/` или `shared/` в `app/`
 
 ---
 

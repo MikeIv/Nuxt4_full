@@ -72,8 +72,8 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 1,
     title: 'Nitro и первый backend',
-    theme: 'шаги 1–3 ✓ → POST → middleware → runtimeConfig → docs',
-    goal: 'Понять backend Nuxt 4 (Nitro): типизированные API, end-to-end frontend ↔ backend, правильная архитектура. Шаги 1–3 сделаны; осталось: POST, middleware, полировка runtimeConfig, актуализация architecture.md.',
+    theme: 'шаги 1–7 ✓ — опционально: boot plugin, apiResponse',
+    goal: 'Понять backend Nuxt 4 (Nitro): типизированные API, end-to-end frontend ↔ backend, правильная архитектура. Обязательные шаги 1–7 сделаны; рекомендуемые: 00-boot.ts, apiResponse.ok().',
     theory: theorySteps([
       {
         topic: '✅ Контракт: `shared/types/health.ts`',
@@ -91,24 +91,24 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Сделано. app/pages/index.vue: useApiFetch<HealthResponse>("/api/health") с pending/error. Полный цикл client ↔ server до POST и middleware.',
       },
       {
-        topic: 'POST и naming convention Nitro',
+        topic: '✅ POST и naming convention Nitro',
         description:
-          'server/api/health.post.ts → POST /api/health. readBody(event). Вернуть HealthResponse или подтверждение { received: true }. Суффикс .post.ts; _ в имени исключает route. После GET+UI — перед middleware.',
+          'Сделано. server/api/health.post.ts → POST /api/health. readHealthPostBody → buildHealthPostResponse. HealthPostBody/HealthPostResponse в shared/types/.',
       },
       {
-        topic: '`server/middleware/log.ts` — порядок middleware → handler',
+        topic: '✅ `server/middleware/log.ts` — порядок middleware → handler',
         description:
-          'Лог method + path на каждый HTTP-запрос до handler. Понимание цепочки: middleware → api route → utils. Не путать с plugins (boot один раз). На нед. 2 — errors, CORS.',
+          'Сделано. Лог [nitro] method path на каждый HTTP-запрос до handler. Цепочка: middleware → api route → utils. На нед. 2 — errors, CORS.',
       },
       {
-        topic: 'runtimeConfig + типизация (довести до идеала)',
+        topic: '✅ runtimeConfig + типизация',
         description:
-          'База уже есть (nuxt.config + types/nuxt-public.d.ts). Финализация: apiBase в .env.example, сверка PublicRuntimeConfig и private exampleSecret. declare module "nuxt/schema" — эталон проекта. Секреты не в браузере.',
+          'Сделано. .env.example, types/nuxt-public.d.ts, server/utils/runtimeConfig.ts (useServerRuntimeConfig, warnIfExampleSecretMissing). Секреты не в браузере и не в JSON health.',
       },
       {
-        topic: 'Документация: `docs/architecture.md`',
+        topic: '✅ Документация: `docs/architecture.md`',
         description:
-          'Файл уже есть — актуализировать под реальный код: Client → useApiFetch → Middleware → API Route → Utils → (DB). Роли app/, server/, shared/types/, server/utils/.',
+          'Сделано. GET/POST потоки, дерево server/, роли shared/types/, runtimeConfig. Client → middleware → api → utils → (DB).',
       },
       {
         topic: '[Рекомендуется] `server/plugins/00-boot.ts`',
@@ -143,32 +143,33 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Главная и /api/health — одни поля. SSR в View Source.',
       },
       {
-        label: 'POST /api/health',
+        label: '✅ POST /api/health',
         what: 'Учебный POST на тот же путь — readBody, naming convention Nitro.',
         where: 'server/api/health.post.ts (не _health.post.ts).',
-        how: 'readBody(event). Вернуть HealthResponse или { received: true } / echo тела.',
-        verify: `curl -X POST …/api/health -d '{"ping":1}' → JSON. GET без регрессий.`,
+        how: 'readHealthPostBody → buildHealthPostResponse. Типы в shared/types/health.ts.',
+        verify: `curl -X POST …/api/health -d '{"ping":1}' → JSON с received + echo. GET без регрессий.`,
       },
       {
-        label: 'Middleware: лог каждого запроса',
+        label: '✅ Middleware: лог каждого запроса',
         what: 'Лог method + path; понимание порядка middleware → handler.',
         where: 'server/middleware/log.ts.',
         how: 'console.log("[nitro]", event.method, event.path). Без секретов.',
         verify: 'Логи при запросах /, /api/health и POST /api/health.',
       },
       {
-        label: 'runtimeConfig + типизация (довести до идеала)',
-        what: 'Финализировать apiBase, nuxt-public.d.ts, .env.example. База уже в nuxt.config.',
-        where: 'nuxt.config.ts, types/nuxt-public.d.ts, .env.example.',
-        how: 'public.apiBase в .env.example. Сверить PublicRuntimeConfig (apiBase, appVersion, appName) и private exampleSecret. version в health из config.',
+        label: '✅ runtimeConfig + типизация',
+        what: 'Финализировать apiBase, nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
+        where:
+          'nuxt.config.ts, types/nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
+        how: 'useServerRuntimeConfig в utils. warnIfExampleSecretMissing в dev. version в health из config.',
         verify:
           'useRuntimeConfig() на клиенте — только public.*. TS без ошибок на config.public.appVersion.',
       },
       {
-        label: 'Актуализировать docs/architecture.md',
+        label: '✅ Актуализировать docs/architecture.md',
         what: 'Схема потока данных и роли папок — по фактическому коду недели.',
         where: 'docs/architecture.md.',
-        how: 'Client → useApiFetch → Middleware → API Route → Utils → (DB). app/, server/, shared/types/, server/utils/.',
+        how: 'GET/POST потоки, дерево server/, shared/types/, runtimeConfig.',
         verify: 'Объясняешь путь /api/health без открытия кода.',
       },
       {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { HealthResponse } from '#shared/types/health'
+
 interface DocLink {
   title: string
   hint: string
@@ -44,6 +46,18 @@ const stackItems: StackItem[] = [
   { label: 'PostgreSQL', status: 'plan' },
   { label: 'Auth + RBAC', status: 'plan' },
 ]
+
+const { data: health, pending: healthPending, error: healthError } =
+  await useApiFetch<HealthResponse>('/api/health')
+
+const healthErrorMessage = computed(() => {
+  const err = healthError.value
+  if (!err) {
+    return ''
+  }
+
+  return err.message || 'Не удалось загрузить /api/health'
+})
 </script>
 
 <template>
@@ -123,10 +137,50 @@ const stackItems: StackItem[] = [
         </ul>
       </section>
 
+      <section :class="$style.section">
+        <div :class="$style.sectionHead">
+          <h2 :class="$style.sectionTitle">Health Check</h2>
+          <p :class="$style.sectionHint">
+            <code>GET /api/health</code> через <code>useApiFetch</code> (SSR)
+          </p>
+        </div>
+
+        <div :class="$style.healthCard">
+          <p v-if="healthPending" :class="$style.healthPending">Загрузка health…</p>
+
+          <p v-else-if="healthError" :class="$style.healthError" role="alert">
+            Ошибка: {{ healthErrorMessage }}
+          </p>
+
+          <dl v-else :class="$style.healthGrid">
+            <div :class="$style.healthRow">
+              <dt :class="$style.healthTerm">Status</dt>
+              <dd :class="[$style.healthValue, $style.healthStatusOk]">{{ health?.status }}</dd>
+            </div>
+            <div :class="$style.healthRow">
+              <dt :class="$style.healthTerm">Version</dt>
+              <dd :class="$style.healthValue">{{ health?.version }}</dd>
+            </div>
+            <div :class="$style.healthRow">
+              <dt :class="$style.healthTerm">App</dt>
+              <dd :class="$style.healthValue">{{ health?.appName }}</dd>
+            </div>
+            <div :class="$style.healthRow">
+              <dt :class="$style.healthTerm">Uptime</dt>
+              <dd :class="$style.healthValue">{{ health?.uptime?.toFixed(1) }} с</dd>
+            </div>
+            <div :class="[$style.healthRow, $style.healthRowFull]">
+              <dt :class="$style.healthTerm">Timestamp</dt>
+              <dd :class="[$style.healthValue, $style.healthTimestamp]">{{ health?.timestamp }}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
       <footer :class="$style.footer">
         <p :class="$style.footerText">
-          UI-токены — UI Kit «Олимпийский» (Grand). Следующий шаг: первый
-          <code>server/api/*</code> endpoint.
+          UI-токены — UI Kit «Олимпийский» (Grand). Неделя 1: POST, middleware, полировка
+          <code>runtimeConfig</code> — см. <NuxtLink to="/roadmap">roadmap</NuxtLink>.
         </p>
       </footer>
     </div>
@@ -379,6 +433,21 @@ const stackItems: StackItem[] = [
   color: var(--fs-color-text-muted);
   @include typo.fs-text-body;
 
+  a {
+    color: var(--fs-color-accent);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--fs-color-primary-strong);
+    }
+
+    &:focus-visible {
+      border-radius: var(--fs-radius-sm);
+      outline: 2px solid var(--fs-color-primary);
+      outline-offset: 2px;
+    }
+  }
+
   code {
     padding: fn.rem(2) fn.rem(6);
     border-radius: var(--fs-radius-sm);
@@ -386,5 +455,71 @@ const stackItems: StackItem[] = [
     color: var(--fs-color-text);
     font-size: 0.92em;
   }
+}
+
+.healthCard {
+  padding: var(--fs-margin-card);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-lg);
+  background: var(--fs-color-bg);
+}
+
+.healthPending {
+  margin: 0;
+  padding: var(--fs-space-3) 0;
+  color: var(--fs-color-text-muted);
+  text-align: center;
+  @include typo.fs-text-body;
+}
+
+.healthError {
+  margin: 0;
+  padding: var(--fs-margin-card-sm);
+  border-radius: var(--fs-radius-md);
+  background: rgb(238 46 34 / 0.08);
+  color: var(--fs-color-error);
+  @include typo.fs-text-body;
+}
+
+.healthGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--fs-space-2) var(--fs-space-3);
+  margin: 0;
+}
+
+.healthRow {
+  display: grid;
+  gap: var(--fs-margin-min);
+  margin: 0;
+}
+
+.healthRowFull {
+  grid-column: 1 / -1;
+  padding-top: var(--fs-space-2);
+  border-top: 1px solid var(--fs-color-border-light);
+}
+
+.healthTerm {
+  margin: 0;
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
+}
+
+.healthValue {
+  margin: 0;
+  color: var(--fs-color-text);
+  @include typo.fs-text-body;
+}
+
+.healthStatusOk {
+  color: var(--fs-color-success);
+  font-weight: 600;
+}
+
+.healthTimestamp {
+  word-break: break-all;
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
 }
 </style>
