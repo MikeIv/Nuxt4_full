@@ -189,13 +189,13 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       },
     ]),
     doneWhen: doneWhen(1, [
-      'Есть GET /api/health и POST /api/health',
-      'Health отображается на главной странице (useApiFetch)',
-      'Работает middleware-логгер (method + path)',
-      'Понимаешь разницу public / private в runtimeConfig',
-      'Есть и актуален docs/architecture.md',
-      'Понимаешь структуру: app/, server/, shared/types/, server/utils/',
-      'Handlers тонкие — бизнес-логика только в server/utils/',
+      '✅ Есть GET /api/health и POST /api/health',
+      '✅ Health отображается на главной странице (useApiFetch)',
+      '✅ Работает middleware-логгер (method + path)',
+      '✅ Понимаешь разницу public / private в runtimeConfig',
+      '✅ Есть и актуален docs/architecture.md',
+      '✅ Понимаешь структуру: app/, server/, shared/types/, server/utils/',
+      '✅ Handlers тонкие — бизнес-логика только в server/utils/',
     ]),
   },
   {
@@ -377,4 +377,21 @@ export function getRoadmapWeekTaskIds(week: RoadmapWeek): string[] {
 
 export function getAllRoadmapTaskIds(): string[] {
   return ROADMAP_WEEKS.flatMap(getRoadmapWeekTaskIds)
+}
+
+/** Пункт с ✅ в начале label — выполнен по умолчанию (пока пользователь явно не снял галочку). */
+export function isRoadmapLabelCompletedByDefault(label: string): boolean {
+  return /^\s*✅/.test(label)
+}
+
+export function getRoadmapTaskLabelMap(): Map<string, string> {
+  const map = new Map<string, string>()
+
+  for (const week of ROADMAP_WEEKS) {
+    for (const item of [...week.practice, ...week.doneWhen]) {
+      map.set(item.id, item.label)
+    }
+  }
+
+  return map
 }

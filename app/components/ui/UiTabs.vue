@@ -3,6 +3,8 @@ export interface UiTabItem {
   value: string
   label: string
   badge?: string
+  /** Неделя полностью выполнена (badge 100%) */
+  complete?: boolean
 }
 
 const props = defineProps<{
@@ -61,7 +63,11 @@ function onKeydown(event: KeyboardEvent, index: number): void {
         :aria-selected="modelValue === item.value"
         :aria-controls="`panel-${item.value}`"
         :tabindex="modelValue === item.value ? 0 : -1"
-        :class="[$style.tab, modelValue === item.value && $style.tabActive]"
+        :class="[
+          $style.tab,
+          modelValue === item.value && $style.tabActive,
+          item.complete && $style.tabComplete,
+        ]"
         @click="selectTab(item.value)"
         @keydown="onKeydown($event, index)"
       >
@@ -141,5 +147,38 @@ function onKeydown(event: KeyboardEvent, index: number): void {
 .tabActive .badge {
   background: rgb(235 153 20 / 0.14);
   color: var(--fs-figma-gradient-auth-from);
+}
+
+$tab-complete: 51 174 39; // --fs-color-success (#33ae27)
+$tab-complete-text: color-mix(in srgb, var(--fs-color-success) 72%, #0a0a0a);
+$tab-complete-text-strong: color-mix(in srgb, var(--fs-color-success) 58%, #0a0a0a);
+
+.tabComplete {
+  border-color: rgb($tab-complete / 0.22);
+  background: rgb($tab-complete / 0.1);
+  color: $tab-complete-text;
+
+  &:hover {
+    background: rgb($tab-complete / 0.14);
+    color: $tab-complete-text-strong;
+  }
+}
+
+.tabComplete.tabActive {
+  border-color: rgb($tab-complete / 0.32);
+  background: rgb($tab-complete / 0.14);
+  box-shadow: none;
+  color: $tab-complete-text-strong;
+}
+
+.tabComplete .badge,
+.tabComplete.tabActive .badge {
+  background: rgb($tab-complete / 0.18);
+  color: $tab-complete-text-strong;
+}
+
+.tabComplete.tabActive .badge {
+  background: rgb($tab-complete / 0.22);
+  color: color-mix(in srgb, var(--fs-color-success) 50%, #0a0a0a);
 }
 </style>

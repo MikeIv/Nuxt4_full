@@ -1,9 +1,13 @@
 import {
   getAllRoadmapTaskIds,
+  getRoadmapTaskLabelMap,
   getRoadmapWeekTaskIds,
+  isRoadmapLabelCompletedByDefault,
   ROADMAP_WEEKS,
   type RoadmapWeek,
 } from '#shared/constants/roadmapWeeks'
+
+const TASK_LABELS = getRoadmapTaskLabelMap()
 
 const STORAGE_KEY = 'nuxt4-full-roadmap-progress'
 
@@ -53,13 +57,18 @@ export function useRoadmapProgress() {
   )
 
   function isDone(taskId: string): boolean {
-    return Boolean(completed.value[taskId])
+    if (Object.hasOwn(completed.value, taskId)) {
+      return Boolean(completed.value[taskId])
+    }
+
+    const label = TASK_LABELS.get(taskId)
+    return label ? isRoadmapLabelCompletedByDefault(label) : false
   }
 
   function toggle(taskId: string): void {
     completed.value = {
       ...completed.value,
-      [taskId]: !completed.value[taskId],
+      [taskId]: !isDone(taskId),
     }
   }
 

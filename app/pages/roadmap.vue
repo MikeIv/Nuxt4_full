@@ -1,26 +1,25 @@
 <script setup lang="ts">
+import type { UiTabItem } from '~/components/ui/UiTabs.vue'
+
 useHead({
   title: 'Roadmap — прогресс обучения',
 })
-
-interface TabItem {
-  value: string
-  label: string
-  badge?: string
-}
 
 const { weeks, isDone, toggle, weekStats, overallStats } = useRoadmapProgress()
 
 const activeWeekId = ref('1')
 
-const tabItems = computed<TabItem[]>(() =>
+const tabItems = computed<UiTabItem[]>(() =>
   weeks.map((week) => {
     const stats = weekStats(week)
+
+    const complete = stats.total > 0 && stats.percent === 100
 
     return {
       value: String(week.id),
       label: `Нед ${week.id}`,
       badge: stats.total > 0 ? `${stats.percent}%` : undefined,
+      complete,
     }
   }),
 )
@@ -43,7 +42,8 @@ const activeWeekProgress = computed(() => {
         <p :class="$style.badge">12-недельный план</p>
         <h1 :class="$style.title">Roadmap — прогресс</h1>
         <p :class="$style.lead">
-          Отмечай выполненные пункты по неделям. Прогресс сохраняется локально в браузере.
+          Отмечай выполненные пункты по неделям. Пункты с ✅ в roadmap засчитываются автоматически;
+          снятие галочки сохраняется локально в браузере.
         </p>
 
         <div :class="$style.stats">
