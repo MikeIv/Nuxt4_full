@@ -98,7 +98,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       {
         topic: '✅ `server/middleware/log.ts` — порядок middleware → handler',
         description:
-          'Сделано. Лог [nitro] method path на каждый HTTP-запрос до handler. Цепочка: middleware → api route → utils. На нед. 2 — errors, CORS.',
+          'Сделано. Лог [nitro] method path на каждый HTTP-запрос до handler. На нед. 4 — duration, apiHandler.',
       },
       {
         topic: '✅ runtimeConfig + типизация',
@@ -118,7 +118,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       {
         topic: '✅ `server/utils/apiResponse.ts` — ok(data)',
         description:
-          'Сделано. ok<T>(data) => { data }. Полноценно на нед. 2; health остаётся плоским объектом.',
+          'Сделано. ok<T>(data) => { data }. На нед. 2 — { data, success, error? } в CRUD /api/tasks.',
       },
     ]),
     practice: practiceSteps(1, [
@@ -182,7 +182,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       },
       {
         label: '✅ apiResponse.ok(data)',
-        what: 'Заготовка единого формата ответа под нед. 2.',
+        what: 'Заготовка единого формата ответа; на нед. 2 — в CRUD tasks.',
         where: 'server/utils/apiResponse.ts',
         how: 'ok<T>(data: T) => ({ data }).',
         verify: 'typecheck OK; health не использует ok().',
@@ -200,54 +200,130 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   },
   {
     id: 2,
+    title: 'Prisma + PostgreSQL + Task CRUD',
+    theme: 'Docker, schema, CRUD /api/tasks (v2)',
+    goal: 'PostgreSQL + Prisma + CRUD tasks. Порядок: types → utils → GET/POST → PATCH/DELETE → curl verify → docs. Zod минимально; apiHandler — нед. 4. Темп: ~1–2 ч/день.',
+    theory: theorySteps([
+      {
+        topic: 'Docker Compose + PostgreSQL',
+        description:
+          'docker-compose.yml, volumes, DATABASE_URL только server-side. Checkpoint дня 1: docker compose ps healthy.',
+      },
+      {
+        topic: 'Prisma: init, singleton, migrate',
+        description:
+          'prisma init, singleton prisma.ts (globalThis в dev). Checkpoint дня 2: $connect() без ошибок.',
+      },
+      {
+        topic: 'Модель Task + seed',
+        description:
+          'migrate dev + seed 3–5 задач (рекомендуется). Checkpoint дня 3: Prisma Studio с данными.',
+      },
+      {
+        topic: 'Порядок endpoint: types → utils → handler',
+        description:
+          'День 4: shared/types/task.ts + utils + GET/POST. День 5: PATCH/DELETE + createError 404/400. Prisma не в handlers.',
+      },
+      {
+        topic: 'Verify: curl-чеклист + persistence',
+        description:
+          'День 6: create → list → patch → delete → docker restart. День 7: architecture.md + lint/build. UI — нед. 3.',
+      },
+    ]),
+    practice: practiceSteps(2, [
+      {
+        label: 'День 1: docker-compose.yml + PostgreSQL',
+        what: 'Локальная БД в Docker с persistent volume.',
+        where: 'docker-compose.yml, .env, .env.example.',
+        how: 'PostgreSQL 16; docker compose up -d; DATABASE_URL в .env.',
+        verify: 'Checkpoint: docker compose ps — postgres healthy.',
+      },
+      {
+        label: 'День 2: Prisma init + prisma.ts singleton',
+        what: 'ORM подключён к Nitro; Client не на каждый запрос.',
+        where: 'prisma/schema.prisma, server/utils/prisma.ts, scripts db:migrate, db:studio.',
+        how: 'pnpm add prisma @prisma/client; prisma init; singleton + runtimeConfig private.',
+        verify: 'Checkpoint: dev стартует; prisma $connect() OK.',
+      },
+      {
+        label: 'День 3: модель Task + migrate + seed',
+        what: 'Таблица Task и 3–5 seed-задач для быстрого GET.',
+        where: 'prisma/schema.prisma, prisma/seed.ts, package.json db:seed.',
+        how: 'model Task { id, title, description, completed, createdAt, updatedAt }; prisma db seed.',
+        verify: 'Checkpoint: Prisma Studio — seed-данные видны.',
+      },
+      {
+        label: 'День 4: types + utils + GET/POST',
+        what: 'Первые endpoints после слоёв types/utils — не наоборот.',
+        where: 'shared/types/task.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
+        how: 'listTasks/createTask в utils; thin handlers; ok(data); Zod на POST body.',
+        verify: 'Checkpoint: GET → seed JSON; POST → новая строка в Studio.',
+      },
+      {
+        label: 'День 5: PATCH/DELETE + ошибки',
+        what: 'Оставшийся CRUD + 404/400.',
+        where: 'server/utils/tasks.ts, tasks/[id].get|patch|delete.ts.',
+        how: 'getTaskById/updateTask/deleteTask; createError 404; Zod на PATCH.',
+        verify: 'Checkpoint: patch/delete curl; bad id → 404 JSON.',
+      },
+      {
+        label: 'День 6: curl-чеклист + persistence',
+        what: 'Обязательная ручная verify всего CRUD.',
+        where: 'terminal + docker compose restart.',
+        how: 'create → list → patch → delete → restart → list (см. roadmap).',
+        verify: 'Checkpoint: все 5 шагов OK; данные в volume после restart.',
+      },
+      {
+        label: 'День 7: architecture.md + lint/build',
+        what: 'Handlers без Prisma; документ потока данных.',
+        where: 'docs/architecture.md, все server/api/tasks*.',
+        how: 'Рефактор если нужно; pnpm lint:all && pnpm build.',
+        verify: 'Checkpoint: architecture.md актуален; сборка зелёная.',
+      },
+    ]),
+    doneWhen: doneWhen(2, [
+      'PostgreSQL запущен через Docker',
+      'Prisma singleton подключён',
+      'Seed + migrate выполнены',
+      'curl-чеклист CRUD пройден',
+      'Данные после restart Docker',
+      'Prisma только в server/utils/tasks.ts',
+      'Обновлён docs/architecture.md',
+    ]),
+  },
+  {
+    id: 3,
+    title: 'Fullstack UI: Tasks',
+    theme: 'Страница /tasks, composable',
+    goal: 'Vertical slice на UI: страница задач поверх CRUD API недели 2.',
+    theory: theoryItems('useApiFetch + composable useTasks()', 'loading / error / empty states'),
+    practice: practice(3, [
+      'app/composables/useTasks.ts',
+      'app/pages/tasks.vue — список, создание, toggle completed',
+      'Типы из shared/types/task.ts',
+      'SSR + client без регрессий',
+    ]),
+    doneWhen: doneWhen(3, [
+      'CRUD с UI после restart dev + Docker',
+      'Данные в volume Postgres между перезапусками',
+    ]),
+  },
+  {
+    id: 4,
     title: 'HTTP, middleware, ошибки',
-    theme: 'Единый формат API',
-    goal: 'Единый стиль API и централизованные ошибки.',
+    theme: 'apiHandler, единый формат API',
+    goal: 'Единый стиль API — унификация createError и { data, success } из нед. 2.',
     theory: theoryItems(
       'REST, статусы, CORS (same-origin в Nuxt)',
       'Nitro middleware, createError',
     ),
-    practice: practice(2, [
+    practice: practice(4, [
       'server/utils/apiHandler.ts',
       'server/middleware/log.ts — method + path + duration',
       'POST /api/echo + страница /playground',
-      'docs/api-conventions.md — { data } / { error }',
+      'docs/api-conventions.md — { data, success, error? }',
     ]),
-    doneWhen: doneWhen(2, ['Ошибки → предсказуемый JSON', 'Middleware логирует в dev']),
-  },
-  {
-    id: 3,
-    title: 'Docker, PostgreSQL, Prisma',
-    theme: 'БД в Docker, schema',
-    goal: 'БД локально + Prisma в Nitro.',
-    theory: theoryItems(
-      'Docker Compose, volumes',
-      'Prisma: schema, migrate, seed',
-      'DATABASE_URL только server-side',
-    ),
-    practice: practice(3, [
-      'docker-compose.yml — PostgreSQL 16',
-      'Prisma: модель User (без auth)',
-      'server/utils/prisma.ts — singleton',
-      'GET /api/users + seed',
-      'Скрипты: db:migrate, db:seed, db:studio',
-      'Обновить .env.example',
-    ]),
-    doneWhen: doneWhen(3, ['docker compose up + migrate + seed', '/api/users из Postgres']),
-  },
-  {
-    id: 4,
-    title: 'Fullstack CRUD: Todo',
-    theme: 'Todo без auth',
-    goal: 'Vertical slice: UI ↔ API ↔ Prisma.',
-    theory: theoryItems('CRUD-паттерн в Nitro', 'useApiFetch + composable для списка'),
-    practice: practice(4, [
-      'Prisma: модель Todo',
-      'CRUD /api/todos',
-      'UI /todos, composable useTodos()',
-      'loading / error states',
-    ]),
-    doneWhen: doneWhen(4, ['CRUD после restart dev + Docker', 'Данные в volume Postgres']),
+    doneWhen: doneWhen(4, ['Ошибки → предсказуемый JSON', 'Middleware логирует duration в dev']),
   },
   {
     id: 5,
@@ -262,9 +338,9 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       'User + passwordHash',
       '/api/auth/register, login, logout, me',
       '/login, /register, middleware auth.ts',
-      'Todo → userId',
+      'Task → userId',
     ]),
-    doneWhen: doneWhen(5, ['Без login нельзя создавать «свои» todos', 'Session secret в .env']),
+    doneWhen: doneWhen(5, ['Без login нельзя создавать «свои» tasks', 'Session secret в .env']),
   },
   {
     id: 6,
@@ -276,7 +352,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       'Role: USER, ADMIN',
       'requireUser, requireAdmin',
       'GET /api/admin/users — только ADMIN',
-      'DELETE todo — владелец или ADMIN',
+      'DELETE task — владелец или ADMIN',
     ]),
     doneWhen: doneWhen(6, ['USER → admin API = 403', 'Защита на server, не только UI']),
   },
@@ -288,9 +364,9 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     theory: theoryItems('Zod на границе API', 'Пагинация и фильтры в query'),
     practice: practice(7, [
       'readValidatedBody(event, schema)',
-      'Zod для auth и todos',
+      'Zod для auth и tasks',
       'Пагинация ?page=&limit=&q=',
-      'Модель Project, relation с Todo',
+      'Модель Project, relation с Task',
       '/projects, /projects/[id]',
     ]),
     doneWhen: doneWhen(7, ['Invalid body → 400 с issues', 'Пагинация на 20+ seed']),
@@ -303,7 +379,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     theory: theoryItems('Vitest + @nuxt/test-utils', 'Upload и лимиты размера'),
     practice: practice(8, [
       'Vitest + @nuxt/test-utils',
-      'Тесты: health, auth, todo CRUD',
+      'Тесты: health, auth, task CRUD',
       'Upload avatar → POST /api/users/avatar',
       '/profile',
     ]),
@@ -332,7 +408,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     theory: theoryItems('@nuxt/ui', 'Admin layout и таблицы'),
     practice: practice(10, [
       '@nuxt/ui, layout /admin',
-      'Users, todos, projects tables',
+      'Users, tasks, projects tables',
       'GET /api/admin/stats',
     ]),
     doneWhen: doneWhen(10, ['ADMIN в /admin', 'USER → 403']),
@@ -342,10 +418,10 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     title: 'Real-time',
     theme: 'SSE / WebSocket',
     goal: 'Live updates на клиенте.',
-    theory: theoryItems('SSE vs WebSocket в Nitro', 'Подписка на изменения todos'),
+    theory: theoryItems('SSE vs WebSocket в Nitro', 'Подписка на изменения tasks'),
     practice: practice(11, [
-      'SSE /api/todos/stream или WebSocket',
-      'Live update на /todos',
+      'SSE /api/tasks/stream или WebSocket',
+      'Live update на /tasks',
       'docs/realtime.md',
     ]),
     doneWhen: doneWhen(11, ['Два браузера — изменения синхронизируются']),

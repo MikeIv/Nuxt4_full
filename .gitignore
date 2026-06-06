@@ -27,3 +27,7 @@ CURSOR_RULES_EXPORT.md
 .env
 .env.*
 !.env.example
+
+# Cursor AI local configuration (персональная оптимизация токенов и контекста агента).
+# .cursorignore не коммитится — правила игнора для AI-фич (Agent/Tab/search) остаются локальными.
+.cursorignore

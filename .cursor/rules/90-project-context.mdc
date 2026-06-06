@@ -22,7 +22,7 @@ alwaysApply: true
 | Развёртывание A–F | `docs/deployment-plan.md` |
 | Контекст сессий | `.planning/PROJECT.md` |
 
-**Текущая фаза:** развёртывание завершено → **Неделя 1** (Nitro, первый `server/api/*`).
+**Текущая фаза:** развёртывание завершено → **Неделя 2** (Prisma, PostgreSQL, CRUD `/api/tasks`).
 
 ## Стек
 
@@ -31,7 +31,7 @@ alwaysApply: true
 | Framework | Nuxt 4.4, Vue 3.5 | — |
 | Модули | `@nuxt/eslint` | + Nuxt UI (нед. 10) |
 | Backend | Nitro (каркас) | `server/api/*` |
-| БД | — | PostgreSQL + Prisma (нед. 3) |
+| БД | — | PostgreSQL + Prisma (нед. 2) |
 | Auth | — | nuxt-auth-utils (нед. 5) |
 | Стили | SCSS, CSS Modules (`$style`) | — |
 | Язык | TypeScript strict | — |
@@ -54,7 +54,7 @@ shared/              # НЕ удалять — #shared, isomorphic types + utils
   types/             # контракты API client ↔ server
   utils/             # normalizeApiBaseUrl и т.п.
 types/               # augmentation Nuxt (nuxt-public.d.ts)
-server/types/        # server-only — с нед. 3+
+server/types/        # server-only — с нед. 2+
 public/              # статика as-is
 scripts/             # pre-commit.mjs в корне
 docs/                # deployment-plan, roadmap, architecture.md
@@ -91,7 +91,7 @@ pnpm lint:all
 
 ## Не трогать без согласования
 
-- Prisma, Docker, PostgreSQL — **не раньше [недели 3](docs/roadmap-12-weeks.md#неделя-3--docker-postgresql-prisma)**
+- Prisma, Docker, PostgreSQL — по [неделе 2](docs/roadmap-12-weeks.md#неделя-2--prisma--postgresql--task-crud) и далее по roadmap; не опережать без задачи
 - Глобальная смена `srcDir`, ESLint/Husky pipeline
 - Массовое изменение SCSS-токенов `--fs-*` без задачи
 - `useApi` / `useApiFetch` / `serverApi` — рабочая основа; не рефакторить «на старте»

@@ -21,7 +21,7 @@ Nitro  server/middleware/log.ts          ← каждый запрос: [nitro] 
        server/utils/health.ts             ← getHealthPayload()
        server/utils/runtimeConfig.ts     ← private config (server-only)
     │
-    ▼  (неделя 3+)
+    ▼  (неделя 2+)
     Prisma  →  PostgreSQL
 ```
 
@@ -50,7 +50,7 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 | Этап    | Слой                                                |
 | ------- | --------------------------------------------------- |
 | Нед. 1  | Client → middleware → `server/api` → `server/utils` |
-| Нед. 3+ | + Prisma → PostgreSQL                               |
+| Нед. 2+ | + Prisma → PostgreSQL                               |
 | Нед. 5+ | + auth middleware, session                          |
 
 ---
@@ -91,7 +91,7 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 | --------------- | ----------------------------------------------------------------------- |
 | `types/`        | `declare module 'nuxt/schema'` — `RuntimeConfig`, `PublicRuntimeConfig` |
 | `shared/types/` | Контракты API client ↔ server                                           |
-| `server/types/` | Server-only — **с недели 3+**                                           |
+| `server/types/` | Server-only — **с недели 2+**                                           |
 
 Правило: тип нужен в `useApiFetch<T>` и в handler → `shared/types/`.
 
@@ -162,12 +162,49 @@ HTTP с UI — только `useApi` / `useApiFetch<T>`, не сырой `fetch`
 - God handlers — логика в `*.get.ts` / `*.post.ts`
 - Дублирование типов API вне `shared/types/`
 - Сырой `fetch` в SFC
-- Prisma / Docker до [недели 3](roadmap-12-weeks.md#неделя-3--docker-postgresql-prisma)
+- Prisma / Docker — с [недели 2](roadmap-12-weeks.md#неделя-2--prisma--postgresql--task-crud); не опережать roadmap
 - Перенос `server/` или `shared/` в `app/`
+
+---
+
+## `server/` — неделя 2 (план)
+
+После подключения Prisma цепочка для `/api/tasks`:
+
+```
+Client (curl / Postman / UI)
+    ▼
+server/middleware/log.ts
+    ▼
+server/api/tasks.*.ts              ← thin handlers
+    ▼
+server/utils/tasks.ts              ← Prisma-логика
+    ▼
+server/utils/prisma.ts             ← singleton Client
+    ▼
+PostgreSQL (Docker volume)
+```
+
+```
+docker-compose.yml
+prisma/schema.prisma
+prisma/seed.ts                     # 3–5 задач (день 3)
+shared/types/task.ts               # до handlers (день 4)
+server/utils/prisma.ts
+server/utils/tasks.ts              # до routes (день 4)
+server/api/tasks.get.ts            # день 4: GET/POST
+server/api/tasks.post.ts
+server/api/tasks/[id].get.ts       # день 5: PATCH/DELETE
+server/api/tasks/[id].patch.ts
+server/api/tasks/[id].delete.ts
+```
+
+Порядок разработки: **types → utils → GET/POST → PATCH/DELETE → curl verify** (см. [mentor-week2-sync.md](mentor-week2-sync.md)).
 
 ---
 
 ## Связанные документы
 
 - [roadmap-12-weeks.md](roadmap-12-weeks.md) — недельный план
+- [mentor-week2-sync.md](mentor-week2-sync.md) — v2 недели 2 для ментора
 - [.planning/PROJECT.md](../.planning/PROJECT.md) — контекст для агента
