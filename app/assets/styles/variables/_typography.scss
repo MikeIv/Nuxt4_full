@@ -1,0 +1,62 @@
+/**
+ * Типографика UI Kit «Олимпийский» (основные токены).
+ * Gilroy — заголовки; Inter — наборный текст и UI.
+ */
+@use '../tools/functions' as fn;
+@use 'resolutions' as bp;
+
+@mixin text-token($name, $size-px, $line-height-percent, $weight, $family: 'sans') {
+  $family-var: --fs-font-sans;
+
+  @if $family == 'heading' {
+    $family-var: --fs-font-heading;
+  }
+
+  --fs-text-#{$name}-size: #{fn.rem($size-px)};
+  --fs-text-#{$name}-line-height: #{$line-height-percent * 0.01};
+  --fs-text-#{$name}-weight: #{$weight};
+  --fs-text-#{$name}-family: var(#{$family-var});
+}
+
+:root {
+  @include text-token('h1', 34, 100, 600, 'heading');
+  @include text-token('h2', 22, 115, 500, 'heading');
+  @include text-token('h3', 20, 115, 600, 'heading');
+  @include text-token('h4', 18, 115, 500, 'heading');
+  @include text-token('h5-subtitle', 16, 108, 400);
+  @include text-token('text', 13, 140, 500);
+  @include text-token('text-quote', 16, 130, 400);
+  @include text-token('header-text', 14, 110, 500);
+  @include text-token('button-text', 16, 100, 600);
+  @include text-token('tag', 11, 140, 500);
+}
+
+@media (min-width: bp.$tablet) {
+  :root {
+    @include text-token('h1', 42, 100, 600, 'heading');
+    @include text-token('h2', 22, 115, 500, 'heading');
+    @include text-token('h3', 20, 115, 600, 'heading');
+    @include text-token('h4', 18, 115, 500, 'heading');
+    @include text-token('h5-subtitle', 16, 108, 400);
+    @include text-token('text', 13, 140, 500);
+    @include text-token('text-quote', 16, 130, 400);
+    @include text-token('header-text', 14, 110, 500);
+    @include text-token('button-text', 16, 100, 600);
+    @include text-token('tag', 13, 140, 500);
+  }
+}
+
+@media (min-width: bp.$desktopMin) {
+  :root {
+    @include text-token('h1', 56, 100, 600, 'heading');
+    @include text-token('h2', 27, 115, 400, 'heading');
+    @include text-token('h3', 24, 115, 600, 'heading');
+    @include text-token('h4', 21, 115, 500, 'heading');
+    @include text-token('h5-subtitle', 19, 115, 400);
+    @include text-token('text', 14, 140, 400);
+    @include text-token('text-quote', 19, 135, 400);
+    @include text-token('header-text', 14, 110, 500);
+    @include text-token('button-text', 16, 100, 600);
+    @include text-token('tag', 13, 140, 500);
+  }
+}

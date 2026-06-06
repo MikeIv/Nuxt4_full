@@ -1,1 +1,38 @@
-/* Локальные @font-face: файлы в public/fonts или app/assets/fonts — подключать здесь. */
+$inter-cyrillic-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+$inter-latin-range:
+  U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+  U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+
+@mixin font-gilroy($weight, $file) {
+  @font-face {
+    font-family: Gilroy;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: url('../../fonts/Gilroy-#{$file}.woff') format('woff');
+  }
+}
+
+@mixin font-inter-subset($weight, $name, $subset, $unicode-range) {
+  @font-face {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: $weight;
+    font-display: swap;
+    src: url('../../fonts/Inter-#{$name}-#{$subset}.woff2') format('woff2');
+    unicode-range: $unicode-range;
+  }
+}
+
+@mixin font-inter($weight, $name) {
+  @include font-inter-subset($weight, $name, 'cyrillic', $inter-cyrillic-range);
+  @include font-inter-subset($weight, $name, 'latin', $inter-latin-range);
+}
+
+@include font-gilroy(400, 'Regular');
+@include font-gilroy(500, 'Medium');
+@include font-gilroy(600, 'Semibold');
+
+@include font-inter(400, 'Regular');
+@include font-inter(500, 'Medium');
+@include font-inter(600, 'Semibold');

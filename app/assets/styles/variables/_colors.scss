@@ -1,13 +1,76 @@
-/* Минимальная палитра — расширять под FoodSity / макеты */
+/**
+ * UI Kit «Олимпийский» — основные токены.
+ * Источник: LK_Arenda_Olimp / Figma Op9IbTgc66eLejvhLqlZAF
+ */
 :root {
-  --fs-color-bg: #fff;
-  --fs-color-surface: #f6f6f6;
-  --fs-color-text: #1a1a1a;
-  --fs-color-text-muted: #666;
-  --fs-color-border: #e0e0e0;
-  --fs-color-primary: #2a6ebb;
-  --fs-color-primary-strong: #1e5390;
-  --fs-color-error: #c62828;
+  /* --- Achromatic --- */
+  --fs-figma-achromatic-black: #171720;
+  --fs-figma-achromatic-dark-gray: #425466;
+  --fs-figma-achromatic-middle-gray: #7b8c9d;
+  --fs-figma-achromatic-light-gray: #f4f5f5;
+  --fs-figma-achromatic-white: #ffffff;
 
-  --fs-font-sans: system-ui, -apple-system, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
+  /* --- Stroke --- */
+  --fs-figma-stroke-gray: #d9d9d9;
+  --fs-figma-stroke-light-gray: #efeff0;
+
+  /* --- Main building --- */
+  --fs-figma-main-building-main: #eb9914;
+  --fs-figma-main-building-sport-complex: #ea5037;
+  --fs-figma-main-building-whater-complex: #00adea;
+  --fs-figma-main-building-concert-hall: #831dd3;
+
+  /* --- Vertical --- */
+  --fs-figma-vertical-sport: #d9412a;
+  --fs-figma-vertical-entertainments: #ee7d00;
+  --fs-figma-vertical-shop: #173557;
+  --fs-figma-vertical-food: #009640;
+  --fs-figma-vertical-events: #c97f62;
+  --fs-figma-vertical-aqua-park: #01b6ed;
+  --fs-figma-vertical-fitness: #6d2077;
+
+  /* --- System --- */
+  --fs-figma-system-gray: #eaeaeb;
+  --fs-figma-system-button-gray: #333343;
+  --fs-figma-system-counter-error: #ee2e22;
+  --fs-figma-system-success: #33ae27;
+
+  /* --- Metallic --- */
+  --fs-figma-metallic-gradient-grey-1: #f9f9f9;
+  --fs-figma-metallic-gradient-grey-2: #dadada;
+
+  /* --- Gradient --- */
+  --fs-figma-gradient-auth-from: #fb7503;
+  --fs-figma-gradient-auth-to: #fc3a03;
+  --fs-gradient-auth: linear-gradient(
+    90deg,
+    var(--fs-figma-gradient-auth-from) 0%,
+    var(--fs-figma-gradient-auth-to) 100%
+  );
+
+  /* --- Семантика приложения --- */
+  --fs-color-bg: var(--fs-figma-achromatic-white);
+  --fs-color-surface: var(--fs-figma-achromatic-light-gray);
+  --fs-color-text: var(--fs-figma-achromatic-black);
+  --fs-color-text-muted: var(--fs-figma-achromatic-middle-gray);
+  --fs-color-border: var(--fs-figma-stroke-gray);
+  --fs-color-border-light: var(--fs-figma-stroke-light-gray);
+  --fs-color-primary: var(--fs-figma-main-building-main);
+  --fs-color-primary-strong: var(--fs-figma-vertical-shop);
+  --fs-color-accent: var(--fs-figma-main-building-whater-complex);
+  --fs-color-error: var(--fs-figma-system-counter-error);
+  --fs-color-success: var(--fs-figma-system-success);
+  --fs-color-warning: var(--fs-figma-vertical-entertainments);
+  --fs-color-button-on-light: var(--fs-figma-system-button-gray);
+
+  --fs-color-ui-button-border: rgb(234 234 235 / 0.32);
+  --fs-color-ui-button-outline-hover: var(--fs-figma-metallic-gradient-grey-2);
+
+  --fs-shadow-sm: 0 4px 16px rgb(23 23 32 / 0.06);
+  --fs-shadow-md: 0 12px 40px rgb(23 23 32 / 0.1);
+  --fs-shadow-glow: 0 20px 60px rgb(235 153 20 / 0.18);
+
+  --fs-font-heading:
+    'Gilroy', system-ui, -apple-system, 'Segoe UI', roboto, 'Helvetica Neue', arial, sans-serif;
+  --fs-font-sans: 'Inter', var(--fs-font-heading);
 }

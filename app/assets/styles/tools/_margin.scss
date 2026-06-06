@@ -1,0 +1,15 @@
+@mixin fs-margin-end($token) {
+  margin-block-end: var(--fs-margin-#{$token});
+}
+
+@mixin fs-margin-title-content {
+  @include fs-margin-end('title-content');
+}
+
+@mixin fs-margin-title-subtitle {
+  @include fs-margin-end('title-subtitle-block');
+}
+
+@mixin fs-margin-content-block {
+  @include fs-margin-end('content-block');
+}

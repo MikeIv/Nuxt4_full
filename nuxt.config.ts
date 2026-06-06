@@ -29,10 +29,16 @@ export default defineNuxtConfig({
     typeCheck: 'build',
   },
 
-  /** Публичные ключи доступны на клиенте; секреты — только в корне `runtimeConfig` без `public` */
+  /**
+   * public.* — доступно на клиенте (NUXT_PUBLIC_* в .env).
+   * Корень без public — только server (NUXT_* без PUBLIC).
+   */
   runtimeConfig: {
+    exampleSecret: process.env.NUXT_EXAMPLE_SECRET ?? '',
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
+      appVersion: process.env.NUXT_PUBLIC_APP_VERSION ?? process.env.npm_package_version ?? '0.0.0',
+      appName: process.env.NUXT_PUBLIC_APP_NAME ?? 'Nuxt4 Fullstack',
     },
   },
 

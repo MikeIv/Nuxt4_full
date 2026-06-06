@@ -20,24 +20,26 @@
 - Server routes — `server/api/`, валидация Zod (с недели 7).
 - Минимальный diff.
 
+**Структура папок:** [architecture.md](architecture.md) — зачем `shared/`, куда класть handlers/utils/plugins, слои типов.
+
 ---
 
 ## Обзор
 
-| Нед | Тема                         | Результат                        |
-| --- | ---------------------------- | -------------------------------- |
-| 1   | Nitro + первый API           | Health, env, структура `server/` |
-| 2   | HTTP, middleware, ошибки     | Единый формат API                |
-| 3   | Docker + PostgreSQL + Prisma | БД в Docker, schema              |
-| 4   | Fullstack CRUD (Todo)        | Todo без auth                    |
-| 5   | Аутентификация               | Register, login, session         |
-| 6   | Авторизация (RBAC)           | Роли, защита routes              |
-| 7   | Zod + API design             | Валидация, пагинация             |
-| 8   | Тестирование + файлы         | Vitest, upload                   |
-| 9   | Логи, кэш, деплой            | Pino, Redis (opt), production    |
-| 10  | Админка                      | Dashboard / Directus             |
-| 11  | Real-time                    | SSE / WebSocket                  |
-| 12  | Capstone SaaS                | Stripe, CI/CD, polish            |
+| Нед | Тема                         | Результат                                |
+| --- | ---------------------------- | ---------------------------------------- |
+| 1   | Nitro + первый API           | Health, структура server/, типы, plugins |
+| 2   | HTTP, middleware, ошибки     | Единый формат API                        |
+| 3   | Docker + PostgreSQL + Prisma | БД в Docker, schema                      |
+| 4   | Fullstack CRUD (Todo)        | Todo без auth                            |
+| 5   | Аутентификация               | Register, login, session                 |
+| 6   | Авторизация (RBAC)           | Роли, защита routes                      |
+| 7   | Zod + API design             | Валидация, пагинация                     |
+| 8   | Тестирование + файлы         | Vitest, upload                           |
+| 9   | Логи, кэш, деплой            | Pino, Redis (opt), production            |
+| 10  | Админка                      | Dashboard / Directus                     |
+| 11  | Real-time                    | SSE / WebSocket                          |
+| 12  | Capstone SaaS                | Stripe, CI/CD, polish                    |
 
 ---
 
@@ -45,39 +47,95 @@
 
 ### Цель
 
-Понять разделение `app/` и `server/`, сделать первые endpoints.
+Полностью понять backend в Nuxt 4 (Nitro): типизированные API, end-to-end frontend ↔ backend, правильная архитектура — до CRUD и БД.
+
+### Текущий прогресс
+
+- ✅ Структура проекта
+- ✅ `runtimeConfig` + типизация (`types/nuxt-public.d.ts`)
+- ✅ `shared/types/health.ts`
+- ✅ `server/utils/health.ts` + thin handler
+- ✅ `server/api/health.get.ts`
+- ✅ Health на главной (`useApiFetch`)
 
 ### Теория (2–3 ч)
 
-- `server/api/`, `server/routes/`, `server/middleware/`
-- h3: `defineEventHandler`, `getQuery`, `readBody`, `createError`
-- `runtimeConfig`: public vs private
+Порядок тем **совпадает с практикой**. Шаги 1–3 — сделаны; теория 4–7 — впереди.
+
+1. **Тема:** ✅ Контракт — `shared/types/health.ts`
+2. **Тема:** ✅ Thin handler — `health.get.ts` + `server/utils/health.ts`
+3. **Тема:** ✅ End-to-end — `useApiFetch` + SSR
+4. **Тема:** POST — `health.post.ts` (`readBody`)
+5. **Тема:** `server/middleware/log.ts` (middleware → handler)
+6. **Тема:** `runtimeConfig` — довести до идеала (apiBase, `nuxt-public.d.ts`)
+7. **Тема:** `docs/architecture.md` — актуализировать схему
+
+**Рекомендуется:** `server/plugins/00-boot.ts`, `server/utils/apiResponse.ts` — `ok(data)`
 
 ### Практика
 
-- [ ] `GET /api/health` → `{ status: 'ok', timestamp }`
-- [ ] `GET /api/version` → версия из `package.json`
-- [ ] `/` показывает health через `useApiFetch('/api/health')`
-- [ ] `docs/architecture.md` — схема client → Nitro → DB
+**Сделано (шаги 1–3)** — дальше по порядку ментора. Подсказки: [/roadmap](/roadmap) → «Неделя 1».
 
-### Структура
+**Осталось**
+
+4. [ ] **POST `/api/health`** — `server/api/health.post.ts`, `readBody`, ответ или подтверждение
+5. [ ] **Middleware** — `server/middleware/log.ts`, method + path
+6. [ ] **runtimeConfig** — финализация apiBase, `.env.example`, `types/nuxt-public.d.ts`
+7. [ ] **`docs/architecture.md`** — Client → useApiFetch → Middleware → API → Utils → _(DB)_
+
+**Рекомендуется**
+
+- [ ] `server/plugins/00-boot.ts`
+- [ ] `server/utils/apiResponse.ts` — `ok(data)`
+
+### Структура (неделя 1)
+
+**Порядок выполнения** (актуальный roadmap ментора):
 
 ```
+✅ 1. shared/types/health.ts
+✅ 2. server/utils/health.ts + server/api/health.get.ts
+✅ 3. app/pages/index.vue (useApiFetch)
+→ 4. server/api/health.post.ts
+→ 5. server/middleware/log.ts
+→ 6. nuxt.config.ts + types/nuxt-public.d.ts + .env.example
+→ 7. docs/architecture.md (актуализировать)
+```
+
+**Дерево файлов** (итог недели):
+
+```
+shared/types/health.ts
+server/utils/health.ts
 server/api/health.get.ts
-server/api/version.get.ts
-server/utils/apiResponse.ts
-shared/types/api.ts
+server/api/health.post.ts
+server/middleware/log.ts
+app/pages/index.vue
+nuxt.config.ts
+types/nuxt-public.d.ts
+docs/architecture.md
+server/utils/apiResponse.ts          # рекомендуется
+server/plugins/00-boot.ts            # рекомендуется
 ```
+
+`shared/` не переносить в `app/` — официальный isomorphic-слой Nuxt 4.
 
 ### Done when
 
-- Health на UI и в `/api/health`
-- Понимаешь `srcDir: app/` и `server/` в корне
+- [ ] Есть GET и POST `/api/health`
+- [ ] Health отображается на главной странице
+- [ ] Работает middleware-логгер
+- [ ] Понимаешь **public** / **private** в `runtimeConfig`
+- [ ] Актуален `docs/architecture.md`
+- [ ] Понимаешь структуру: `app/`, `server/`, `shared/types/`, `server/utils/`
+- [ ] Handlers тонкие — бизнес-логика только в `server/utils/`
 
 ### Промпты Cursor
 
-- «Объясни lifecycle запроса от useApiFetch до defineEventHandler»
-- «Сделай health.get.ts с типизированным ответом»
+- «Объясни lifecycle: useApiFetch → Nitro → defineEventHandler → utils»
+- «Сделай health.get.ts как thin handler с Promise<HealthResponse>»
+- «Чем server/middleware/log.ts отличается от server/plugins?»
+- «Почему POST — health.post.ts, а не \_health.post.ts?»
 
 ---
 

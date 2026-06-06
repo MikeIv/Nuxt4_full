@@ -1,1 +1,4 @@
-$base-font-size: 16px;
+$base-font-size: 14px;
+
+/** Figma px → rem; root ($base-font-size) масштабирует итог на экране */
+$rem-design-base: 16;

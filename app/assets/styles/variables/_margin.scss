@@ -1,0 +1,33 @@
+/**
+ * Margins UI Kit «Олимпийский» (основные токены).
+ */
+@use '../tools/functions' as fn;
+@use 'resolutions' as bp;
+
+@mixin margin-token($name, $mobile-px, $tablet-px, $desktop-px) {
+  --fs-margin-#{$name}: #{fn.rem($mobile-px)};
+
+  @media (min-width: bp.$tablet) {
+    --fs-margin-#{$name}: #{fn.rem($tablet-px)};
+  }
+
+  @media (min-width: bp.$desktopMin) {
+    --fs-margin-#{$name}: #{fn.rem($desktop-px)};
+  }
+}
+
+@mixin margin-token-static($name, $px) {
+  --fs-margin-#{$name}: #{fn.rem($px)};
+}
+
+:root {
+  @include margin-token('block', 72, 80, 134);
+  @include margin-token('title-content', 32, 32, 56);
+  @include margin-token('title-subtitle-block', 16, 16, 40);
+  @include margin-token('content-block', 24, 24, 32);
+  @include margin-token('card', 16, 16, 24);
+  @include margin-token('card-sm', 8, 12, 16);
+  @include margin-token-static('card-xs', 12);
+  @include margin-token-static('tag', 8);
+  @include margin-token-static('min', 4);
+}

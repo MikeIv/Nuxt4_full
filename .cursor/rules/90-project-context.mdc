@@ -18,6 +18,7 @@ alwaysApply: true
 | Документ | Путь |
 | -------- | ---- |
 | Roadmap 12 недель | `docs/roadmap-12-weeks.md` |
+| Архитектура папок | `docs/architecture.md` |
 | Развёртывание A–F | `docs/deployment-plan.md` |
 | Контекст сессий | `.planning/PROJECT.md` |
 
@@ -39,15 +40,28 @@ alwaysApply: true
 
 ## Структура
 
+Полная схема: `docs/architecture.md`.
+
 ```
-app/pages/, layouts/, composables/useApi.ts, assets/styles/
-server/api/          # добавлять с недели 1
-server/utils/        # prisma, auth, validate — по roadmap
-shared/types, shared/utils
-docs/                # deployment-plan, roadmap
-types/nuxt-public.d.ts
-scripts/pre-commit.mjs
+app/                 # srcDir — pages, layouts, composables, assets/
+server/
+  api/               # thin handlers → /api/*
+  routes/            # вне /api
+  middleware/        # каждый запрос
+  plugins/           # старт Nitro
+  utils/             # логика (health, apiResponse; позже prisma, auth)
+shared/              # НЕ удалять — #shared, isomorphic types + utils
+  types/             # контракты API client ↔ server
+  utils/             # normalizeApiBaseUrl и т.п.
+types/               # augmentation Nuxt (nuxt-public.d.ts)
+server/types/        # server-only — с нед. 3+
+public/              # статика as-is
+scripts/             # pre-commit.mjs в корне
+docs/                # deployment-plan, roadmap, architecture.md
 ```
+
+**Слои типов:** `types/` (ambient) → `shared/types/` (API) → `server/types/` (internal).
+**Thin handlers:** бизнес-логика только в `server/utils/`, не в `api/*.ts`.
 
 ## Команды
 

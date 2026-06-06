@@ -8,6 +8,7 @@ Fullstack-песочница для прокачки backend на Nuxt 4 + Nitro
 | ------------------------------------------ | ------------------------------------------ |
 | [deployment-plan.md](deployment-plan.md)   | Этапы A–F развёртывания проекта из шаблона |
 | [roadmap-12-weeks.md](roadmap-12-weeks.md) | 12-недельный план обучения и реализации    |
+| [architecture.md](architecture.md)         | Папки, server/, shared/, thin handlers     |
 
 ## Быстрый старт
 

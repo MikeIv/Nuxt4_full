@@ -1,0 +1,46 @@
+@mixin text-style($token) {
+  font-family: var(--fs-text-#{$token}-family);
+  font-size: var(--fs-text-#{$token}-size);
+  font-weight: var(--fs-text-#{$token}-weight);
+  line-height: var(--fs-text-#{$token}-line-height);
+}
+
+@mixin fs-text-h1 {
+  @include text-style('h1');
+}
+
+@mixin fs-text-h2 {
+  @include text-style('h2');
+}
+
+@mixin fs-text-h3 {
+  @include text-style('h3');
+}
+
+@mixin fs-text-h4 {
+  @include text-style('h4');
+}
+
+@mixin fs-text-h5-subtitle {
+  @include text-style('h5-subtitle');
+}
+
+@mixin fs-text-body {
+  @include text-style('text');
+}
+
+@mixin fs-text-quote {
+  @include text-style('text-quote');
+}
+
+@mixin fs-text-header {
+  @include text-style('header-text');
+}
+
+@mixin fs-text-button {
+  @include text-style('button-text');
+}
+
+@mixin fs-text-tag {
+  @include text-style('tag');
+}

@@ -1,8 +1,17 @@
 @use 'sass:math';
+@use '../variables/base-font-size' as font;
 
-/* px → rem, база 16px (как в Booking_ukr) */
 @function rem($px) {
-  $base: 16;
+  @return math.div($px, font.$rem-design-base) * 1rem;
+}
 
-  @return math.div($px, $base) * 1rem;
+/** Design px → физический px при текущем root (для max-width / media) */
+@function rendered-px($design-px) {
+  $root: math.div(font.$base-font-size, 1px);
+
+  @return math.div($design-px, font.$rem-design-base) * $root * 1px;
+}
+
+@function round-px($value, $step: 8px) {
+  @return math.round(math.div($value, $step)) * $step;
 }
