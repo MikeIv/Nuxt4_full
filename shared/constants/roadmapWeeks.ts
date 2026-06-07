@@ -282,13 +282,13 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       },
     ]),
     doneWhen: doneWhen(2, [
-      'PostgreSQL запущен через Docker',
-      'Prisma singleton подключён',
-      'Seed + migrate выполнены',
-      'curl-чеклист CRUD пройден',
-      'Данные после restart Docker',
-      'Prisma только в server/utils/tasks.ts',
-      'Обновлён docs/architecture.md',
+      '✅ PostgreSQL запущен через Docker',
+      '✅ Prisma singleton подключён',
+      '✅ Seed + migrate выполнены',
+      '✅ curl-чеклист CRUD пройден',
+      '✅ Данные после restart Docker',
+      '✅ Prisma только в server/utils/tasks.ts',
+      '✅ Обновлён docs/architecture.md',
     ]),
   },
   {
@@ -463,9 +463,9 @@ export function isRoadmapLabelCompletedByDefault(label: string): boolean {
 /**
  * The week the student is currently actively working on.
  * This determines the default active tab when opening /roadmap.
- * Update this value when moving to the next week (after completing previous week's final commit + checklist).
+ * Bumped to 3 after Week 2 reached 100% (all practice + doneWhen items marked completed via ✅ defaults).
  */
-export const CURRENT_ROADMAP_WEEK_ID = 2
+export const CURRENT_ROADMAP_WEEK_ID = 3
 
 export function getRoadmapTaskLabelMap(): Map<string, string> {
   const map = new Map<string, string>()
