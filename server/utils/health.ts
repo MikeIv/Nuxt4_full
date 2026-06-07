@@ -1,13 +1,16 @@
 import type { H3Event } from 'h3'
 import { readBody } from 'h3'
 import type { HealthPostBody, HealthPostResponse, HealthResponse } from '#shared/types/health'
+import { prisma } from './prisma'
 
 /**
  * Возвращает полный HealthResponse
  * Вся логика здесь — handler остаётся максимально тонким
  */
-export function getHealthPayload(): HealthResponse {
+export async function getHealthPayload(): Promise<HealthResponse> {
   const config = useServerRuntimeConfig()
+
+  await prisma.$queryRaw`SELECT 1`
 
   return {
     status: 'ok',
@@ -28,9 +31,10 @@ export async function readHealthPostBody(event: H3Event): Promise<HealthPostBody
 }
 
 /** Health + received + echo для учебного POST */
-export function buildHealthPostResponse(body: HealthPostBody): HealthPostResponse {
+export async function buildHealthPostResponse(body: HealthPostBody): Promise<HealthPostResponse> {
+  const payload = await getHealthPayload()
   return {
-    ...getHealthPayload(),
+    ...payload,
     received: true,
     echo: body,
   }
