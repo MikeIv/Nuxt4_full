@@ -232,21 +232,21 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     ]),
     practice: practiceSteps(2, [
       {
-        label: 'День 1: docker-compose.yml + PostgreSQL',
+        label: '✅ День 1: docker-compose.yml + PostgreSQL',
         what: 'Локальная БД в Docker с persistent volume.',
         where: 'docker-compose.yml, .env, .env.example.',
         how: 'PostgreSQL 16; docker compose up -d; DATABASE_URL в .env.',
         verify: 'Checkpoint: docker compose ps — postgres healthy.',
       },
       {
-        label: 'День 2: Prisma init + prisma.ts singleton',
+        label: '✅ День 2: Prisma init + prisma.ts singleton',
         what: 'ORM подключён к Nitro; Client не на каждый запрос.',
         where: 'prisma/schema.prisma, server/utils/prisma.ts, scripts db:migrate, db:studio.',
         how: 'pnpm add prisma @prisma/client; prisma init; singleton + runtimeConfig private.',
         verify: 'Checkpoint: dev стартует; prisma $connect() OK.',
       },
       {
-        label: 'День 3: модель Task + migrate + seed',
+        label: '✅ День 3: модель Task + migrate + seed',
         what: 'Таблица Task и 3–5 seed-задач для быстрого GET.',
         where: 'prisma/schema.prisma, prisma/seed.ts, package.json db:seed.',
         how: 'model Task { id, title, description, completed, createdAt, updatedAt }; prisma db seed.',
