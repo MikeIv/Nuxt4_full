@@ -1,28 +1,42 @@
 # State
 
-**Последнее обновление:** 2026-06-07 (День 2 завершён)
+**Последнее обновление:** 2026-06-07
+
+**Неделя 2 — v2 канон (ментор 2026-06-06)**
+
+## Выполненные дни
+
+- **День 1 (Docker + PostgreSQL):** ✅ закрыт (коммит + checkpoint: docker compose ps → healthy).
+- **День 2 (Prisma init + singleton + private DATABASE_URL):** ✅ закрыт (коммит fa1874e + runtime evidence: `[nitro] boot`, `prisma:query SELECT 1`).
 
 ## Текущая волна
 
-- **Задача:** День 2: Prisma init + singleton + private DATABASE_URL (v2 канон)
-- **Статус:** done
+- **Задача:** День 3: Модель Task + migrate + обязательный seed (3–5 задач)
+- **Статус:** in progress (следующая узкая волна)
 
-## Сделано (День 2, кратко)
+## Краткий итог по закрытым дням
 
-- `nuxt.config.ts`: `runtimeConfig.databaseUrl` (приватная, не в public), `nitro.esbuild.target: 'es2022'` (для top-level await).
-- `server/utils/prisma.ts`: динамический импорт (решает "Named export 'PrismaClient' not found"), Prisma 7 adapter (`@prisma/adapter-pg` + `pg.Pool`), singleton через globalThis, чтение URL из приватного runtimeConfig + fallback + явная ошибка при отсутствии URL.
-- `types/nuxt-public.d.ts`: `databaseUrl` задекларирован только в RuntimeConfig (приватная часть) с комментарием.
-- **Checkpoint пройден:** dev-сервер стартует без ошибок Prisma constructor/adapter. В логе: `[nitro] boot`, `prisma:query SELECT 1`, обработка запросов (/api/health и др.). DATABASE_URL только server-side.
+**День 1**
 
-## Блокеры
+- docker-compose.yml (postgres:16-alpine, named volume nuxt4full-postgres-data, healthcheck pg_isready).
+- DATABASE_URL в .env.example (приватная, server-only).
+- Контейнер запущен и healthy.
 
-- Нет
+**День 2**
+
+- nuxt.config.ts: private `databaseUrl`, nitro.esbuild.target=es2022.
+- server/utils/prisma.ts: динамический импорт + Prisma 7 adapter (@prisma/adapter-pg + pg), singleton, URL из runtimeConfig + валидация.
+- package.json: db:migrate, db:studio + postinstall с prisma generate.
+- prisma/ + prisma.config.ts закоммичены.
+- types/nuxt-public.d.ts: databaseUrl только в приватной RuntimeConfig.
+- Официальный план (roadmap-12-weeks.md): Шаг 1 и Шаг 2 отмечены [x].
 
 ## Next
 
-1. День 3: Модель Task в schema, `prisma migrate dev`, обязательный seed (3–5 задач), `prisma/seed.ts` + скрипт.
-2. Продолжать по плану v2 день за днём (см. brief.md → roadmap-12-weeks.md#неделя-2).
-3. (Ниже сохранён полный исторический контекст планировочной волны и примечания для агента.)
+1. День 3 по v2: модель Task, `prisma migrate dev`, `prisma/seed.ts` + 3–5 задач, скрипт db:seed.
+2. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
+
+(Полный исторический контекст планировочной волны сохранён ниже.)
 
 ## Исторический контекст (планировочная волна + День 1)
 
