@@ -5,9 +5,18 @@ useHead({
   title: 'Roadmap — прогресс обучения',
 })
 
-const { weeks, isDone, toggle, weekStats, overallStats } = useRoadmapProgress()
+const { weeks, isDone, toggle, weekStats, overallStats, currentWorkingWeekId } = useRoadmapProgress()
 
-const activeWeekId = ref('1')
+// Default active tab is driven by the composable's currentWorkingWeekId.
+// This value starts from CURRENT_ROADMAP_WEEK_ID on first visit and automatically
+// advances to the next week when the user reaches 100% completion on the current one.
+const activeWeekId = ref(String(currentWorkingWeekId.value))
+
+// If the current working week auto-advances (because user just hit 100% on the previous week),
+// update the visible tab so the user sees the new active week immediately.
+watch(currentWorkingWeekId, (newId) => {
+  activeWeekId.value = String(newId)
+})
 
 const tabItems = computed<UiTabItem[]>(() =>
   weeks.map((week) => {

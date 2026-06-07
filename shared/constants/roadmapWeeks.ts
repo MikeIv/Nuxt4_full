@@ -253,11 +253,11 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Checkpoint: Prisma Studio — seed-данные видны.',
       },
       {
-        label: 'День 4: types + utils + GET/POST',
+        label: '✅ День 4: types + utils + GET/POST',
         what: 'Первые endpoints после слоёв types/utils — не наоборот.',
-        where: 'shared/types/task.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
-        how: 'listTasks/createTask в utils; thin handlers; ok(data); Zod на POST body.',
-        verify: 'Checkpoint: GET → seed JSON; POST → новая строка в Studio.',
+        where: 'shared/types/tasks.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
+        how: 'getAllTasks/createTask в utils; thin handlers (без Prisma в api).',
+        verify: 'Checkpoint: POST добавляет строку в БД (Postman); GET возвращает данные.',
       },
       {
         label: 'День 5: PATCH/DELETE + ошибки',
@@ -459,6 +459,13 @@ export function getAllRoadmapTaskIds(): string[] {
 export function isRoadmapLabelCompletedByDefault(label: string): boolean {
   return /^\s*✅/.test(label)
 }
+
+/**
+ * The week the student is currently actively working on.
+ * This determines the default active tab when opening /roadmap.
+ * Update this value when moving to the next week (after completing previous week's final commit + checklist).
+ */
+export const CURRENT_ROADMAP_WEEK_ID = 2
 
 export function getRoadmapTaskLabelMap(): Map<string, string> {
   const map = new Map<string, string>()
