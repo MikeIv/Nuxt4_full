@@ -260,7 +260,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Checkpoint: POST добавляет строку в БД (Postman); GET возвращает данные.',
       },
       {
-        label: 'День 5: PATCH/DELETE + ошибки',
+        label: '✅ День 5: PATCH/DELETE + ошибки',
         what: 'Оставшийся CRUD + 404/400.',
         where: 'server/utils/tasks.ts, tasks/[id].get|patch|delete.ts.',
         how: 'getTaskById/updateTask/deleteTask; createError 404; Zod на PATCH.',
