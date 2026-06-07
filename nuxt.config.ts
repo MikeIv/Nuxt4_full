@@ -34,7 +34,7 @@ export default defineNuxtConfig({
    * Корень без public — только server (NUXT_* без PUBLIC).
    */
   runtimeConfig: {
-    exampleSecret: process.env.NUXT_EXAMPLE_SECRET ?? '',
+    databaseUrl: process.env.DATABASE_URL,
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
       appVersion: process.env.NUXT_PUBLIC_APP_VERSION ?? process.env.npm_package_version ?? '0.0.0',
@@ -56,5 +56,11 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    /** Поднимаем target, чтобы работал top-level await в server/utils (нужен для Prisma singleton + ESM interop). */
+    esbuild: {
+      options: {
+        target: 'es2022',
+      },
+    },
   },
 })

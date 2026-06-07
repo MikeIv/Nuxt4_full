@@ -1,18 +1,18 @@
 # State
 
-**Последнее обновление:** 2026-06-07 (День 1 завершён)
+**Последнее обновление:** 2026-06-07 (День 2 завершён)
 
 ## Текущая волна
 
-- **Задача:** День 1: Docker + PostgreSQL (v2 канон)
+- **Задача:** День 2: Prisma init + singleton + private DATABASE_URL (v2 канон)
 - **Статус:** done
 
-## Сделано (День 1, кратко)
+## Сделано (День 2, кратко)
 
-- Создан/подтверждён docker-compose.yml (postgres:16-alpine, container nuxt4full-postgres, named volume nuxt4full-postgres-data, healthcheck pg_isready).
-- Добавлена/подтверждена секция DATABASE*URL в .env.example (приватная, только server-side, не NUXT_PUBLIC*\*, креды совпадают с compose).
-- Контейнер запущен: `docker compose up -d`.
-- **Checkpoint пройден:** `docker compose ps` показывает "Up 18 minutes (healthy)" (локальный вывод пользователя). Named volume создан, порт 5432 проброшен, можно подключаться (psql/pgAdmin), БД nuxt4full доступна.
+- `nuxt.config.ts`: `runtimeConfig.databaseUrl` (приватная, не в public), `nitro.esbuild.target: 'es2022'` (для top-level await).
+- `server/utils/prisma.ts`: динамический импорт (решает "Named export 'PrismaClient' not found"), Prisma 7 adapter (`@prisma/adapter-pg` + `pg.Pool`), singleton через globalThis, чтение URL из приватного runtimeConfig + fallback + явная ошибка при отсутствии URL.
+- `types/nuxt-public.d.ts`: `databaseUrl` задекларирован только в RuntimeConfig (приватная часть) с комментарием.
+- **Checkpoint пройден:** dev-сервер стартует без ошибок Prisma constructor/adapter. В логе: `[nitro] boot`, `prisma:query SELECT 1`, обработка запросов (/api/health и др.). DATABASE_URL только server-side.
 
 ## Блокеры
 
@@ -20,11 +20,11 @@
 
 ## Next
 
-1. День 2: Prisma (init + настройка, singleton клиент в server/utils/prisma.ts), подключение DATABASE_URL через runtimeConfig (private, без утечек в клиент), базовая проверка подключения.
+1. День 3: Модель Task в schema, `prisma migrate dev`, обязательный seed (3–5 задач), `prisma/seed.ts` + скрипт.
 2. Продолжать по плану v2 день за днём (см. brief.md → roadmap-12-weeks.md#неделя-2).
 3. (Ниже сохранён полный исторический контекст планировочной волны и примечания для агента.)
 
-## Исторический контекст (планировочная волна, до Дня 1)
+## Исторический контекст (планировочная волна + День 1)
 
 ## Текущая волна (на момент планирования)
 

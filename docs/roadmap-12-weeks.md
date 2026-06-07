@@ -176,20 +176,20 @@ server/plugins/00-boot.ts
 
 **Шаг 1 — Docker + PostgreSQL (день 1)**
 
-- [ ] `docker-compose.yml` — PostgreSQL 16 (+ pgAdmin по желанию)
-- [ ] Запуск: `docker compose up -d`
-- [ ] `DATABASE_URL` в `.env` / `.env.example`
-- [ ] **Checkpoint:** `docker compose ps` + подключение (psql / pgAdmin)
+- [x] `docker-compose.yml` — PostgreSQL 16 (+ pgAdmin по желанию)
+- [x] Запуск: `docker compose up -d`
+- [x] `DATABASE_URL` в `.env` / `.env.example`
+- [x] **Checkpoint:** `docker compose ps` + подключение (psql / pgAdmin) — выполнен 2026-06-07
 
 **Шаг 2 — Prisma (день 2)**
 
-- [ ] `pnpm add -D prisma` + `pnpm add @prisma/client`
-- [ ] `pnpm exec prisma init`
-- [ ] `prisma/schema.prisma` — provider PostgreSQL
-- [ ] `server/utils/prisma.ts` — singleton Client (`globalThis` в dev)
-- [ ] `DATABASE_URL` через private `runtimeConfig` (не в client)
-- [ ] Скрипты в `package.json`: `db:migrate`, `db:studio`
-- [ ] **Checkpoint:** dev-сервер стартует; `$connect()` без ошибок
+- [x] `pnpm add -D prisma` + `pnpm add @prisma/client`
+- [x] `pnpm exec prisma init`
+- [x] `prisma/schema.prisma` — provider PostgreSQL
+- [x] `server/utils/prisma.ts` — singleton Client (`globalThis` в dev) + Prisma 7 adapter
+- [x] `DATABASE_URL` через private `runtimeConfig` (не в client)
+- [x] Скрипты в `package.json`: `db:migrate`, `db:studio`
+- [x] **Checkpoint:** dev-сервер стартует; `$connect()` без ошибок — выполнен 2026-06-07 (логи: `[nitro] boot`, `prisma:query SELECT 1`)
 
 **Шаг 3 — Модель, migrate, seed (день 3)**
 

@@ -8,7 +8,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
+    "postinstall": "nuxt prepare && prisma generate",
     "prepare": "husky",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -16,10 +16,16 @@
     "format:check": "prettier --check .",
     "stylelint": "stylelint \"**/*.{vue,css}\" --allow-empty-input",
     "stylelint:fix": "stylelint \"**/*.{vue,css}\" --fix --allow-empty-input",
-    "lint:all": "eslint . && pnpm format:check && stylelint \"**/*.{vue,css}\" --allow-empty-input"
+    "lint:all": "eslint . && pnpm format:check && stylelint \"**/*.{vue,css}\" --allow-empty-input",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.4.2",
     "nuxt": "^4.4.5",
+    "pg": "^8.21.0",
     "vue": "^3.5.34"
   },
   "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
@@ -31,6 +37,7 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@types/node": "^25.7.0",
+    "@types/pg": "^8.20.0",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
@@ -39,6 +46,7 @@
     "postcss": "^8.5.14",
     "postcss-html": "^1.8.1",
     "prettier": "^3.8.3",
+    "prisma": "^7.8.0",
     "sass": "^1.99.0",
     "stylelint": "^17.11.0",
     "stylelint-config-recommended-vue": "^1.6.1",

@@ -2,6 +2,9 @@ declare module 'nuxt/schema' {
   interface RuntimeConfig {
     /** Учебный private-ключ (нед. 1). Env: `NUXT_EXAMPLE_SECRET`. Только server. */
     exampleSecret: string
+
+    /** Приватный DATABASE_URL для Prisma (нед. 2). Только server, не попадает в клиент. */
+    databaseUrl?: string
   }
 
   interface PublicRuntimeConfig {
