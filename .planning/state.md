@@ -8,11 +8,7 @@
 
 - **День 1 (Docker + PostgreSQL):** ✅ закрыт (коммит + checkpoint: docker compose ps → healthy).
 - **День 2 (Prisma init + singleton + private DATABASE_URL):** ✅ закрыт (коммит fa1874e + runtime evidence: `[nitro] boot`, `prisma:query SELECT 1`).
-
-## Текущая волна
-
-- **Задача:** День 3: Модель Task + migrate + обязательный seed (3–5 задач)
-- **Статус:** in progress (следующая узкая волна)
+- **День 3 (Модель Task + migrate + обязательный seed):** ✅ закрыт (2026-06-07).
 
 ## Краткий итог по закрытым дням
 
@@ -31,9 +27,22 @@
 - types/nuxt-public.d.ts: databaseUrl только в приватной RuntimeConfig.
 - Официальный план (roadmap-12-weeks.md): Шаг 1 и Шаг 2 отмечены [x].
 
+**День 3**
+
+- Модель `Task` в prisma/schema.prisma (полностью соответствует плану).
+- Миграция под модель (в составе init-миграции).
+- `prisma/seed.ts` с 4 задачами (в пределах 3–5), идемпотентный, использует проектный singleton.
+- Скрипты в package.json: `db:seed`, а также `db:reset`, `db:push`, `db:generate` + секция `"prisma": { "seed": "tsx prisma/seed.ts" }`.
+- **Checkpoint:** Prisma Studio показывает seed-данные (4 задачи, screenshot от пользователя 2026-06-07).
+
+## Текущая волна
+
+- **Задача:** День 4: shared/types/task.ts + server/utils/tasks.ts + GET/POST thin handlers
+- **Статус:** in progress (следующая узкая волна)
+
 ## Next
 
-1. День 3 по v2: модель Task, `prisma migrate dev`, `prisma/seed.ts` + 3–5 задач, скрипт db:seed.
+1. День 4 по v2: контракты, utils с бизнес-логикой, тонкие хендлеры GET + POST (с Zod только для POST, ответы `{ data, success }`).
 2. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
 
 (Полный исторический контекст планировочной волны сохранён ниже.)
@@ -86,7 +95,7 @@
 
 **Примечание для нового агента (обязательно к соблюдению):**
 
-- Следуй правилам из `.cursor/rules/` (особенно 00-workflow-core, 03-execution-discipline, 04-verify-and-done, 05-context-hygiene).
+- Следуй правилами из `.cursor/rules/` (особенно 00-workflow-core, 03-execution-discipline, 04-verify-and-done, 05-context-hygiene).
 - Работай **узкими волнами** (1 день или 1–2 связанных задачи).
 - После каждой волны — коротко обновляй `state.md`, не сваливай весь diff в чат.
 - Общайся с пользователем на русском.

@@ -193,11 +193,11 @@ server/plugins/00-boot.ts
 
 **Шаг 3 — Модель, migrate, seed (день 3)**
 
-- [ ] Модель `Task`: `id`, `title`, `description`, `completed`, `createdAt`, `updatedAt`
-- [ ] `pnpm exec prisma migrate dev`
-- [ ] `prisma/seed.ts` — **3–5 задач** (рекомендуется, не опционально)
-- [ ] `pnpm exec prisma db seed` + script `db:seed`
-- [ ] **Checkpoint:** Prisma Studio показывает seed-данные
+- [x] Модель `Task`: `id`, `title`, `description`, `completed`, `createdAt`, `updatedAt`
+- [x] `pnpm exec prisma migrate dev` (таблица создана в миграции 20260607075331_init)
+- [x] `prisma/seed.ts` — **4 задачи** (рекомендуется, не опционально)
+- [x] `pnpm exec prisma db seed` + script `db:seed` (добавлен в package.json)
+- [x] **Checkpoint:** Prisma Studio показывает seed-данные — выполнен 2026-06-07 (4 задачи в таблице tasks, screenshot предоставлен)
 
 **Шаг 4 — Контракт + utils + GET/POST (день 4)**
 
