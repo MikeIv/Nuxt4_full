@@ -11,6 +11,8 @@
 - **День 3 (Модель Task + migrate + обязательный seed):** ✅ закрыт (2026-06-07).
 - **День 4 (shared/types/tasks.ts + server/utils/tasks.ts + GET/POST thin handlers):** ✅ закрыт (2026-06-07, Postman screenshot).
 - **День 5 (PATCH/DELETE + ошибки):** ✅ закрыт (2026-06-07, Postman + Prisma Studio + lint/typecheck).
+- **День 6 (curl-чеклист + persistence):** ✅ закрыт (2026-06-07, curl list после перезапуска сервера/БД/dev + подтверждение сохранения данных).
+- **День 7 (architecture.md + lint/build):** ✅ закрыт (2026-06-07, docs обновлены по тексту ментора, lint + build + typecheck чистые).
 
 ## Краткий итог по закрытым дням
 
@@ -56,16 +58,31 @@
 - Подтверждение: Postman (обновление/удаление), Prisma Studio (данные меняются), `pnpm lint:all` + `nuxi typecheck` чистые.
 - Официальный план: Шаг 5 отмечен [x]. Roadmap UI — ✅ префиксы добавляются только после коммита (по правилу).
 
+**День 6**
+
+- Обязательный curl-чеклист + persistence: `curl -s http://localhost:3000/api/tasks` после перезапуска сервера, Docker (БД) и dev — данные (seed + добавленные записи) на месте.
+- Подтверждено отсутствие Prisma/Zod в server/api/\* (grep по handlers — чисто).
+- **Checkpoint:** persistence в Docker volume пройден. Пользователь предоставил вывод curl и явно подтвердил «перезапуск сервера, БД и dev», «вывод правильный».
+- Официальный план: Шаг 6 отмечен [x].
+
+**День 7**
+
+- Обновлён `docs/architecture.md`: добавлена точная секция «# Архитектура проекта (Неделя 2)» по тексту, предоставленному ментором (Общая схема, Структура папок, Текущие API, Best Practices: Thin Handlers / Shared types / RuntimeConfig / Prisma Adapter + Pool).
+- Проверки: `pnpm lint:all` (чист), `pnpm build` (exit 0), `nuxi typecheck` (0 ошибок).
+- Handlers тонкие (весь Prisma — в server/utils/tasks.ts).
+- ✅ для Дня 6 и Дня 7 в `shared/constants/roadmapWeeks.ts` добавлены после завершения работ (по правилу).
+- Неделя 2 полностью закрыта по v2.
+
 ## Текущая волна
 
-- **Задача:** День 6: curl-чеклист + persistence (docker compose restart)
-- **Статус:** next
+- **Задача:** Неделя 2 завершена. Подготовка к Неделе 3 (Fullstack UI: /tasks).
+- **Статус:** done
 
 ## Next
 
-1. День 6 по v2: выполнить обязательный curl-чеклист (list/create/patch/delete + 404), проверить persistence после `docker compose restart`.
-2. После успешного чеклиста — отметить День 6 в roadmap-12-weeks.md и state.md.
-3. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
+1. Перейти к Неделе 3 по roadmap (UI поверх CRUD: страница /tasks, composable useTasks, loading/error/empty states, SSR).
+2. Обновить .planning/brief.md под новую неделю при необходимости.
+3. Продолжать узкими волнами, с обновлением state.md после каждой значимой части.
 
 (Полный исторический контекст планировочной волны сохранён ниже.)
 
@@ -126,4 +143,4 @@
 - Не начинай UI `/tasks` — это неделя 3.
 - Не добавляй apiHandler / унифицированные ошибки — это неделя 4.
 - В конце каждого дня/волны предлагай пользователю проверить checkpoint перед переходом дальше.
-- Используй `pnpm lint:all` и typecheck при необходимости (перед «готово» по правилам).
+- Используй `pnpm lint:all` и typecheck при необходимости (перед «готово» по правила

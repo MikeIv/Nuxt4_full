@@ -253,14 +253,27 @@ curl -s -X DELETE http://localhost:3000/api/tasks/<ID> -w '\nHTTP %{http_code}\n
 # 5. Persistence: docker compose restart → GET list — данные на месте
 ```
 
-- [ ] Все 5 пунктов пройдены
-- [ ] **Checkpoint:** после restart Docker данные в volume сохранились
+- [x] Все 5 пунктов пройдены (list после seed + ручных записей; create/patch/delete в предыдущие дни + повторные; persistence подтверждена)
+- [x] **Checkpoint:** `curl -s http://localhost:3000/api/tasks` после перезапуска сервера + БД + dev показывает все записи (seed + добавленные) — данные в Docker volume на месте. (2026-06-07, пользователь предоставил вывод)
+
+**День 6 (curl-чеклист + persistence) — выполнен 2026-06-07**
+
+- Полный список задач через curl после множественных перезапусков (сервер, docker DB, dev).
+- Данные (включая seed 4 задачи + тестовые из Postman/ручного добавления) сохранились.
+- Thin handlers + Prisma только в utils подтверждены (grep по server/api/tasks\* — 0 упоминаний Prisma).
+- Соответствует v2: persistence — ключевой чек для Docker volume.
 
 **Шаг 7 — Архитектура (день 7)**
 
-- [ ] Пройтись по handlers: нет Prisma/Zod в `server/api/*`
-- [ ] Обновить `docs/architecture.md` — поток Client → Prisma → PostgreSQL
-- [ ] `pnpm lint:all` + `pnpm build`
+- [x] Пройтись по handlers: нет Prisma/Zod в `server/api/*` (grep подтвердил; вся логика в server/utils/tasks.ts)
+- [x] Обновить `docs/architecture.md` — добавлена каноническая секция «# Архитектура проекта (Неделя 2)» по тексту ментора (общая схема, структура папок, текущие API, Best Practices)
+- [x] `pnpm lint:all` + `pnpm build` + typecheck — чисто (2026-06-07)
+
+**День 7 (architecture.md + lint/build) — выполнен 2026-06-07**
+
+- Обновлён `docs/architecture.md` точной секцией, предоставленной ментором.
+- Проверки: lint чистый, production build успешен (exit 0), typecheck 0 ошибок.
+- Handlers остаются тонкими.
 
 ### Структура (неделя 2)
 

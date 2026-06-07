@@ -167,7 +167,45 @@ HTTP с UI — только `useApi` / `useApiFetch<T>`, не сырой `fetch`
 
 ---
 
-## `server/` — неделя 2 (план)
+# Архитектура проекта (Неделя 2)
+
+## Общая схема
+
+Client (Browser)
+→ useApiFetch / $fetch
+→ Nitro Server (server/api/)
+→ Middleware (будет на след. неделях)
+→ server/utils/
+→ Prisma Client
+→ PostgreSQL (Docker)
+
+## Структура папок
+
+- `shared/types/` — контракты API (Task, HealthResponse и т.д.)
+- `server/api/` — HTTP handlers (тонкие)
+- `server/utils/` — бизнес-логика + Prisma queries
+- `prisma/` — схема БД и миграции
+- `server/utils/prisma.ts` — singleton клиента
+
+## Текущие API
+
+- GET /api/tasks
+- POST /api/tasks
+- GET /api/tasks/[id]
+- PATCH /api/tasks/[id]
+- DELETE /api/tasks/[id]
+- GET /api/health
+
+## Best Practices, которые применяем
+
+- Thin Handlers
+- Shared types (isomorphic)
+- RuntimeConfig для секретов
+- Prisma Adapter + Pool
+
+---
+
+## `server/` — неделя 2 (план, историческое)
 
 После подключения Prisma цепочка для `/api/tasks`:
 

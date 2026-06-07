@@ -267,14 +267,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Checkpoint: patch/delete curl; bad id → 404 JSON.',
       },
       {
-        label: 'День 6: curl-чеклист + persistence',
+        label: '✅ День 6: curl-чеклист + persistence',
         what: 'Обязательная ручная verify всего CRUD.',
         where: 'terminal + docker compose restart.',
         how: 'create → list → patch → delete → restart → list (см. roadmap).',
         verify: 'Checkpoint: все 5 шагов OK; данные в volume после restart.',
       },
       {
-        label: 'День 7: architecture.md + lint/build',
+        label: '✅ День 7: architecture.md + lint/build',
         what: 'Handlers без Prisma; документ потока данных.',
         where: 'docs/architecture.md, все server/api/tasks*.',
         how: 'Рефактор если нужно; pnpm lint:all && pnpm build.',
