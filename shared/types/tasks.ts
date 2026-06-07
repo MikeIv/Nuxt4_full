@@ -5,8 +5,8 @@ export interface Task {
   title: string
   description?: string | null
   completed: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt: string | Date
+  updatedAt: string | Date
 }
 
 export interface CreateTaskInput {
@@ -18,4 +18,9 @@ export interface UpdateTaskInput {
   title?: string
   description?: string
   completed?: boolean
+}
+
+export interface TaskResponse extends Omit<Task, 'createdAt' | 'updatedAt'> {
+  createdAt: string
+  updatedAt: string
 }

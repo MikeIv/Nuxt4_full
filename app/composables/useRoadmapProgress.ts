@@ -135,7 +135,9 @@ export function useRoadmapProgress() {
   }
 
   function getCurrentWorkingWeek(): RoadmapWeek {
-    return ROADMAP_WEEKS.find((w) => w.id === currentWeekId.value) || ROADMAP_WEEKS[0]
+    const found = ROADMAP_WEEKS.find((w) => w.id === currentWeekId.value)
+    if (found) return found
+    return ROADMAP_WEEKS[0]!
   }
 
   function checkAndAdvanceCurrentWeek() {

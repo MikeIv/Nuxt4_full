@@ -204,6 +204,13 @@ server/plugins/00-boot.ts
 - POST /api/tasks успешно создаёт задачу (Postman screenshot с телом и ответом `{ data: Task }`).
 - Структура: shared/types/tasks.ts (Task + DTOs) → server/utils/tasks.ts (с Prisma) → тонкие handlers.
 
+**День 5 (PATCH/DELETE + ошибки) — выполнен 2026-06-07**
+
+- PATCH /api/tasks/:id обновляет задачу (title/description/completed), DELETE удаляет.
+- Оба подтверждены в Postman (записи меняются/пропадают в Prisma Studio).
+- Ручная валидация (минимум) + `createError(400/404)`. Полноценный Zod — отложен на Неделю 4 по рекомендации ментора.
+- Исправлены мелкие несоответствия (mapTaskDates для update, типы ответов, гвард id в GET).
+
 **Шаг 4 — Контракт + utils + GET/POST (день 4)**
 
 Сначала слои, потом routes — **не наоборот**:
@@ -217,11 +224,10 @@ server/plugins/00-boot.ts
 
 **Шаг 5 — PATCH/DELETE + ошибки (день 5)**
 
-- [ ] `server/utils/tasks.ts` — `getTaskById`, `updateTask`, `deleteTask`
-- [ ] `server/api/tasks/[id].get.ts`, `[id].patch.ts`, `[id].delete.ts`
-- [ ] Zod для PATCH body; `createError({ statusCode: 404 })` если id не найден
-- [ ] Invalid body → 400 (минимально, без apiHandler)
-- [ ] **Checkpoint:** curl patch + delete; `GET /api/tasks/nonexistent` → 404 JSON
+- [x] `server/utils/tasks.ts` — `getTaskById`, `updateTask`, `deleteTask` (с mapTaskDates для консистентности дат)
+- [x] `server/api/tasks/[id].get.ts`, `[id].patch.ts`, `[id].delete.ts` (thin handlers)
+- [x] Ручная валидация + `createError(400/404)` (Zod отложен на Неделю 4 по совету ментора)
+- [x] **Checkpoint:** Postman PATCH + DELETE (записи обновляются/удаляются в БД, Prisma Studio). GET /nonexistent → 404. typecheck + lint чистые. (2026-06-07)
 
 **Шаг 6 — curl-чеклист + persistence (день 6)**
 

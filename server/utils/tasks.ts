@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import type { Task, CreateTaskInput } from '#shared/types/tasks'
+import type { CreateTaskInput, Task, UpdateTaskInput } from '#shared/types/tasks'
 
 export async function getAllTasks(): Promise<Task[]> {
   const tasks = await prisma.task.findMany({
@@ -25,5 +25,24 @@ function mapTaskDates<T extends { createdAt: Date; updatedAt: Date }>(
     ...task,
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+  }
+}
+
+export async function updateTask(id: string, data: UpdateTaskInput): Promise<Task | null> {
+  try {
+    const updated = await prisma.task.update({ where: { id }, data })
+    return mapTaskDates(updated)
+  } catch (error) {
+    console.error('Update task error:', error)
+    return null
+  }
+}
+
+export async function deleteTask(id: string): Promise<boolean> {
+  try {
+    await prisma.task.delete({ where: { id } })
+    return true
+  } catch {
+    return false
   }
 }

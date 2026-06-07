@@ -10,6 +10,7 @@
 - **День 2 (Prisma init + singleton + private DATABASE_URL):** ✅ закрыт (коммит fa1874e + runtime evidence: `[nitro] boot`, `prisma:query SELECT 1`).
 - **День 3 (Модель Task + migrate + обязательный seed):** ✅ закрыт (2026-06-07).
 - **День 4 (shared/types/tasks.ts + server/utils/tasks.ts + GET/POST thin handlers):** ✅ закрыт (2026-06-07, Postman screenshot).
+- **День 5 (PATCH/DELETE + ошибки):** ✅ закрыт (2026-06-07, Postman + Prisma Studio + lint/typecheck).
 
 ## Краткий итог по закрытым дням
 
@@ -46,15 +47,25 @@
 - Линт и typecheck чистые.
 - Официальный план (roadmap-12-weeks.md): Шаг 4 отмечен [x] с Postman доказательством.
 
+**День 5**
+
+- `server/utils/tasks.ts`: `getTaskById` / `updateTask` / `deleteTask` + `mapTaskDates` (консистентные ISO-строки в ответах).
+- Thin handlers: `[id].get.ts`, `[id].patch.ts`, `[id].delete.ts` с `createError(400/404)`.
+- PATCH: ручная валидация title (пустая строка → 400). DELETE возвращает `{ data: { success: true } }`.
+- Мелкие правки: добавлен missing import UpdateTaskInput, убрана ручная `updatedAt` (Prisma @updatedAt), исправлен тип возврата DELETE, гвард id в GET, safe return в getCurrentWorkingWeek (typecheck).
+- Подтверждение: Postman (обновление/удаление), Prisma Studio (данные меняются), `pnpm lint:all` + `nuxi typecheck` чистые.
+- Официальный план: Шаг 5 отмечен [x]. Roadmap UI — ✅ префиксы добавляются только после коммита (по правилу).
+
 ## Текущая волна
 
-- **Задача:** День 5: PATCH/DELETE + ошибки (404/400, createError)
+- **Задача:** День 6: curl-чеклист + persistence (docker compose restart)
 - **Статус:** next
 
 ## Next
 
-1. День 5 по v2: расширить utils (getTaskById, updateTask, deleteTask), тонкие handlers [id].get / [id].patch / [id].delete, createError(404), минимальная валидация.
-2. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
+1. День 6 по v2: выполнить обязательный curl-чеклист (list/create/patch/delete + 404), проверить persistence после `docker compose restart`.
+2. После успешного чеклиста — отметить День 6 в roadmap-12-weeks.md и state.md.
+3. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
 
 (Полный исторический контекст планировочной волны сохранён ниже.)
 
