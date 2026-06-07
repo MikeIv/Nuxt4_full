@@ -1,42 +1,23 @@
-# Docker Compose для Недели 2 (v2 канон)
-# PostgreSQL 16 + named volume (persistence данных)
-#
-# Команды:
-#   docker compose up -d          # запуск в фоне
-#   docker compose ps             # проверить статус (ищем "healthy")
-#   docker compose logs -f postgres
-#   docker compose down           # остановка (volume остаётся — данные не теряются)
-#   docker compose down -v        # полная очистка (вкл. удаление volume)
-#
-# Подключение из хоста (после старта):
-#   psql -h localhost -U postgres -d nuxt4full
-#   (пароль: postgres)
-#
-# DATABASE_URL для приложения (в .env, только server-side):
-#   postgresql://postgres:postgres@localhost:5432/nuxt4full
-
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: nuxt4full-postgres
     restart: unless-stopped
+    ports:
+      - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: nuxt4full
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d nuxt4full']
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 5
       start_period: 10s
 
 volumes:
   postgres_data:
-    # named volume — данные сохраняются между перезапусками контейнера и docker compose down/up
+    name: nuxt4full-postgres-data
