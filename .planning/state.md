@@ -9,6 +9,7 @@
 - **День 1 (Docker + PostgreSQL):** ✅ закрыт (коммит + checkpoint: docker compose ps → healthy).
 - **День 2 (Prisma init + singleton + private DATABASE_URL):** ✅ закрыт (коммит fa1874e + runtime evidence: `[nitro] boot`, `prisma:query SELECT 1`).
 - **День 3 (Модель Task + migrate + обязательный seed):** ✅ закрыт (2026-06-07).
+- **День 4 (shared/types/tasks.ts + server/utils/tasks.ts + GET/POST thin handlers):** ✅ закрыт (2026-06-07, Postman screenshot).
 
 ## Краткий итог по закрытым дням
 
@@ -35,14 +36,24 @@
 - Скрипты в package.json: `db:seed`, а также `db:reset`, `db:push`, `db:generate` + секция `"prisma": { "seed": "tsx prisma/seed.ts" }`.
 - **Checkpoint:** Prisma Studio показывает seed-данные (4 задачи, screenshot от пользователя 2026-06-07).
 
+**День 4**
+
+- `shared/types/tasks.ts` — Task + CreateTaskInput (naming: plural module/tasks как указал ментор).
+- `server/utils/tasks.ts` — getAllTasks / createTask (Prisma только здесь) + маппинг дат в string.
+- `server/api/tasks.get.ts` и `tasks.post.ts` — тонкие handlers (без Prisma, возврат `{ data: ... }`).
+- POST подтверждён рабочим (Postman: создаёт задачу, возвращает корректный `{ data: Task }` с id и timestamps).
+- GET возвращает данные из БД.
+- Линт и typecheck чистые.
+- Официальный план (roadmap-12-weeks.md): Шаг 4 отмечен [x] с Postman доказательством.
+
 ## Текущая волна
 
-- **Задача:** День 4: shared/types/task.ts + server/utils/tasks.ts + GET/POST thin handlers
-- **Статус:** in progress (следующая узкая волна)
+- **Задача:** День 5: PATCH/DELETE + ошибки (404/400, createError)
+- **Статус:** next
 
 ## Next
 
-1. День 4 по v2: контракты, utils с бизнес-логикой, тонкие хендлеры GET + POST (с Zod только для POST, ответы `{ data, success }`).
+1. День 5 по v2: расширить utils (getTaskById, updateTask, deleteTask), тонкие handlers [id].get / [id].patch / [id].delete, createError(404), минимальная валидация.
 2. Продолжать строго по плану v2 (см. brief.md и docs/roadmap-12-weeks.md#неделя-2).
 
 (Полный исторический контекст планировочной волны сохранён ниже.)
@@ -95,7 +106,7 @@
 
 **Примечание для нового агента (обязательно к соблюдению):**
 
-- Следуй правилами из `.cursor/rules/` (особенно 00-workflow-core, 03-execution-discipline, 04-verify-and-done, 05-context-hygiene).
+- Следуй правилам из `.cursor/rules/` (особенно 00-workflow-core, 03-execution-discipline, 04-verify-and-done, 05-context-hygiene).
 - Работай **узкими волнами** (1 день или 1–2 связанных задачи).
 - После каждой волны — коротко обновляй `state.md`, не сваливай весь diff в чат.
 - Общайся с пользователем на русском.

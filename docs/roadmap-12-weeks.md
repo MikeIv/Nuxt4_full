@@ -199,16 +199,21 @@ server/plugins/00-boot.ts
 - [x] `pnpm exec prisma db seed` + script `db:seed` (добавлен в package.json)
 - [x] **Checkpoint:** Prisma Studio показывает seed-данные — выполнен 2026-06-07 (4 задачи в таблице tasks, screenshot предоставлен)
 
+**День 4 (GET + POST) — выполнен 2026-06-07**
+
+- POST /api/tasks успешно создаёт задачу (Postman screenshot с телом и ответом `{ data: Task }`).
+- Структура: shared/types/tasks.ts (Task + DTOs) → server/utils/tasks.ts (с Prisma) → тонкие handlers.
+
 **Шаг 4 — Контракт + utils + GET/POST (день 4)**
 
 Сначала слои, потом routes — **не наоборот**:
 
-- [ ] `shared/types/task.ts` — `Task`, DTO create/update, response types
-- [ ] `server/utils/tasks.ts` — `listTasks()`, `createTask()` (Prisma здесь)
-- [ ] `server/api/tasks.get.ts` — thin → `listTasks()`
-- [ ] `server/api/tasks.post.ts` — thin → Zod body → `createTask()`
-- [ ] Ответы через `ok(data)` → `{ data, success: true }`
-- [ ] **Checkpoint:** GET возвращает seed; POST добавляет строку в Studio
+- [x] `shared/types/tasks.ts` — `Task`, DTO create/update, response types (naming per mentor: plural module)
+- [x] `server/utils/tasks.ts` — `getAllTasks()`, `createTask()` (Prisma здесь)
+- [x] `server/api/tasks.get.ts` — thin → getAllTasks()
+- [x] `server/api/tasks.post.ts` — thin handler (manual title validation + createTask)
+- [x] Ответы в формате `{ data: Task }` (consistent with project)
+- [x] **Checkpoint:** POST добавляет строку (Postman screenshot 2026-06-07). GET возвращает данные из БД (включая seed + новые).
 
 **Шаг 5 — PATCH/DELETE + ошибки (день 5)**
 
