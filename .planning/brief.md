@@ -1,50 +1,67 @@
-# Brief: Неделя 2 — Prisma + PostgreSQL + Task CRUD (v2)
+# Brief: Неделя 3 — Fullstack UI: Tasks
 
-**Дата:** 2026-06-06
-**Статус:** v2 — канон (ментор ✅ 2026-06-06)
-**Класс:** L (волнами по дням)
+**Дата:** 2026-06-07
+**Класс:** M (волнами по дням)
 
 ## Цель
 
-Подключить PostgreSQL через Docker, настроить Prisma в Nuxt 4, реализовать CRUD `/api/tasks` с thin handlers и понять безопасную работу с БД из `server/api`.
+Создать полноценную интерактивную страницу задач `/tasks`, которая работает с CRUD API из Недели 2. Замкнуть полный fullstack цикл: от базы данных → API → UI с состоянием, загрузкой, ошибками, optimistic updates и проверкой SSR/persistence.
 
 ## Scope
 
 - Включено:
-  - `docker-compose.yml`, `DATABASE_URL`, Prisma init + migrate
-  - Модель `Task`, **seed 3–5 задач**, `server/utils/prisma.ts`, `server/utils/tasks.ts`
-  - CRUD routes по волнам: день 4 GET/POST, день 5 PATCH/DELETE
-  - `shared/types/task.ts`, минимальный Zod, `{ data, success }`, `createError`
-  - **curl-чеклист** (день 6), обновление `docs/architecture.md` (день 7)
+  - `app/composables/useTasks.ts` — `fetchTasks`, `createTask`, `updateTask`, `deleteTask`, `toggleComplete`; `useAsyncData`/`useApiFetch` + кэширование (ключ 'tasks')
+  - `app/pages/tasks.vue` — список задач (карточки или таблица на `$style`), форма создания (title обязателен), кнопки Toggle/Edit/Delete
+  - Состояния: Loading skeleton, Empty state, Error state + кнопка «Повторить»
+  - Toast-уведомления (простая реализация)
+  - Optimistic updates на toggle completed (UI сразу + rollback при ошибке) + `refresh()` после мутаций
+  - Базовая сортировка/фильтр (все / активные / завершённые)
+  - Проверка SSR (данные в HTML), гидратация без лишних запросов
+  - Полная проверка после `docker compose restart postgres` + рестарт dev
+  - Обновление `docs/architecture.md` (секция по UI tasks + поток данных)
 - Исключено:
-  - UI `/tasks` (неделя 3)
-  - Auth, User, RBAC
-  - `apiHandler.ts`, `docs/api-conventions.md` (неделя 4)
+  - Подключение `@nuxt/ui` и его компонентов (`<UCard>`, `useToast` и т.д.) — отложить на неделю 10
+  - Auth, User, RBAC (неделя 5+)
+  - Полноценная валидация Zod, пагинация, фильтры на сервере (неделя 4/7)
+  - Real-time / SSE
 
 ## Порядок (важно)
 
-1. types + utils → потом handler (не CRUD «в лоб»)
-2. GET/POST → потом PATCH/DELETE
-3. curl verify → потом docs
+1. Сначала composable `useTasks()` (типы + методы + кэш)
+2. Потом страница + базовый CRUD в UI
+3. Состояния интерфейса
+4. Optimistic + обработка ошибок
+5. Полировка (фильтры, SSR, persistence)
+   6-7. Рефакторинг, комментарии, docs, итоговый тест всего флоу
 
 ## Done when
 
-- [ ] PostgreSQL запущен через Docker
-- [ ] Prisma singleton подключён
-- [ ] Seed + migrate
-- [ ] **curl-чеклист** CRUD пройден
-- [ ] Данные после restart Docker
-- [ ] Prisma только в `server/utils/tasks.ts`
-- [ ] Обновлён `docs/architecture.md`
+- [ ] Есть полноценная страница `/tasks` с полным CRUD
+- [ ] Используется composable `useTasks()`
+- [ ] Работают loading, empty и error состояния + retry
+- [ ] Optimistic updates на toggle completed (с rollback при ошибке)
+- [ ] Данные сохраняются после перезапуска Docker + Nuxt (docker compose restart + dev)
+- [ ] Страница красиво выглядит и удобно используется (семантика, CSS Modules `$style`, a11y)
+- [ ] `docs/architecture.md` обновлён
+- [ ] Пройдены `pnpm lint:all`, `pnpm build`, typecheck (0 ошибок)
 
 ## Ограничения
 
-- Темп: ~1–2 ч/день; **checkpoint в конце каждого дня**
-- `DATABASE_URL` только server-side
-- Клиент: `useApi` / `useApiFetch` — на нед. 3
+- Темп: ~1–2 ч в день; checkpoint в конце дня
+- Только `useApi` / `useApiFetch` для всех запросов к API (никакого сырого fetch в SFC)
+- Минимальный diff, без лишнего рефакторинга
+- Чистый, переиспользуемый код; комментарии где неочевидно
+- SSR по умолчанию (не отключать)
 
 ## Контекст
 
-- Roadmap: [docs/roadmap-12-weeks.md](../docs/roadmap-12-weeks.md#неделя-2--prisma--postgresql--task-crud)
-- Синхронизация с ментором: [docs/mentor-week2-sync.md](../docs/mentor-week2-sync.md)
-- Неделя 1 завершена (health, middleware, apiResponse.ok)
+- Полный план и теория: [docs/roadmap-12-weeks.md](../docs/roadmap-12-weeks.md#неделя-3--fullstack-ui-tasks)
+- Неделя 2 завершена (Prisma + CRUD `/api/tasks` + curl-чеклист + persistence + architecture.md)
+- Текущий стек: Nuxt 4 + SCSS + CSS Modules; Nuxt UI позже
+
+## Промпты для Cursor (примеры)
+
+- «Создай composable useTasks.ts с методами CRUD + optimistic toggle на базе useApiFetch и useAsyncData»
+- «В tasks.vue реализуй optimistic toggle completed с rollback на ошибке + skeleton/empty/error states»
+- «Добавь базовый фильтр и сортировку задач (active/completed)»
+- «Обнови docs/architecture.md — добавь описание потока данных для /tasks и useTasks»

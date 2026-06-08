@@ -30,7 +30,7 @@
 | --- | --------------------------- | ---------------------------------------- |
 | 1   | Nitro + первый API          | Health, структура server/, типы, plugins |
 | 2   | Prisma + PostgreSQL + Tasks | Docker, schema, CRUD `/api/tasks`        |
-| 3   | Fullstack UI: Tasks         | Страница `/tasks`, composable            |
+| 3   | Fullstack UI: Tasks         | /tasks + useTasks + optimistic + states  |
 | 4   | HTTP, ошибки, API design    | apiHandler, `{ data, success, error? }`  |
 | 5   | Аутентификация              | Register, login, session                 |
 | 6   | Авторизация (RBAC)          | Роли, защита routes                      |
@@ -151,6 +151,16 @@ server/plugins/00-boot.ts
 > **Принцип недели:** сначала **types + utils + один endpoint**, потом остальной CRUD.
 > Zod и `createError` — минимально; единый `apiHandler` и `docs/api-conventions.md` — [неделя 4](#неделя-4--http-middleware-ошибки).
 > **План v2 — канон** (подтверждён ментором 2026-06-06).
+
+### Текущий прогресс
+
+- ✅ Docker + PostgreSQL (день 1) — `docker compose ps` healthy, подключение подтверждено
+- ✅ Prisma init + singleton + `DATABASE_URL` (день 2) — `$connect()` без ошибок, hot-reload готов
+- ✅ Модель `Task` + migrate + seed 4 задач (день 3) — Prisma Studio показывает данные
+- ✅ Types + utils + GET/POST (день 4) — Postman, ответы `{ data: Task }`, thin handlers
+- ✅ PATCH/DELETE + ошибки 404/400 (день 5) — валидация, Postman, Prisma Studio
+- ✅ curl-чеклист + persistence (день 6) — все 5 шагов, данные после `docker compose restart`
+- ✅ Рефакторинг + `docs/architecture.md` + lint/build (день 7) — каноническая секция от ментора, exit 0
 
 ### План по дням
 
@@ -296,13 +306,13 @@ docs/architecture.md   # обновить (день 7)
 
 ### Done when
 
-- [ ] PostgreSQL запущен через Docker
-- [ ] Prisma настроен и подключён (singleton)
-- [ ] Seed + migrate; CRUD `/api/tasks` пройден **curl-чеклистом**
-- [ ] Данные сохраняются после restart Docker / dev
-- [ ] Handlers тонкие — Prisma только в `server/utils/tasks.ts`
-- [ ] Обновлён `docs/architecture.md`
-- [ ] Понимаешь lifecycle: handler → utils → prisma → PostgreSQL
+- [x] PostgreSQL запущен через Docker
+- [x] Prisma настроен и подключён (singleton)
+- [x] Seed + migrate; CRUD `/api/tasks` пройден **curl-чеклистом**
+- [x] Данные сохраняются после restart Docker / dev
+- [x] Handlers тонкие — Prisma только в `server/utils/tasks.ts`
+- [x] Обновлён `docs/architecture.md`
+- [x] Понимаешь lifecycle: handler → utils → prisma → PostgreSQL
 
 ### Промпты Cursor
 
@@ -321,24 +331,111 @@ docs/architecture.md   # обновить (день 7)
 
 ### Цель
 
-Vertical slice на UI: страница задач поверх CRUD API недели 2.
+Создать полноценную интерактивную страницу задач, которая работает с нашим CRUD API из Недели 2. Замкнуть полный fullstack цикл: от базы данных → API → UI с состоянием, загрузкой и ошибками.
+
+**Темп:** ~1–2 ч в день, **~7–10 ч** за неделю.
+
+> **Принцип недели:** composable `useTasks()` как единый источник правды для UI; optimistic updates только для toggle; состояния loading/empty/error — обязательно; SSR без лишних запросов.
+
+### План по дням
+
+| День | Тема                       | Время   | Checkpoint (конец дня)                                                |
+| ---- | -------------------------- | ------- | --------------------------------------------------------------------- |
+| 1    | Composables: useTasks()    | 1.5–2 ч | `fetch/create/update/delete/toggleComplete` + кэширование             |
+| 2    | Страница Tasks             | 1.5 ч   | Список (карточки/таблица) + форма создания; кнопки действий           |
+| 3    | Состояния интерфейса       | 1–1.5 ч | Loading skeleton, Empty, Error + retry; toast-уведомления             |
+| 4    | Optimistic updates + UX    | 1.5 ч   | Toggle сразу в UI, rollback при ошибке, refresh после мутаций         |
+| 5    | Полировка + SSR + фильтры  | 1–1.5 ч | SSR-гидратация; docker restart + persist; базовая сортировка/фильтр   |
+| 6-7  | Рефакторинг + Документация | 1–2 ч   | Чистый код, `docs/architecture.md` обновлён, комментарии, полный тест |
 
 ### Теория
 
-- `useApiFetch` + composable для списка
-- loading / error / empty states
+- `useApiFetch` + composables (`useTasks()`)
+- Управление состоянием на клиенте (`ref`, `computed`)
+- Loading / Error / Empty states
+- SSR + клиентская гидратация (без лишних перезагрузок)
+- Оптимистичные обновления (optimistic updates) — базово
+- Лучшие практики работы с данными в Nuxt 4
 
-### Практика
+**Дополнительные рекомендации (адаптировано):**
 
-- [ ] `app/composables/useTasks.ts`
-- [ ] Страница `app/pages/tasks.vue` — список, создание, toggle completed
-- [ ] Типы из `shared/types/task.ts`
-- [ ] SSR + client hydration без регрессий
+- Для UI: семантика + CSS Modules (`$style`); Nuxt UI (`<UCard>`, `<UButton>`, `useToast()`) — по плану в неделю 10. На этой неделе — без добавления модуля.
+- Код максимально чистый и переиспользуемый.
+- Уведомления: простой toast-composable или заготовка под `useToast`.
 
-### Done when
+### Практика (порядок шагов)
 
-- CRUD с UI после restart dev + Docker
-- Данные в volume Postgres сохраняются между перезапусками
+**День 1 — Composables**
+
+- [ ] Создать `app/composables/useTasks.ts`
+- [ ] Реализовать: `fetchTasks()`, `createTask()`, `updateTask()`, `deleteTask()`, `toggleComplete()`
+- [ ] Использовать `useAsyncData` / `useApiFetch` + кэширование (ключ `'tasks'`)
+- [ ] Строгие типы из `shared/types/tasks.ts` (Task, Create/Update DTO)
+- [ ] Экспорт состояния и действий: `{ tasks, pending, error, refresh, create, update, remove, toggle }`
+
+**День 2 — Страница Tasks**
+
+- [ ] Создать `app/pages/tasks.vue`
+- [ ] Список задач (карточки или таблица на `$style`)
+- [ ] Форма создания новой задачи (title обязательно, description опционально)
+- [ ] Кнопки: Toggle completed, Edit, Delete на каждой задаче
+- [ ] Подключить `useTasks()`: данные + обработчики
+
+**День 3 — Состояния интерфейса**
+
+- [ ] Loading skeleton (во время `pending`)
+- [ ] Empty state (задач нет)
+- [ ] Error state + кнопка «Повторить» (вызов `refresh()`)
+- [ ] Toast-уведомления об успехе/ошибке (простая реализация)
+
+**День 4 — Оптимистичные обновления + UX**
+
+- [ ] Optimistic toggle completed: меняем UI сразу, подтверждаем на сервере
+- [ ] Обработка ошибок с откатом состояния (rollback)
+- [ ] `refresh()` после мутаций (create/update/delete)
+- [ ] Защита от двойных действий (disabled во время pending)
+
+**День 5 — Полировка + SSR проверка**
+
+- [ ] Убедиться в корректной работе при SSR (просмотр HTML до гидратации)
+- [ ] Проверка после `docker compose restart postgres` + рестарт dev-сервера
+- [ ] Базовая сортировка / фильтр (все / активные / завершённые; по дате)
+- [ ] `definePageMeta` (при необходимости layout)
+
+**День 6-7 — Рефакторинг + Документация**
+
+- [ ] Вынести повторяющийся код (при необходимости)
+- [ ] Обновить `docs/architecture.md` (секция fullstack tasks, поток данных)
+- [ ] Добавить комментарии в код
+- [ ] Итоговый тест всего флоу (CRUD + optimistic + фильтры + persist)
+
+### Структура (неделя 3)
+
+```
+app/composables/useTasks.ts
+app/pages/tasks.vue
+app/components/ (опционально: TaskCard.vue / TaskForm.vue — минимально)
+docs/architecture.md   # обновить (дни 6-7)
+```
+
+### Done when (критерии завершения недели)
+
+- [ ] Есть полноценная страница `/tasks` с CRUD
+- [ ] Работают loading, empty и error состояния
+- [ ] Используется composable `useTasks()`
+- [ ] Optimistic updates на toggle completed (с rollback при ошибке)
+- [ ] Данные сохраняются после перезапуска Docker + Nuxt
+- [ ] Страница красиво выглядит и удобно используется (семантика, стили, a11y)
+- [ ] `docs/architecture.md` обновлён
+- [ ] Пройдены `pnpm lint:all`, `pnpm build`, typecheck
+
+### Промпты Cursor
+
+- «Создай composable useTasks.ts: методы CRUD + toggle, на базе useApiFetch и useAsyncData с кэшем»
+- «В tasks.vue реализуй optimistic toggle completed с rollback на ошибку»
+- «Добавь skeleton, empty и error states + retry в страницу задач»
+- «Сделай базовый фильтр и сортировку задач (active / completed)»
+- «Обнови docs/architecture.md — добавь диаграмму/описание потока для /tasks и useTasks»
 
 ---
 

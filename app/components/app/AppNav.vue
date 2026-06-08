@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const navItems = [
   { to: '/', label: 'Главная' },
+  { to: '/tasks', label: 'Задачи' },
   { to: '/roadmap', label: 'Roadmap' },
 ] as const
 </script>

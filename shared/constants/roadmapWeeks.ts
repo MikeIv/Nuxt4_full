@@ -294,18 +294,94 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 3,
     title: 'Fullstack UI: Tasks',
-    theme: 'Страница /tasks, composable',
-    goal: 'Vertical slice на UI: страница задач поверх CRUD API недели 2.',
-    theory: theoryItems('useApiFetch + composable useTasks()', 'loading / error / empty states'),
-    practice: practice(3, [
-      'app/composables/useTasks.ts',
-      'app/pages/tasks.vue — список, создание, toggle completed',
-      'Типы из shared/types/task.ts',
-      'SSR + client без регрессий',
+    theme: 'Страница /tasks + useTasks + optimistic',
+    goal: 'Полноценная интерактивная страница задач поверх CRUD API (Неделя 2). Замкнуть цикл БД → API → UI: composables, состояния, optimistic updates, SSR, persistence. ~7–10 ч.',
+    theory: theorySteps([
+      {
+        topic: 'useApiFetch + composables (useTasks())',
+        description:
+          'Единый composable как источник правды. useAsyncData / useApiFetch + кэширование. Методы: fetch, create, update, delete, toggleComplete.',
+      },
+      {
+        topic: 'Управление состоянием на клиенте',
+        description:
+          'ref / computed для списка, формы, фильтров. Локальное состояние + синхронизация с сервером.',
+      },
+      {
+        topic: 'Loading / Error / Empty states',
+        description: 'Skeleton во время загрузки, пустое состояние, ошибка + кнопка «Повторить».',
+      },
+      {
+        topic: 'SSR + клиентская гидратация',
+        description: 'Данные на сервере, без лишних перезагрузок на клиенте. Проверка hydration.',
+      },
+      {
+        topic: 'Оптимистичные обновления (базово)',
+        description:
+          'Toggle completed: меняем UI сразу, подтверждаем на сервере. Rollback при ошибке.',
+      },
+      {
+        topic: 'Best practices Nuxt 4',
+        description:
+          'refresh() после мутаций, защита от двойных кликов, чистый переиспользуемый код.',
+      },
+    ]),
+    practice: practiceSteps(3, [
+      {
+        label: 'День 1: app/composables/useTasks.ts',
+        what: 'Composable-обёртка над API задач с кэшированием.',
+        where: 'app/composables/useTasks.ts.',
+        how: 'useAsyncData + useApiFetch для fetchTasks; методы create/update/delete/toggleComplete. Типы из shared/types/tasks.ts.',
+        verify:
+          'Composable возвращает tasks + pending/error + actions. Используется без дублирования fetch в компонентах.',
+      },
+      {
+        label: 'День 2: Страница /tasks — список и создание',
+        what: 'Базовый CRUD-интерфейс: список + форма добавления.',
+        where: 'app/pages/tasks.vue (+ опц. мелкие компоненты в app/components/).',
+        how: 'Карточки или таблица на $style. Форма (title + description). Кнопки Toggle / Edit / Delete. Подключить useTasks().',
+        verify: 'Можно создать задачу через UI; список обновляется; данные приходят из БД.',
+      },
+      {
+        label: 'День 3: Loading / Empty / Error + toast',
+        what: 'Обязательные состояния интерфейса и обратная связь.',
+        where: 'app/pages/tasks.vue + простой toast (composable или inline).',
+        how: 'Skeleton при pending; Empty когда нет задач; Error + «Повторить»; уведомления об успехе/ошибке.',
+        verify:
+          'При ошибке сети — показывается error state с кнопкой. При пустом списке — empty. Toast появляется.',
+      },
+      {
+        label: 'День 4: Optimistic toggle + rollback',
+        what: 'UX без задержек: мгновенное изменение + безопасный откат.',
+        where: 'useTasks.ts + tasks.vue (локальный список + mutate).',
+        how: 'При toggle: сразу обновить completed в UI, вызвать API; при ошибке — откатить и показать toast. refresh после мутаций.',
+        verify:
+          'Toggle работает мгновенно. При сетевой ошибке состояние возвращается; данные консистентны.',
+      },
+      {
+        label: 'День 5: SSR, persistence, фильтры',
+        what: 'Проверка fullstack после перезапусков + удобство.',
+        where: 'app/pages/tasks.vue + docker compose.',
+        how: 'Проверить HTML при SSR (данные видны до гидратации). docker compose restart postgres + nuxt dev → данные на месте. Добавить фильтр (все/активные/завершённые) и сортировку.',
+        verify: 'После рестарта БД и сервера список задач прежний. Фильтр работает, UI отзывается.',
+      },
+      {
+        label: 'День 6-7: Рефакторинг + docs',
+        what: 'Чистота кода и актуализация документации.',
+        where: 'useTasks.ts, tasks.vue, docs/architecture.md.',
+        how: 'Вынести дубли (если есть); добавить комментарии; обновить architecture.md (поток /tasks, useTasks → api → utils → prisma); полный ручной тест флоу.',
+        verify:
+          'lint + build зелёные. architecture.md содержит секцию по UI tasks. Полный цикл работает.',
+      },
     ]),
     doneWhen: doneWhen(3, [
-      'CRUD с UI после restart dev + Docker',
-      'Данные в volume Postgres между перезапусками',
+      'Есть полноценная страница /tasks с CRUD',
+      'Работают loading, empty и error состояния',
+      'Используется composable useTasks()',
+      'Optimistic updates на toggle completed (с rollback)',
+      'Данные сохраняются после перезапуска Docker + Nuxt',
+      'Страница красиво выглядит и удобно используется',
+      'docs/architecture.md обновлён',
     ]),
   },
   {
