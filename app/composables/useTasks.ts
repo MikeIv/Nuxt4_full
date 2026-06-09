@@ -1,3 +1,9 @@
+/**
+ * Единый источник правды для UI задач (Неделя 3).
+ * — Список: useApiFetch (SSR, key `tasks`, transform → Task[]).
+ * — Мутации: useApi (императивно); create/delete/toggle — optimistic + rollback.
+ * — update/create/delete: refresh() после успешного ответа сервера.
+ */
 import type { Task, CreateTaskInput, UpdateTaskInput } from '#shared/types/task'
 
 type TaskEnvelope = { data: Task }

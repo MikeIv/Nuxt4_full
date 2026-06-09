@@ -10,22 +10,6 @@ useHead({
   title: 'Задачи — Nuxt4_full',
 })
 
-type TaskFilter = 'all' | 'active' | 'completed'
-type TaskSort = 'newest' | 'oldest'
-
-const FILTER_OPTIONS: { value: TaskFilter; label: string }[] = [
-  { value: 'all', label: 'Все' },
-  { value: 'active', label: 'Активные' },
-  { value: 'completed', label: 'Завершённые' },
-]
-
-const SORT_OPTIONS: { value: TaskSort; label: string }[] = [
-  { value: 'newest', label: 'Сначала новые' },
-  { value: 'oldest', label: 'Сначала старые' },
-]
-
-const toTimestamp = (value: string | Date) => new Date(value).getTime()
-
 const {
   tasks,
   pending,
@@ -40,6 +24,17 @@ const {
   isDeleting,
 } = useTasks()
 
+const {
+  taskFilter,
+  taskSort,
+  hasAnyTasks,
+  filteredTasks,
+  isFilterEmpty,
+  resetFilter,
+  filterOptions,
+  sortOptions,
+} = useTaskFilters(tasks)
+
 const toast = useToast()
 
 const newTitle = ref('')
@@ -51,8 +46,6 @@ const editTitle = ref('')
 const editDesc = ref('')
 
 const busyTaskId = ref<string | null>(null)
-const taskFilter = ref<TaskFilter>('all')
-const taskSort = ref<TaskSort>('newest')
 
 const isTaskBusy = (id: string) =>
   isToggling(id) || isDeleting(id) || busyTaskId.value === id
@@ -60,30 +53,6 @@ const isTaskBusy = (id: string) =>
 const isAnyTaskBusy = computed(
   () => busyTaskId.value !== null || isCreating.value,
 )
-
-const hasAnyTasks = computed(() => tasks.value.length > 0)
-
-const filteredTasks = computed(() => {
-  const filtered = tasks.value.filter((task) => {
-    if (taskFilter.value === 'active') return !task.completed
-    if (taskFilter.value === 'completed') return task.completed
-    return true
-  })
-
-  const sortDirection = taskSort.value === 'newest' ? 1 : -1
-
-  return [...filtered].sort(
-    (a, b) => (toTimestamp(b.createdAt) - toTimestamp(a.createdAt)) * sortDirection,
-  )
-})
-
-const isFilterEmpty = computed(
-  () => hasAnyTasks.value && filteredTasks.value.length === 0,
-)
-
-const resetFilter = () => {
-  taskFilter.value = 'all'
-}
 
 const notifyError = (cause: unknown, fallback: string) => {
   toast.error(formatApiError(cause, fallback))
@@ -289,7 +258,7 @@ const handleToggle = async (id: string) => {
         >
           <div :class="$style.filterGroup" role="group" aria-label="Фильтр по статусу">
             <button
-              v-for="option in FILTER_OPTIONS"
+              v-for="option in filterOptions"
               :key="option.value"
               type="button"
               :class="[
@@ -306,18 +275,17 @@ const handleToggle = async (id: string) => {
           <label :class="$style.sortControl">
             <span :class="$style.sortLabel">Сортировка</span>
             <select v-model="taskSort" :class="$style.sortSelect">
-              <option v-for="option in SORT_OPTIONS" :key="option.value" :value="option.value">
+              <option
+                v-for="option in sortOptions"
+                :key="option.value"
+                :value="option.value"
+              >
                 {{ option.label }}
               </option>
             </select>
           </label>
         </section>
 
-        <!--
-          TODO (Дни 6-7 / рефакторинг):
-          Вынести карточку задачи + инлайн-редактирование в отдельный компонент TaskItem.vue.
-          Сейчас инлайн-редактирование реализовано прямо в списке для скорости Дня 2.
-        -->
         <ul v-if="filteredTasks.length" :class="$style.list">
           <li
             v-for="task in filteredTasks"

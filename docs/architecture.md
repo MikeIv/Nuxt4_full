@@ -4,6 +4,8 @@
 
 **Неделя 1 (факт):** health GET/POST, middleware, thin handlers, `useApiFetch` на главной, `runtimeConfig` + типизация.
 
+**Неделя 3 (факт):** страница `/tasks` — `useTasks`, optimistic updates, фильтры, toast, SSR через `useApiFetch`.
+
 ---
 
 ## Обзор потока данных
@@ -77,6 +79,7 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 | Файл                                  | Назначение                                               |
 | ------------------------------------- | -------------------------------------------------------- |
 | `shared/types/health.ts`              | `HealthResponse`, `HealthPostBody`, `HealthPostResponse` |
+| `shared/types/task.ts`                | `Task`, `CreateTaskInput`, `UpdateTaskInput`             |
 | `shared/types/api.ts`                 | Общие HTTP-типы (заготовка)                              |
 | `shared/utils/normalizeApiBaseUrl.ts` | `apiBase` для `useApi` и `serverApi`                     |
 | `shared/constants/roadmapWeeks.ts`    | Данные страницы `/roadmap`                               |
@@ -133,11 +136,15 @@ export default defineEventHandler(async (): Promise<HealthResponse> => {
 
 ## Frontend (`app/`)
 
-| Путь                    | Назначение                                               |
-| ----------------------- | -------------------------------------------------------- |
-| `pages/index.vue`       | Health Check через `useApiFetch<HealthResponse>`         |
-| `pages/roadmap.vue`     | Интерактивный roadmap                                    |
-| `composables/useApi.ts` | `useApi`, `useApiFetch` + `runtimeConfig.public.apiBase` |
+| Путь                            | Назначение                                               |
+| ------------------------------- | -------------------------------------------------------- |
+| `pages/index.vue`               | Health Check через `useApiFetch<HealthResponse>`         |
+| `pages/tasks.vue`               | Task Board: CRUD UI, фильтры, состояния loading/error    |
+| `pages/roadmap.vue`             | Интерактивный roadmap                                    |
+| `composables/useApi.ts`         | `useApi`, `useApiFetch` + `runtimeConfig.public.apiBase` |
+| `composables/useTasks.ts`       | Список задач + мутации (optimistic, rollback)            |
+| `composables/useTaskFilters.ts` | Клиентский фильтр/сортировка списка задач                |
+| `composables/useToast.ts`       | Глобальные toast-уведомления                             |
 
 HTTP с UI — только `useApi` / `useApiFetch<T>`, не сырой `fetch`.
 
@@ -238,6 +245,57 @@ server/api/tasks/[id].delete.ts
 ```
 
 Порядок разработки: **types → utils → GET/POST → PATCH/DELETE → curl verify** (см. [mentor-week2-sync.md](mentor-week2-sync.md)).
+
+---
+
+# Архитектура fullstack UI (Неделя 3)
+
+## Поток `/tasks`
+
+```
+app/pages/tasks.vue
+    │  useTasks()              — единый источник правды (список + мутации)
+    │  useTaskFilters(tasks)   — фильтр/сортировка на клиенте
+    │  useToast()              — успех/ошибка мутаций
+    ▼
+app/layouts/default.vue  →  AppNav + UiToastHost
+    ▼
+useApiFetch<Task[]>('/api/tasks', { key: 'tasks' })   — SSR, payload, гидратация
+useApi()  — POST / PATCH / DELETE (императивные мутации)
+    ▼
+server/middleware/log.ts
+    ▼
+server/api/tasks.get.ts | tasks.post.ts | tasks/[id].*
+    ▼
+server/utils/tasks.ts
+    ▼
+server/utils/prisma.ts  →  PostgreSQL (Docker volume)
+```
+
+Контракты: `shared/types/task.ts`. Ошибки API на UI: `shared/utils/formatApiError.ts`.
+
+## `useTasks` — соглашения
+
+| Операция                      | Подход                                                     |
+| ----------------------------- | ---------------------------------------------------------- |
+| Загрузка списка               | `useApiFetch` + `transform` → `Task[]`, `key: 'tasks'`     |
+| create / update / delete      | `useApi()` → `refresh()` после успеха                      |
+| toggle / create / delete (UX) | optimistic update кэша `useApiFetch` + rollback при ошибке |
+| Защита от дублей              | `isCreating`, `isToggling(id)`, `isDeleting(id)`           |
+
+Состояния UI (`pending`, skeleton, empty, error + retry) — в `tasks.vue`, данные — только из `useTasks()`.
+
+## Файлы недели 3
+
+```
+app/composables/useTasks.ts
+app/composables/useTaskFilters.ts
+app/composables/useToast.ts
+app/components/ui/UiToastHost.vue
+app/pages/tasks.vue
+shared/types/task.ts
+shared/utils/formatApiError.ts
+```
 
 ---
 

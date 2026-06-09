@@ -328,7 +328,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     ]),
     practice: practiceSteps(3, [
       {
-        label: 'День 1: app/composables/useTasks.ts',
+        label: '✅ День 1: app/composables/useTasks.ts',
         what: 'Composable-обёртка над API задач с кэшированием.',
         where: 'app/composables/useTasks.ts.',
         how: 'useApiFetch для списка; useApi для мутаций. Типы из shared/types/task.ts.',
@@ -336,14 +336,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Composable возвращает tasks + pending/error + actions. Используется без дублирования fetch в компонентах.',
       },
       {
-        label: 'День 2: Страница /tasks — список и создание',
+        label: '✅ День 2: Страница /tasks — список и создание',
         what: 'Базовый CRUD-интерфейс: список + форма добавления.',
         where: 'app/pages/tasks.vue (+ опц. мелкие компоненты в app/components/).',
         how: 'Карточки или таблица на $style. Форма (title + description). Кнопки Toggle / Edit / Delete. Подключить useTasks().',
         verify: 'Можно создать задачу через UI; список обновляется; данные приходят из БД.',
       },
       {
-        label: 'День 3: Loading / Empty / Error + toast',
+        label: '✅ День 3: Loading / Empty / Error + toast',
         what: 'Обязательные состояния интерфейса и обратная связь.',
         where: 'app/pages/tasks.vue + простой toast (composable или inline).',
         how: 'Skeleton при pending; Empty когда нет задач; Error + «Повторить»; уведомления об успехе/ошибке.',
@@ -351,7 +351,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'При ошибке сети — показывается error state с кнопкой. При пустом списке — empty. Toast появляется.',
       },
       {
-        label: 'День 4: Optimistic toggle + rollback',
+        label: '✅ День 4: Optimistic toggle + rollback',
         what: 'UX без задержек: мгновенное изменение + безопасный откат.',
         where: 'useTasks.ts + tasks.vue (локальный список + mutate).',
         how: 'При toggle: сразу обновить completed в UI, вызвать API; при ошибке — откатить и показать toast. refresh после мутаций.',
@@ -359,14 +359,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Toggle работает мгновенно. При сетевой ошибке состояние возвращается; данные консистентны.',
       },
       {
-        label: 'День 5: SSR, persistence, фильтры',
+        label: '✅ День 5: SSR, persistence, фильтры',
         what: 'Проверка fullstack после перезапусков + удобство.',
         where: 'app/pages/tasks.vue + docker compose.',
         how: 'Проверить HTML при SSR (данные видны до гидратации). docker compose restart postgres + nuxt dev → данные на месте. Добавить фильтр (все/активные/завершённые) и сортировку.',
         verify: 'После рестарта БД и сервера список задач прежний. Фильтр работает, UI отзывается.',
       },
       {
-        label: 'День 6-7: Рефакторинг + docs',
+        label: '✅ День 6-7: Рефакторинг + docs',
         what: 'Чистота кода и актуализация документации.',
         where: 'useTasks.ts, tasks.vue, docs/architecture.md.',
         how: 'Вынести дубли (если есть); добавить комментарии; обновить architecture.md (поток /tasks, useTasks → api → utils → prisma); полный ручной тест флоу.',
@@ -375,13 +375,13 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       },
     ]),
     doneWhen: doneWhen(3, [
-      'Есть полноценная страница /tasks с CRUD',
-      'Работают loading, empty и error состояния',
-      'Используется composable useTasks()',
-      'Optimistic updates на toggle completed (с rollback)',
-      'Данные сохраняются после перезапуска Docker + Nuxt',
-      'Страница красиво выглядит и удобно используется',
-      'docs/architecture.md обновлён',
+      '✅ Есть полноценная страница /tasks с CRUD',
+      '✅ Работают loading, empty и error состояния',
+      '✅ Используется composable useTasks()',
+      '✅ Optimistic updates на toggle completed (с rollback)',
+      '✅ Данные сохраняются после перезапуска Docker + Nuxt',
+      '✅ Страница красиво выглядит и удобно используется',
+      '✅ docs/architecture.md обновлён',
     ]),
   },
   {
@@ -541,7 +541,7 @@ export function isRoadmapLabelCompletedByDefault(label: string): boolean {
  * This determines the default active tab when opening /roadmap.
  * Bumped to 3 after Week 2 reached 100% (all practice + doneWhen items marked completed via ✅ defaults).
  */
-export const CURRENT_ROADMAP_WEEK_ID = 3
+export const CURRENT_ROADMAP_WEEK_ID = 4
 
 export function getRoadmapTaskLabelMap(): Map<string, string> {
   const map = new Map<string, string>()
