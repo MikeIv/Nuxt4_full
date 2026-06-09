@@ -17,6 +17,16 @@ export const useTasks = () => {
     { default: () => [] },
   )
 
+  const togglingId = ref<string | null>(null)
+
+  const patchTaskInCache = (id: string, patch: Partial<Task>) => {
+    const index = tasks.value.findIndex((task) => task.id === id)
+    const current = tasks.value[index]
+    if (index === -1 || !current) return
+
+    tasks.value = tasks.value.with(index, { ...current, ...patch })
+  }
+
   const createTask = async (input: CreateTaskInput) => {
     const response = await api<{ data: Task }>('/api/tasks', {
       method: 'POST',
@@ -43,11 +53,35 @@ export const useTasks = () => {
   }
 
   const toggleTask = async (id: string) => {
-    const task = tasks.value.find((t) => t.id === id)
+    if (togglingId.value !== null) return
+
+    const task = tasks.value.find((item) => item.id === id)
     if (!task) return
 
-    await updateTask(id, { completed: !task.completed })
+    const previousCompleted = task.completed
+    const nextCompleted = !previousCompleted
+
+    togglingId.value = id
+    patchTaskInCache(id, { completed: nextCompleted })
+
+    try {
+      const response = await api<{ data: Task }>(`/api/tasks/${id}`, {
+        method: 'PATCH',
+        body: { completed: nextCompleted },
+      })
+
+      if (response.data) {
+        patchTaskInCache(id, response.data)
+      }
+    } catch (e) {
+      patchTaskInCache(id, { completed: previousCompleted })
+      throw e
+    } finally {
+      togglingId.value = null
+    }
   }
+
+  const isToggling = (id: string) => togglingId.value === id
 
   return {
     tasks: readonly(tasks),
@@ -58,5 +92,6 @@ export const useTasks = () => {
     updateTask,
     deleteTask,
     toggleTask,
+    isToggling,
   }
 }
