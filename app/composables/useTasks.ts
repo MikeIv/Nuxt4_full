@@ -32,6 +32,7 @@ export const useTasks = () => {
     error,
     refresh,
   } = useApiFetch<Task[]>('/api/tasks', {
+    key: 'tasks',
     transform: unwrapTasks,
   })
 

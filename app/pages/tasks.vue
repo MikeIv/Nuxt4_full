@@ -2,9 +2,29 @@
 import type { Task } from '#shared/types/task'
 import { formatApiError } from '#shared/utils/formatApiError'
 
+definePageMeta({
+  layout: 'default',
+})
+
 useHead({
   title: 'Задачи — Nuxt4_full',
 })
+
+type TaskFilter = 'all' | 'active' | 'completed'
+type TaskSort = 'newest' | 'oldest'
+
+const FILTER_OPTIONS: { value: TaskFilter; label: string }[] = [
+  { value: 'all', label: 'Все' },
+  { value: 'active', label: 'Активные' },
+  { value: 'completed', label: 'Завершённые' },
+]
+
+const SORT_OPTIONS: { value: TaskSort; label: string }[] = [
+  { value: 'newest', label: 'Сначала новые' },
+  { value: 'oldest', label: 'Сначала старые' },
+]
+
+const toTimestamp = (value: string | Date) => new Date(value).getTime()
 
 const {
   tasks,
@@ -15,6 +35,9 @@ const {
   updateTask,
   deleteTask,
   toggleTask,
+  isCreating,
+  isToggling,
+  isDeleting,
 } = useTasks()
 
 const toast = useToast()
@@ -27,11 +50,40 @@ const editingId = ref<string | null>(null)
 const editTitle = ref('')
 const editDesc = ref('')
 
-const isSubmitting = ref(false)
 const busyTaskId = ref<string | null>(null)
+const taskFilter = ref<TaskFilter>('all')
+const taskSort = ref<TaskSort>('newest')
 
-const isTaskBusy = (id: string) => busyTaskId.value === id
-const isAnyTaskBusy = computed(() => busyTaskId.value !== null)
+const isTaskBusy = (id: string) =>
+  isToggling(id) || isDeleting(id) || busyTaskId.value === id
+
+const isAnyTaskBusy = computed(
+  () => busyTaskId.value !== null || isCreating.value,
+)
+
+const hasAnyTasks = computed(() => tasks.value.length > 0)
+
+const filteredTasks = computed(() => {
+  const filtered = tasks.value.filter((task) => {
+    if (taskFilter.value === 'active') return !task.completed
+    if (taskFilter.value === 'completed') return task.completed
+    return true
+  })
+
+  const sortDirection = taskSort.value === 'newest' ? 1 : -1
+
+  return [...filtered].sort(
+    (a, b) => (toTimestamp(b.createdAt) - toTimestamp(a.createdAt)) * sortDirection,
+  )
+})
+
+const isFilterEmpty = computed(
+  () => hasAnyTasks.value && filteredTasks.value.length === 0,
+)
+
+const resetFilter = () => {
+  taskFilter.value = 'all'
+}
 
 const notifyError = (cause: unknown, fallback: string) => {
   toast.error(formatApiError(cause, fallback))
@@ -50,9 +102,8 @@ const focusCreateForm = () => {
 
 const handleCreate = async () => {
   const title = newTitle.value.trim()
-  if (!title || isSubmitting.value) return
+  if (!title || isCreating.value) return
 
-  isSubmitting.value = true
   try {
     await createTask({
       title,
@@ -65,13 +116,11 @@ const handleCreate = async () => {
     focusCreateForm()
   } catch (e) {
     notifyError(e, 'Не удалось создать задачу. Попробуйте ещё раз.')
-  } finally {
-    isSubmitting.value = false
   }
 }
 
 const startEdit = (task: Task) => {
-  if (busyTaskId.value !== null || isSubmitting.value) return
+  if (busyTaskId.value !== null || isCreating.value) return
 
   editingId.value = task.id
   editTitle.value = task.title
@@ -110,31 +159,27 @@ const cancelEdit = () => {
 }
 
 const handleDelete = async (id: string) => {
-  if (busyTaskId.value !== null || isSubmitting.value) return
+  if (isTaskBusy(id) || isCreating.value) return
   if (!confirm('Удалить задачу?')) return
 
   const taskTitle = tasks.value.find((task) => task.id === id)?.title ?? 'Задача'
 
-  busyTaskId.value = id
   try {
     await deleteTask(id)
     toast.success(`Задача «${taskTitle}» удалена`)
   } catch (e) {
     notifyError(e, 'Не удалось удалить задачу. Попробуйте ещё раз.')
-  } finally {
-    busyTaskId.value = null
   }
 }
 
 const handleToggle = async (id: string) => {
-  if (busyTaskId.value !== null || isSubmitting.value) return
+  if (isTaskBusy(id) || isCreating.value) return
 
   const task = tasks.value.find((item) => item.id === id)
   if (!task) return
 
   const wasCompleted = task.completed
 
-  busyTaskId.value = id
   try {
     await toggleTask(id)
     toast.success(
@@ -142,8 +187,6 @@ const handleToggle = async (id: string) => {
     )
   } catch (e) {
     notifyError(e, 'Не удалось изменить статус задачи. Попробуйте ещё раз.')
-  } finally {
-    busyTaskId.value = null
   }
 }
 </script>
@@ -170,16 +213,16 @@ const handleToggle = async (id: string) => {
               placeholder="Название задачи *"
               required
               autocomplete="off"
-              :disabled="isSubmitting"
+              :disabled="isCreating"
             />
 
             <button
               type="submit"
               :class="[$style.btn, $style.btnPrimary]"
-              :disabled="!newTitle.trim() || isSubmitting"
-              :aria-busy="isSubmitting"
+              :disabled="!newTitle.trim() || isCreating"
+              :aria-busy="isCreating"
             >
-              {{ isSubmitting ? 'Добавление…' : 'Добавить' }}
+              {{ isCreating ? 'Добавление…' : 'Добавить' }}
             </button>
           </div>
 
@@ -188,7 +231,7 @@ const handleToggle = async (id: string) => {
             :class="$style.textarea"
             placeholder="Описание (необязательно)"
             rows="2"
-            :disabled="isSubmitting"
+            :disabled="isCreating"
           />
         </form>
       </section>
@@ -239,14 +282,45 @@ const handleToggle = async (id: string) => {
       </section>
 
       <div v-else>
+        <section
+          v-if="hasAnyTasks"
+          :class="$style.toolbar"
+          aria-label="Фильтр и сортировка задач"
+        >
+          <div :class="$style.filterGroup" role="group" aria-label="Фильтр по статусу">
+            <button
+              v-for="option in FILTER_OPTIONS"
+              :key="option.value"
+              type="button"
+              :class="[
+                $style.filterBtn,
+                taskFilter === option.value && $style.filterBtnActive,
+              ]"
+              :aria-pressed="taskFilter === option.value"
+              @click="taskFilter = option.value"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+
+          <label :class="$style.sortControl">
+            <span :class="$style.sortLabel">Сортировка</span>
+            <select v-model="taskSort" :class="$style.sortSelect">
+              <option v-for="option in SORT_OPTIONS" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+        </section>
+
         <!--
           TODO (Дни 6-7 / рефакторинг):
           Вынести карточку задачи + инлайн-редактирование в отдельный компонент TaskItem.vue.
           Сейчас инлайн-редактирование реализовано прямо в списке для скорости Дня 2.
         -->
-        <ul v-if="tasks.length" :class="$style.list">
+        <ul v-if="filteredTasks.length" :class="$style.list">
           <li
-            v-for="task in tasks"
+            v-for="task in filteredTasks"
             :key="task.id"
             :class="$style.task"
             :aria-busy="isTaskBusy(task.id)"
@@ -256,7 +330,7 @@ const handleToggle = async (id: string) => {
               type="checkbox"
               :class="$style.checkbox"
               :checked="task.completed"
-              :disabled="isTaskBusy(task.id) || isSubmitting"
+              :disabled="isTaskBusy(task.id) || isCreating"
               :aria-label="task.completed ? 'Отметить как активную' : 'Отметить как выполненную'"
               @change="handleToggle(task.id)"
             />
@@ -288,7 +362,7 @@ const handleToggle = async (id: string) => {
                   :class="[
                     $style.taskTitle,
                     task.completed && $style.taskTitleDone,
-                    (isTaskBusy(task.id) || isSubmitting) && $style.taskTitleDisabled,
+                    (isTaskBusy(task.id) || isCreating) && $style.taskTitleDisabled,
                   ]"
                   title="Нажмите, чтобы редактировать"
                   @click="startEdit(task)"
@@ -326,7 +400,7 @@ const handleToggle = async (id: string) => {
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnGhost, $style.btnSm]"
-                  :disabled="isTaskBusy(task.id) || isSubmitting || isAnyTaskBusy"
+                  :disabled="isTaskBusy(task.id) || isCreating || isAnyTaskBusy"
                   @click="startEdit(task)"
                 >
                   Изменить
@@ -334,7 +408,7 @@ const handleToggle = async (id: string) => {
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnDanger, $style.btnSm]"
-                  :disabled="isTaskBusy(task.id) || isSubmitting"
+                  :disabled="isTaskBusy(task.id) || isCreating"
                   @click="handleDelete(task.id)"
                 >
                   {{ isTaskBusy(task.id) ? 'Удаление…' : 'Удалить' }}
@@ -343,6 +417,17 @@ const handleToggle = async (id: string) => {
             </div>
           </li>
         </ul>
+
+        <div v-else-if="isFilterEmpty" :class="$style.empty">
+          <span :class="$style.stateIcon" aria-hidden="true">🔍</span>
+          <h2 :class="$style.stateTitle">Нет задач по фильтру</h2>
+          <p :class="$style.stateMessage">
+            Попробуйте другой статус или сбросьте фильтр, чтобы увидеть все задачи.
+          </p>
+          <button type="button" :class="[$style.btn, $style.btnPrimary]" @click="resetFilter">
+            Показать все
+          </button>
+        </div>
 
         <div v-else :class="$style.empty">
           <span :class="$style.stateIcon" aria-hidden="true">📋</span>
@@ -470,6 +555,81 @@ const handleToggle = async (id: string) => {
 .textarea {
   resize: vertical;
   min-height: fn.rem(60);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--fs-space-2);
+  margin-bottom: var(--fs-space-3);
+  padding: var(--fs-space-2);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-lg);
+  background: var(--fs-color-surface);
+}
+
+.filterGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--fs-space-1);
+}
+
+.filterBtn {
+  padding: fn.rem(6) fn.rem(12);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-color-bg);
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    border-color: var(--fs-color-border);
+    color: var(--fs-color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fs-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.filterBtnActive {
+  border-color: var(--fs-color-primary);
+  background: rgb(235 153 20 / 0.1);
+  color: var(--fs-color-primary-strong);
+}
+
+.sortControl {
+  display: flex;
+  align-items: center;
+  gap: var(--fs-space-1);
+}
+
+.sortLabel {
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
+}
+
+.sortSelect {
+  padding: fn.rem(6) fn.rem(10);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-color-bg);
+  color: var(--fs-color-text);
+  @include typo.fs-text-body;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--fs-color-primary);
+    outline-offset: 2px;
+  }
 }
 
 .list {
