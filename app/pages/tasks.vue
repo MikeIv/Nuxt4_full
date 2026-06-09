@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Task } from '#shared/types/tasks'
+import type { Task } from '#shared/types/task'
 import { formatApiError } from '#shared/utils/formatApiError'
 
 useHead({

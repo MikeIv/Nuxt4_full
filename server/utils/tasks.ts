@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import type { CreateTaskInput, Task, UpdateTaskInput } from '#shared/types/tasks'
+import type { CreateTaskInput, Task, UpdateTaskInput } from '#shared/types/task'
 
 export async function getAllTasks(): Promise<Task[]> {
   const tasks = await prisma.task.findMany({

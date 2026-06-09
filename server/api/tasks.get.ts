@@ -1,4 +1,4 @@
-import type { Task } from '#shared/types/tasks'
+import type { Task } from '#shared/types/task'
 
 // Thin handler — logic lives in server/utils/tasks.ts (Prisma only there).
 export default defineEventHandler(async (): Promise<{ data: Task[] }> => {

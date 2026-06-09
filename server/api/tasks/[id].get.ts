@@ -1,4 +1,4 @@
-import type { Task } from '#shared/types/tasks'
+import type { Task } from '#shared/types/task'
 
 export default defineEventHandler(async (event): Promise<{ data: Task | null }> => {
   const { id } = getRouterParams(event)

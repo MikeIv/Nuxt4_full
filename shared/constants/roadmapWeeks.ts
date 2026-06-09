@@ -255,7 +255,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       {
         label: '✅ День 4: types + utils + GET/POST',
         what: 'Первые endpoints после слоёв types/utils — не наоборот.',
-        where: 'shared/types/tasks.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
+        where: 'shared/types/task.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
         how: 'getAllTasks/createTask в utils; thin handlers (без Prisma в api).',
         verify: 'Checkpoint: POST добавляет строку в БД (Postman); GET возвращает данные.',
       },
@@ -331,7 +331,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         label: 'День 1: app/composables/useTasks.ts',
         what: 'Composable-обёртка над API задач с кэшированием.',
         where: 'app/composables/useTasks.ts.',
-        how: 'useAsyncData + useApiFetch для fetchTasks; методы create/update/delete/toggleComplete. Типы из shared/types/tasks.ts.',
+        how: 'useApiFetch для списка; useApi для мутаций. Типы из shared/types/task.ts.',
         verify:
           'Composable возвращает tasks + pending/error + actions. Используется без дублирования fetch в компонентах.',
       },

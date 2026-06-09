@@ -1,5 +1,4 @@
-// Naming: plural "tasks" for the module/file (per mentor for Week 2 Day 4).
-// Singular "Task" for the entity type itself.
+// Entity types for Task CRUD — singular module name (как shared/types/health.ts).
 export interface Task {
   id: string
   title: string

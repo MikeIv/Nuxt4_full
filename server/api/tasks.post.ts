@@ -1,4 +1,4 @@
-import type { Task, CreateTaskInput } from '#shared/types/tasks'
+import type { Task, CreateTaskInput } from '#shared/types/task'
 import { readBody } from 'h3'
 
 // Thin handler — validation minimal, business logic in server/utils/tasks.ts.
