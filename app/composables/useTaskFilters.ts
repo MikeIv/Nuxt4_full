@@ -31,10 +31,10 @@ export const useTaskFilters = (tasks: Ref<readonly Task[]>) => {
     })
 
     const sortDirection = taskSort.value === 'newest' ? 1 : -1
+    const byDate = (a: Task, b: Task) =>
+      (toTimestamp(b.createdAt) - toTimestamp(a.createdAt)) * sortDirection
 
-    return [...filtered].sort(
-      (a, b) => (toTimestamp(b.createdAt) - toTimestamp(a.createdAt)) * sortDirection,
-    )
+    return filtered.toSorted(byDate)
   })
 
   const isFilterEmpty = computed(() => hasAnyTasks.value && filteredTasks.value.length === 0)
@@ -50,7 +50,7 @@ export const useTaskFilters = (tasks: Ref<readonly Task[]>) => {
     filteredTasks,
     isFilterEmpty,
     resetFilter,
-    filterOptions: TASK_FILTER_OPTIONS,
-    sortOptions: TASK_SORT_OPTIONS,
+    filterOptions: readonly(TASK_FILTER_OPTIONS),
+    sortOptions: readonly(TASK_SORT_OPTIONS),
   }
 }
