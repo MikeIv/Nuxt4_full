@@ -1,6 +1,8 @@
 import type { Task, CreateTaskInput, UpdateTaskInput } from '#shared/types/tasks'
 
 export const useTasks = () => {
+  const api = useApi()
+
   const {
     data: tasks,
     pending,
@@ -9,34 +11,34 @@ export const useTasks = () => {
   } = useAsyncData<Task[]>(
     'tasks',
     async () => {
-      const { data } = await useApiFetch<{ data: Task[] }>('/api/tasks')
-      return data.value?.data || []
+      const response = await api<{ data: Task[] }>('/api/tasks')
+      return response.data ?? []
     },
     { default: () => [] },
   )
 
   const createTask = async (input: CreateTaskInput) => {
-    const { data } = await useApiFetch<{ data: Task }>('/api/tasks', {
+    const response = await api<{ data: Task }>('/api/tasks', {
       method: 'POST',
       body: input,
     })
 
     await refresh()
-    return data.value?.data
+    return response.data
   }
 
   const updateTask = async (id: string, payload: UpdateTaskInput) => {
-    const { data } = await useApiFetch<{ data: Task }>(`/api/tasks/${id}`, {
+    const response = await api<{ data: Task }>(`/api/tasks/${id}`, {
       method: 'PATCH',
       body: payload,
     })
 
     await refresh()
-    return data.value?.data
+    return response.data
   }
 
   const deleteTask = async (id: string) => {
-    await useApiFetch(`/api/tasks/${id}`, { method: 'DELETE' })
+    await api(`/api/tasks/${id}`, { method: 'DELETE' })
     await refresh()
   }
 

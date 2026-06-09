@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Task } from '#shared/types/tasks'
+import { formatApiError } from '#shared/utils/formatApiError'
 
 useHead({
   title: 'Задачи — Nuxt4_full',
@@ -16,35 +17,62 @@ const {
   toggleTask,
 } = useTasks()
 
+const toast = useToast()
+
 const newTitle = ref('')
 const newDesc = ref('')
+const titleInputRef = ref<HTMLInputElement | null>(null)
 
 const editingId = ref<string | null>(null)
 const editTitle = ref('')
 const editDesc = ref('')
 
-// tasks from useTasks is already a readonly Ref<Task[]> (useAsyncData with default: [])
-// No extra computed wrapper needed.
+const isSubmitting = ref(false)
+const busyTaskId = ref<string | null>(null)
+
+const isTaskBusy = (id: string) => busyTaskId.value === id
+const isAnyTaskBusy = computed(() => busyTaskId.value !== null)
+
+const notifyError = (cause: unknown, fallback: string) => {
+  toast.error(formatApiError(cause, fallback))
+}
+
+const SKELETON_ROWS = 4
+
+const loadErrorMessage = computed(() =>
+  formatApiError(error.value, 'Не удалось загрузить список задач. Проверьте подключение к серверу.'),
+)
+
+const focusCreateForm = () => {
+  titleInputRef.value?.focus()
+  titleInputRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 
 const handleCreate = async () => {
   const title = newTitle.value.trim()
-  if (!title) return
+  if (!title || isSubmitting.value) return
 
+  isSubmitting.value = true
   try {
     await createTask({
       title,
       description: newDesc.value.trim() || undefined,
     })
-    // refresh() уже выполняется внутри createTask в useTasks()
+    toast.success(`Задача «${title}» создана`)
     newTitle.value = ''
     newDesc.value = ''
+    await nextTick()
+    focusCreateForm()
   } catch (e) {
-    // Ошибка будет обработана на уровне UI позже (toast / error state)
-    console.error('Create task failed', e)
+    notifyError(e, 'Не удалось создать задачу. Попробуйте ещё раз.')
+  } finally {
+    isSubmitting.value = false
   }
 }
 
 const startEdit = (task: Task) => {
+  if (busyTaskId.value !== null || isSubmitting.value) return
+
   editingId.value = task.id
   editTitle.value = task.title
   editDesc.value = task.description ?? ''
@@ -52,7 +80,7 @@ const startEdit = (task: Task) => {
 
 const saveEdit = async () => {
   const id = editingId.value
-  if (!id) return
+  if (!id || busyTaskId.value !== null) return
 
   const title = editTitle.value.trim()
   if (!title) {
@@ -60,15 +88,18 @@ const saveEdit = async () => {
     return
   }
 
+  busyTaskId.value = id
   try {
     await updateTask(id, {
       title,
       description: editDesc.value.trim() || undefined,
     })
-    // refresh() уже выполняется внутри updateTask в useTasks()
+    toast.success(`Задача «${title}» обновлена`)
     cancelEdit()
   } catch (e) {
-    console.error('Update task failed', e)
+    notifyError(e, 'Не удалось сохранить изменения. Попробуйте ещё раз.')
+  } finally {
+    busyTaskId.value = null
   }
 }
 
@@ -79,13 +110,40 @@ const cancelEdit = () => {
 }
 
 const handleDelete = async (id: string) => {
-  // Простое подтверждение для учебного проекта
+  if (busyTaskId.value !== null || isSubmitting.value) return
   if (!confirm('Удалить задачу?')) return
 
+  const taskTitle = tasks.value.find((task) => task.id === id)?.title ?? 'Задача'
+
+  busyTaskId.value = id
   try {
     await deleteTask(id)
+    toast.success(`Задача «${taskTitle}» удалена`)
   } catch (e) {
-    console.error('Delete task failed', e)
+    notifyError(e, 'Не удалось удалить задачу. Попробуйте ещё раз.')
+  } finally {
+    busyTaskId.value = null
+  }
+}
+
+const handleToggle = async (id: string) => {
+  if (busyTaskId.value !== null || isSubmitting.value) return
+
+  const task = tasks.value.find((item) => item.id === id)
+  if (!task) return
+
+  const wasCompleted = task.completed
+
+  busyTaskId.value = id
+  try {
+    await toggleTask(id)
+    toast.success(
+      wasCompleted ? 'Задача возвращена в активные' : 'Задача отмечена как выполненная',
+    )
+  } catch (e) {
+    notifyError(e, 'Не удалось изменить статус задачи. Попробуйте ещё раз.')
+  } finally {
+    busyTaskId.value = null
   }
 }
 </script>
@@ -105,20 +163,23 @@ const handleDelete = async (id: string) => {
         <form :class="$style.createForm" @submit.prevent="handleCreate">
           <div :class="$style.formRow">
             <input
+              ref="titleInputRef"
               v-model="newTitle"
               :class="$style.input"
               type="text"
               placeholder="Название задачи *"
               required
               autocomplete="off"
+              :disabled="isSubmitting"
             />
 
             <button
               type="submit"
               :class="[$style.btn, $style.btnPrimary]"
-              :disabled="!newTitle.trim()"
+              :disabled="!newTitle.trim() || isSubmitting"
+              :aria-busy="isSubmitting"
             >
-              Добавить
+              {{ isSubmitting ? 'Добавление…' : 'Добавить' }}
             </button>
           </div>
 
@@ -127,21 +188,55 @@ const handleDelete = async (id: string) => {
             :class="$style.textarea"
             placeholder="Описание (необязательно)"
             rows="2"
+            :disabled="isSubmitting"
           />
         </form>
       </section>
 
       <!-- Состояния и список -->
-      <div v-if="pending" :class="$style.state">
-        Загрузка задач…
-      </div>
+      <section
+        v-if="pending"
+        :class="$style.skeletonList"
+        aria-busy="true"
+        aria-live="polite"
+        aria-label="Загрузка задач"
+      >
+        <p :class="$style.skeletonLabel">Загрузка задач…</p>
+        <div
+          v-for="row in SKELETON_ROWS"
+          :key="row"
+          :class="$style.skeletonTask"
+          aria-hidden="true"
+        >
+          <span :class="[$style.skeletonBlock, $style.skeletonCheckbox]" />
+          <div :class="$style.skeletonBody">
+            <span :class="[$style.skeletonBlock, $style.skeletonTitle]" />
+            <span :class="[$style.skeletonBlock, $style.skeletonDesc]" />
+          </div>
+          <div :class="$style.skeletonActions">
+            <span :class="[$style.skeletonBlock, $style.skeletonBtn]" />
+            <span :class="[$style.skeletonBlock, $style.skeletonBtn]" />
+          </div>
+        </div>
+      </section>
 
-      <div v-else-if="error" :class="$style.errorState">
-        <p>Не удалось загрузить задачи.</p>
-        <button :class="[$style.btn, $style.btnGhost]" @click="() => refresh()">
+      <section
+        v-else-if="error"
+        :class="$style.errorState"
+        role="alert"
+        aria-live="assertive"
+      >
+        <span :class="$style.stateIcon" aria-hidden="true">⚠️</span>
+        <h2 :class="$style.stateTitle">Не удалось загрузить задачи</h2>
+        <p :class="$style.stateMessage">{{ loadErrorMessage }}</p>
+        <button
+          type="button"
+          :class="[$style.btn, $style.btnPrimary]"
+          @click="() => refresh()"
+        >
           Повторить
         </button>
-      </div>
+      </section>
 
       <div v-else>
         <!--
@@ -154,14 +249,16 @@ const handleDelete = async (id: string) => {
             v-for="task in tasks"
             :key="task.id"
             :class="$style.task"
+            :aria-busy="isTaskBusy(task.id)"
           >
             <!-- Чекбокс toggle -->
             <input
               type="checkbox"
               :class="$style.checkbox"
               :checked="task.completed"
+              :disabled="isTaskBusy(task.id) || isSubmitting"
               :aria-label="task.completed ? 'Отметить как активную' : 'Отметить как выполненную'"
-              @change="toggleTask(task.id)"
+              @change="handleToggle(task.id)"
             />
 
             <!-- Контент / режим редактирования -->
@@ -172,6 +269,7 @@ const handleDelete = async (id: string) => {
                   :class="$style.input"
                   type="text"
                   placeholder="Название"
+                  :disabled="isTaskBusy(task.id)"
                   @keyup.enter="saveEdit"
                   @keyup.esc="cancelEdit"
                 />
@@ -180,13 +278,18 @@ const handleDelete = async (id: string) => {
                   :class="$style.textarea"
                   placeholder="Описание"
                   rows="2"
+                  :disabled="isTaskBusy(task.id)"
                   @keyup.esc="cancelEdit"
                 />
               </template>
 
               <template v-else>
                 <p
-                  :class="[$style.taskTitle, task.completed && $style.taskTitleDone]"
+                  :class="[
+                    $style.taskTitle,
+                    task.completed && $style.taskTitleDone,
+                    (isTaskBusy(task.id) || isSubmitting) && $style.taskTitleDisabled,
+                  ]"
                   title="Нажмите, чтобы редактировать"
                   @click="startEdit(task)"
                 >
@@ -204,13 +307,15 @@ const handleDelete = async (id: string) => {
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnPrimary, $style.btnSm]"
+                  :disabled="isTaskBusy(task.id)"
                   @click="saveEdit"
                 >
-                  Сохранить
+                  {{ isTaskBusy(task.id) ? 'Сохранение…' : 'Сохранить' }}
                 </button>
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnGhost, $style.btnSm]"
+                  :disabled="isTaskBusy(task.id)"
                   @click="cancelEdit"
                 >
                   Отмена
@@ -221,6 +326,7 @@ const handleDelete = async (id: string) => {
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnGhost, $style.btnSm]"
+                  :disabled="isTaskBusy(task.id) || isSubmitting || isAnyTaskBusy"
                   @click="startEdit(task)"
                 >
                   Изменить
@@ -228,9 +334,10 @@ const handleDelete = async (id: string) => {
                 <button
                   type="button"
                   :class="[$style.btn, $style.btnDanger, $style.btnSm]"
+                  :disabled="isTaskBusy(task.id) || isSubmitting"
                   @click="handleDelete(task.id)"
                 >
-                  Удалить
+                  {{ isTaskBusy(task.id) ? 'Удаление…' : 'Удалить' }}
                 </button>
               </template>
             </div>
@@ -238,8 +345,18 @@ const handleDelete = async (id: string) => {
         </ul>
 
         <div v-else :class="$style.empty">
-          <p>Пока нет задач</p>
-          <p :class="$style.emptyHint">Создайте первую задачу в форме выше</p>
+          <span :class="$style.stateIcon" aria-hidden="true">📋</span>
+          <h2 :class="$style.stateTitle">Пока нет задач</h2>
+          <p :class="$style.stateMessage">
+            Список пуст — добавьте первую задачу и начните работу с Task Board.
+          </p>
+          <button
+            type="button"
+            :class="[$style.btn, $style.btnPrimary]"
+            @click="focusCreateForm"
+          >
+            Создать задачу
+          </button>
         </div>
       </div>
     </div>
@@ -249,7 +366,28 @@ const handleDelete = async (id: string) => {
 <style module lang="scss">
 @use '~/assets/styles/tools/functions' as fn;
 @use '~/assets/styles/tools/typography' as typo;
-@use '~/assets/styles/tools/margin' as margin;
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@mixin skeleton-surface {
+  border-radius: var(--fs-radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--fs-color-surface) 0%,
+    var(--fs-color-border-light) 45%,
+    var(--fs-color-surface) 90%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
 
 .page {
   padding: var(--fs-space-3) var(--fs-space-2) var(--fs-space-4);
@@ -321,6 +459,12 @@ const handleDelete = async (id: string) => {
     border-color: var(--fs-color-primary);
     box-shadow: 0 0 0 3px rgb(235 153 20 / 0.12);
   }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--fs-color-surface);
+  }
 }
 
 .textarea {
@@ -361,6 +505,11 @@ const handleDelete = async (id: string) => {
   accent-color: var(--fs-color-primary);
   cursor: pointer;
   flex-shrink: 0;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .taskContent {
@@ -385,6 +534,12 @@ const handleDelete = async (id: string) => {
 .taskTitleDone {
   text-decoration: line-through;
   color: var(--fs-color-text-muted);
+}
+
+.taskTitleDisabled {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .taskDesc {
@@ -475,25 +630,116 @@ const handleDelete = async (id: string) => {
 }
 
 /* Состояния */
-.state,
+.skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs-space-2);
+}
+
+.skeletonLabel {
+  margin: 0 0 var(--fs-space-1);
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
+}
+
+.skeletonTask {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--fs-space-2);
+  padding: var(--fs-space-3);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-lg);
+  background: var(--fs-color-bg);
+}
+
+.skeletonBlock {
+  display: block;
+  @include skeleton-surface;
+}
+
+.skeletonCheckbox {
+  width: fn.rem(20);
+  height: fn.rem(20);
+  margin-top: fn.rem(2);
+  border-radius: fn.rem(4);
+  flex-shrink: 0;
+}
+
+.skeletonBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--fs-space-1);
+  min-width: 0;
+}
+
+.skeletonTitle {
+  width: 68%;
+  height: fn.rem(16);
+}
+
+.skeletonDesc {
+  width: 42%;
+  height: fn.rem(12);
+}
+
+.skeletonActions {
+  display: flex;
+  gap: var(--fs-space-1);
+  flex-shrink: 0;
+}
+
+.skeletonBtn {
+  width: fn.rem(72);
+  height: fn.rem(32);
+  border-radius: var(--fs-radius-md);
+}
+
 .empty,
 .errorState {
-  padding: var(--fs-space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fs-space-2);
+  padding: var(--fs-space-5) var(--fs-space-3);
   text-align: center;
-  color: var(--fs-color-text-muted);
-  @include typo.fs-text-body;
-  border: 1px dashed var(--fs-color-border-light);
   border-radius: var(--fs-radius-lg);
 }
 
-.emptyHint {
-  margin-top: var(--fs-space-1);
-  font-size: 0.92em;
+.empty {
+  border: 1px dashed var(--fs-color-border-light);
+  background: var(--fs-color-surface);
 }
 
 .errorState {
+  border: 1px solid rgb(238 46 34 / 0.28);
+  background: rgb(238 46 34 / 0.06);
+}
+
+.stateIcon {
+  font-size: fn.rem(40);
+  line-height: 1;
+}
+
+.stateTitle {
+  margin: 0;
+  color: var(--fs-color-text);
+  @include typo.fs-text-h4;
+}
+
+.stateMessage {
+  max-width: fn.rem(420);
+  margin: 0;
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-body;
+}
+
+.errorState .stateTitle,
+.errorState .stateMessage {
   color: var(--fs-color-error);
-  border-style: solid;
-  border-color: rgb(238 46 34 / 0.3);
+}
+
+.errorState .stateMessage {
+  opacity: 0.88;
 }
 </style>

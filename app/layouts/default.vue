@@ -6,6 +6,7 @@
     <main :class="$style.main">
       <slot />
     </main>
+    <UiToastHost />
   </div>
 </template>
 
