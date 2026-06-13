@@ -1,4 +1,5 @@
 import type { Task, CreateTaskInput } from '#shared/types/task'
+import { requireBody } from '../utils/requestBody'
 
 // Thin handler — validation minimal, business logic in server/utils/tasks.ts.
 export default defineEventHandler(async (event): Promise<{ data: Task }> => {

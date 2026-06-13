@@ -1,4 +1,5 @@
 import type { Task, UpdateTaskInput } from '#shared/types/task'
+import { requireBody } from '../../utils/requestBody'
 
 export default defineEventHandler(async (event): Promise<{ data: Task | null }> => {
   const { id } = getRouterParams(event)
