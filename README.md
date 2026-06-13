@@ -26,7 +26,7 @@ pnpm install
 pnpm dev
 ```
 
-Проверка: `pnpm build` и `pnpm lint:all`.
+Проверка: `pnpm verify` (lint + typecheck) и `pnpm build`. Pre-push автоматически гоняет `typecheck`.
 
 ## Скрипты
 
@@ -37,6 +37,8 @@ pnpm dev
 | `pnpm preview`      | Просмотр production-сборки         |
 | `pnpm lint`         | ESLint                             |
 | `pnpm lint:all`     | ESLint + Prettier + Stylelint      |
+| `pnpm typecheck`    | TypeScript (app + server + shared) |
+| `pnpm verify`       | `lint:all` + `typecheck`           |
 | `pnpm format:check` | Prettier (check)                   |
 | `pnpm stylelint`    | Stylelint для Vue/CSS              |
 

@@ -69,6 +69,8 @@ docs/                # deployment-plan, roadmap, architecture.md
 cp .env.example .env   # один раз
 pnpm install
 pnpm dev               # :3000 или следующий свободный порт
+pnpm typecheck         # TS (server/api, app) — автоматически на pre-push
+pnpm verify            # lint:all + typecheck — перед деплоем
 pnpm build
 pnpm lint:all
 ```
@@ -81,7 +83,7 @@ pnpm lint:all
 - Стек Nuxt: `nuxt-template.mdc`
 - Verify / security: `04-verify-and-done.mdc`
 - MCP: `.cursor/mcp.json` — Nuxt, Context7
-- Коммиты — только по явной просьбе; pre-commit: Husky + lint-staged
+- Коммиты — только по явной просьбе; pre-commit: Husky + lint-staged; pre-push: `pnpm typecheck`
 
 ## API
 

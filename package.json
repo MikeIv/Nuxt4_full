@@ -17,6 +17,8 @@
     "stylelint": "stylelint \"**/*.{vue,css}\" --allow-empty-input",
     "stylelint:fix": "stylelint \"**/*.{vue,css}\" --fix --allow-empty-input",
     "lint:all": "eslint . && pnpm format:check && stylelint \"**/*.{vue,css}\" --allow-empty-input",
+    "typecheck": "nuxt prepare && nuxi typecheck",
+    "verify": "pnpm lint:all && pnpm typecheck",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
