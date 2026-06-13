@@ -7,8 +7,7 @@ export default defineEventHandler(async (event): Promise<{ data: Task | null }> 
     throw createError({ statusCode: 400, statusMessage: 'ID is required' })
   }
 
-  const body = await readBody<UpdateTaskInput>(event)
-
+  const body = await requireBody<UpdateTaskInput>(event)
   const task = await updateTask(id, body)
 
   if (!task) {
