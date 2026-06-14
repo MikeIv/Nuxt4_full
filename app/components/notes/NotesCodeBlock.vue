@@ -16,7 +16,7 @@ interface CodeLine {
 const COPY_ALL_RESET_MS = 2000
 const COPY_LINE_RESET_MS = 1500
 
-const { copyToClipboard } = useCopyToClipboard()
+const { copyToClipboard, copyWithFeedback } = useCopyToClipboard()
 const copiedAll = ref(false)
 const copiedLineIndex = ref<number | null>(null)
 
@@ -52,12 +52,7 @@ const lines = computed<CodeLine[]>(() =>
   }),
 )
 
-const copyCode = async () => {
-  const copied = await copyToClipboard(props.code)
-  if (copied) {
-    flashCopyState('all', COPY_ALL_RESET_MS)
-  }
-}
+const copyCode = () => copyWithFeedback(props.code, copiedAll, COPY_ALL_RESET_MS)
 
 const copyLine = async (text: string, index: number) => {
   const copied = await copyToClipboard(text.trim())

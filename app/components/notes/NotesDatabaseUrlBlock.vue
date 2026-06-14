@@ -24,7 +24,7 @@ const props = withDefaults(
 
 const COPY_RESET_MS = 2000
 
-const { copyToClipboard } = useCopyToClipboard()
+const { copyWithFeedback } = useCopyToClipboard()
 const {
   savedPassword,
   password,
@@ -46,17 +46,7 @@ const fullEnvLine = computed(() => {
   return `DATABASE_URL="postgresql://${props.username}:${encodedPassword}${connectionPath.value}"`
 })
 
-const copyEnvLine = async () => {
-  const ok = await copyToClipboard(fullEnvLine.value)
-  if (!ok) {
-    return
-  }
-
-  copied.value = true
-  window.setTimeout(() => {
-    copied.value = false
-  }, COPY_RESET_MS)
-}
+const copyEnvLine = () => copyWithFeedback(fullEnvLine.value, copied, COPY_RESET_MS)
 </script>
 
 <template>

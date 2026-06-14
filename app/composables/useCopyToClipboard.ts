@@ -1,7 +1,9 @@
+import type { Ref } from 'vue'
 import { useAppToast } from '~/composables/useAppToast'
 
 const DEFAULT_SUCCESS_MESSAGE = 'Скопировано в буфер обмена'
 const DEFAULT_ERROR_MESSAGE = 'Не удалось скопировать'
+const DEFAULT_COPIED_RESET_MS = 2000
 
 async function writeClipboard(text: string): Promise<boolean> {
   if (import.meta.server) {
@@ -51,5 +53,23 @@ export function useCopyToClipboard() {
     return false
   }
 
-  return { copyToClipboard }
+  const copyWithFeedback = async (
+    text: string,
+    isCopied: Ref<boolean>,
+    resetMs = DEFAULT_COPIED_RESET_MS,
+    options?: { successMessage?: string; errorMessage?: string },
+  ): Promise<boolean> => {
+    const ok = await copyToClipboard(text, options)
+    if (!ok) {
+      return false
+    }
+
+    isCopied.value = true
+    window.setTimeout(() => {
+      isCopied.value = false
+    }, resetMs)
+    return true
+  }
+
+  return { copyToClipboard, copyWithFeedback }
 }

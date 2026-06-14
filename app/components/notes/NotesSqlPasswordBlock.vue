@@ -16,7 +16,7 @@ const props = withDefaults(
 
 const COPY_RESET_MS = 2000
 
-const { copyToClipboard } = useCopyToClipboard()
+const { copyWithFeedback } = useCopyToClipboard()
 const {
   savedPassword,
   password,
@@ -36,17 +36,7 @@ const fullSql = computed(
     `ALTER USER ${props.username} WITH PASSWORD '${escapeSqlLiteral(savedPassword.value)}';`,
 )
 
-const copySql = async () => {
-  const ok = await copyToClipboard(fullSql.value)
-  if (!ok) {
-    return
-  }
-
-  copied.value = true
-  window.setTimeout(() => {
-    copied.value = false
-  }, COPY_RESET_MS)
-}
+const copySql = () => copyWithFeedback(fullSql.value, copied, COPY_RESET_MS)
 </script>
 
 <template>
