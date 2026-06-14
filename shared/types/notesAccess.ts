@@ -16,3 +16,15 @@ export interface NotesAccessActionResponse {
   ok: true
   unlocked: true
 }
+
+export interface NotesDbPasswordResponse {
+  password: string | null
+}
+
+export interface NotesDbPasswordBody {
+  password: string
+}
+
+export interface NotesDbPasswordSaveResponse {
+  ok: true
+}

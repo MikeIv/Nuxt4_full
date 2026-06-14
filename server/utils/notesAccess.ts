@@ -1,6 +1,10 @@
 import type { H3Event } from 'h3'
 import { Prisma } from '@prisma/client'
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import type {
+  NotesDbPasswordResponse,
+  NotesDbPasswordSaveResponse,
+} from '#shared/types/notesAccess'
 import {
   decryptNotesAccessPassword,
   encryptNotesAccessPassword,
@@ -221,4 +225,76 @@ export function requireNotesAccessUnlock(event: H3Event): void {
       statusMessage: 'Требуется пароль раздела «Серверные доступы»',
     })
   }
+}
+
+function assertDbPasswordValue(password: string): string {
+  const trimmed = password.trim()
+
+  if (!trimmed) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Пароль PostgreSQL не может быть пустым',
+    })
+  }
+
+  if (trimmed.length > 512) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Пароль PostgreSQL слишком длинный',
+    })
+  }
+
+  return trimmed
+}
+
+export async function getNotesDbPassword(event: H3Event): Promise<NotesDbPasswordResponse> {
+  requireNotesAccessUnlock(event)
+
+  const settings = await findNotesAccessSettings({
+    where: { id: SETTINGS_ID },
+    select: { dbPasswordCipher: true },
+  })
+
+  if (!settings?.dbPasswordCipher) {
+    return { password: null }
+  }
+
+  const password = decryptNotesAccessPassword(settings.dbPasswordCipher, getAuthSecret())
+
+  return { password }
+}
+
+export async function saveNotesDbPassword(
+  event: H3Event,
+  password: string,
+): Promise<NotesDbPasswordSaveResponse> {
+  requireNotesAccessUnlock(event)
+
+  const normalized = assertDbPasswordValue(password)
+  const dbPasswordCipher = encryptNotesAccessPassword(normalized, getAuthSecret())
+
+  try {
+    await prisma.notesAccessSettings.update({
+      where: { id: SETTINGS_ID },
+      data: { dbPasswordCipher },
+    })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Пароль раздела ещё не установлен',
+      })
+    }
+
+    if (isMissingNotesAccessTable(error)) {
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'Таблица notes_access_settings не найдена. Выполните prisma migrate deploy.',
+      })
+    }
+
+    throw error
+  }
+
+  return { ok: true as const }
 }

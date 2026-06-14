@@ -25,13 +25,7 @@ const sshCommand = 'ssh root@80.78.247.58'
 
     <section :class="$style.section">
       <h3 :class="$style.sectionTitle">DATABASE_URL (.env)</h3>
-      <p :class="$style.placeholder">
-        Добавьте строку подключения PostgreSQL для production.
-      </p>
-      <NotesCodeBlock
-        code="# postgresql://USER:PASSWORD@host:5432/DBNAME"
-        label="Шаблон DATABASE_URL"
-      />
+      <NotesDatabaseUrlBlock />
     </section>
 
     <section :class="$style.section">

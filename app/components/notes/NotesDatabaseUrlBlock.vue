@@ -3,11 +3,19 @@ const props = withDefaults(
   defineProps<{
     label?: string
     username?: string
+    host?: string
+    port?: number
+    database?: string
+    schema?: string
     initialPassword?: string
   }>(),
   {
-    label: 'Смена пароля PostgreSQL',
+    label: 'Строка подключения (.env)',
     username: 'nuxtuser',
+    host: 'localhost',
+    port: 5432,
+    database: 'nuxt4full',
+    schema: 'public',
     initialPassword: 'НовыйСильныйПароль123!',
   },
 )
@@ -27,16 +35,18 @@ const {
 
 const copied = ref(false)
 
-const escapeSqlLiteral = (value: string) => value.replaceAll("'", "''")
-
-const fullSql = computed(
-  () =>
-    `ALTER USER ${props.username} WITH PASSWORD '${escapeSqlLiteral(savedPassword.value)}';`,
+const connectionPath = computed(
+  () => `@${props.host}:${props.port}/${props.database}?schema=${props.schema}`,
 )
 
-const copySql = async () => {
+const fullEnvLine = computed(() => {
+  const encodedPassword = encodeURIComponent(savedPassword.value)
+  return `DATABASE_URL="postgresql://${props.username}:${encodedPassword}${connectionPath.value}"`
+})
+
+const copyEnvLine = async () => {
   try {
-    await navigator.clipboard.writeText(fullSql.value)
+    await navigator.clipboard.writeText(fullEnvLine.value)
     copied.value = true
     toast.success('Скопировано в буфер обмена')
     window.setTimeout(() => {
@@ -55,8 +65,8 @@ const copySql = async () => {
       <button
         type="button"
         :class="$style.copyBtn"
-        :aria-label="copied ? 'Скопировано' : 'Скопировать SQL'"
-        @click="copySql"
+        :aria-label="copied ? 'Скопировано' : 'Скопировать DATABASE_URL'"
+        @click="copyEnvLine"
       >
         {{ copied ? 'Скопировано' : 'Копировать' }}
       </button>
@@ -64,7 +74,7 @@ const copySql = async () => {
 
     <div :class="$style.body">
       <code :class="$style.code">
-        <span :class="$style.prefix">ALTER USER {{ username }} WITH PASSWORD '</span>
+        <span :class="$style.prefix">DATABASE_URL="postgresql://{{ username }}:</span>
         <span :class="$style.inputWrap">
           <input
             ref="passwordInputRef"
@@ -74,7 +84,7 @@ const copySql = async () => {
             :readonly="!isEditing"
             spellcheck="false"
             autocomplete="off"
-            aria-label="Пароль PostgreSQL"
+            aria-label="Пароль в DATABASE_URL"
             @keydown="handleInputKeydown"
           />
           <button
@@ -117,7 +127,7 @@ const copySql = async () => {
             </svg>
           </button>
         </span>
-        <span :class="$style.suffix">';</span>
+        <span :class="$style.suffix">{{ connectionPath }}"</span>
       </code>
     </div>
   </div>
