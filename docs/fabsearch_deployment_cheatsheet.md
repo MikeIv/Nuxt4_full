@@ -102,13 +102,23 @@ pnpm install --frozen-lockfile
 # 3. Применить миграции Prisma (если менялась схема)
 pnpm exec prisma migrate deploy
 
-# 4. Пересобрать проект (при ошибках Better Auth — сначала rm -rf .output)
+# 4. Пересобрать проект (prisma generate внутри pnpm run build; при ошибках Better Auth — rm -rf .output)
 rm -rf .output
 pnpm run build
 
 # 5. Перезапустить приложение
 pm2 restart fabsearch
 ```
+
+> **Prisma:** в коде только имена **моделей** из `schema.prisma`, не таблиц БД:
+> `prisma.task`, `prisma.user`, `prisma.notesAccessSettings` — **не** `prisma.tasks`, `prisma.users`, `prisma.notes_access_settings`.
+> Не правь `server/utils/*.ts` через `sed`. Если уже правили — откат:
+>
+> ```bash
+> git restore server/utils/tasks.ts server/utils/notesAccess.ts
+> pnpm exec prisma generate
+> pnpm run build
+> ```
 
 ---
 

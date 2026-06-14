@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DEPLOYMENT_CHEATSHEET } from '#shared/constants/deploymentCheatsheet'
+import { DEPLOYMENT_CHEATSHEET, DEPLOY_QUICK_COMMAND } from '#shared/constants/deploymentCheatsheet'
 
 const { meta, sections, footerNote } = DEPLOYMENT_CHEATSHEET
 
@@ -17,8 +17,6 @@ const tocItems = sections.map((section) => ({
 }))
 
 const sshCommand = `ssh root@${meta.ip}`
-const deployCommand =
-  'git pull && pnpm install --frozen-lockfile && rm -rf .output && pnpm build && pm2 restart fabsearch'
 </script>
 
 <template>
@@ -51,7 +49,7 @@ const deployCommand =
 
     <NotesCodeBlock :code="sshCommand" label="Подключение к серверу" />
 
-    <NotesCodeBlock :code="deployCommand" label="Деплой обновлений (универсальный)" />
+    <NotesCodeBlock :code="DEPLOY_QUICK_COMMAND" label="Деплой обновлений (универсальный)" />
 
     <nav :class="$style.toc" aria-label="Содержание шпаргалки">
       <p :class="$style.tocTitle">Содержание</p>

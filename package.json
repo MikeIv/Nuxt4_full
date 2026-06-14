@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "preinstall": "only-allow pnpm",
-    "build": "nuxt build",
+    "build": "prisma generate && nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
