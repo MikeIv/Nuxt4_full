@@ -11,6 +11,7 @@ export function useApi() {
 
   return $fetch.create({
     baseURL,
+    credentials: 'include',
     onResponseError(ctx) {
       if (import.meta.dev) {
         console.error('[useApi]', String(ctx.request), ctx.response.status, ctx.response._data)
@@ -32,5 +33,8 @@ export function useApiFetch<T = unknown>(
 
   const request = computed(() => joinApiUrl(config.public.apiBase, String(toValue(path))))
 
-  return useFetch(request, options) as AsyncData<T, FetchError | null>
+  return useFetch(request, {
+    credentials: 'include',
+    ...options,
+  }) as AsyncData<T, FetchError | null>
 }

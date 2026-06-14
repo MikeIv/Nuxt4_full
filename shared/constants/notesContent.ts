@@ -11,9 +11,10 @@ export const NOTES_DOCUMENTS = [
   },
   {
     id: 'server-access',
-    title: 'Серверные доступы',
-    description: 'Пароли env, БД и psql — доступ по паролю',
+    title: 'Общие настройки',
+    description: 'env и др.',
     protected: true,
+    devOnly: true,
   },
 ] as const
 
@@ -23,6 +24,17 @@ export type NotesDocument = (typeof NOTES_DOCUMENTS)[number]
 
 export function isProtectedNotesDocument(doc: NotesDocument): boolean {
   return 'protected' in doc && doc.protected === true
+}
+
+const isProduction = process.env.NODE_ENV === 'production'
+
+/** Скрытые на production подразделы (например, env и пароли). */
+export function isNotesDocumentVisible(doc: NotesDocument): boolean {
+  if ('devOnly' in doc && doc.devOnly && isProduction) {
+    return false
+  }
+
+  return true
 }
 
 export interface NoteLink {

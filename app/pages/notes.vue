@@ -2,6 +2,7 @@
 import type { UiTabItem } from '~/components/ui/UiTabs.vue'
 import {
   isProtectedNotesDocument,
+  isNotesDocumentVisible,
   NOTE_LINKS,
   NOTES_DOCUMENTS,
   USEFUL_ITEMS,
@@ -23,6 +24,12 @@ const SERVER_ACCESS_ID: NotesDocumentId = 'server-access'
 
 const activeTab = ref<NotesTab>('documents')
 const activeDocument = ref<NotesDocumentId>('project-docs')
+
+const visibleDocuments = computed(() => NOTES_DOCUMENTS.filter(isNotesDocumentVisible))
+
+if (process.env.NODE_ENV === 'production' && activeDocument.value === SERVER_ACCESS_ID) {
+  activeDocument.value = 'project-docs'
+}
 
 const {
   isConfigured,
@@ -53,7 +60,7 @@ const openAccessDialog = (mode: 'setup' | 'unlock', docId: NotesDocumentId) => {
 
 const selectDocument = async (docId: NotesDocumentId) => {
   const doc = NOTES_DOCUMENTS.find((item) => item.id === docId)
-  if (!doc) {
+  if (!doc || !isNotesDocumentVisible(doc)) {
     return
   }
 
@@ -73,13 +80,15 @@ const selectDocument = async (docId: NotesDocumentId) => {
 }
 
 const completeAccess = async () => {
+  const docId = pendingDocument.value
   accessDialogOpen.value = false
   await refreshAccessStatus()
 
-  if (pendingDocument.value) {
-    activeDocument.value = pendingDocument.value
-    pendingDocument.value = null
+  if (docId) {
+    activeDocument.value = docId
   }
+
+  pendingDocument.value = null
 }
 
 const handleAccessClose = () => {
@@ -161,7 +170,7 @@ const handleForgotPassword = () =>
             <aside :class="$style.docNav" aria-label="Подразделы документов">
               <p :class="$style.docNavTitle">Подразделы</p>
               <ul :class="$style.docNavList">
-                <li v-for="doc in NOTES_DOCUMENTS" :key="doc.id">
+                <li v-for="doc in visibleDocuments" :key="doc.id">
                   <button
                     type="button"
                     :class="[
@@ -186,7 +195,7 @@ const handleForgotPassword = () =>
                 v-else-if="activeDocument === SERVER_ACCESS_ID"
                 :class="$style.lockedHint"
               >
-                Раздел «Серверные доступы» закрыт. Нажмите подраздел слева и введите пароль.
+                Раздел «Общие настройки» закрыт. Нажмите подраздел слева и введите пароль.
               </p>
             </div>
           </div>
