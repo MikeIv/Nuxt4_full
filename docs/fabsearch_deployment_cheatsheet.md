@@ -102,7 +102,8 @@ pnpm install --frozen-lockfile
 # 3. Применить миграции Prisma (если менялась схема)
 pnpm exec prisma migrate deploy
 
-# 4. Пересобрать проект
+# 4. Пересобрать проект (при ошибках Better Auth — сначала rm -rf .output)
+rm -rf .output
 pnpm run build
 
 # 5. Перезапустить приложение

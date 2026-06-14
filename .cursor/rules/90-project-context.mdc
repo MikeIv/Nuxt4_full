@@ -15,28 +15,28 @@ alwaysApply: true
 
 ## Обучение
 
-| Документ | Путь |
-| -------- | ---- |
+| Документ          | Путь                       |
+| ----------------- | -------------------------- |
 | Roadmap 12 недель | `docs/roadmap-12-weeks.md` |
-| Архитектура папок | `docs/architecture.md` |
-| Развёртывание A–F | `docs/deployment-plan.md` |
-| Контекст сессий | `.planning/PROJECT.md` |
+| Архитектура папок | `docs/architecture.md`     |
+| Развёртывание A–F | `docs/deployment-plan.md`  |
+| Контекст сессий   | `.planning/PROJECT.md`     |
 
-**Текущая фаза:** развёртывание завершено → **Неделя 2** (Prisma, PostgreSQL, CRUD `/api/tasks`).
+**Текущая фаза:** нед. 3 ✅ → **нед. 4** (Better Auth + RBAC, план 2026-06-10).
 
 ## Стек
 
-| Слой | Сейчас | План |
-| ---- | ------ | ---- |
-| Framework | Nuxt 4.4, Vue 3.5 | — |
-| Модули | `@nuxt/eslint` | + Nuxt UI (нед. 10) |
-| Backend | Nitro (каркас) | `server/api/*` |
-| БД | — | PostgreSQL + Prisma (нед. 2) |
-| Auth | — | nuxt-auth-utils (нед. 5) |
-| Стили | SCSS, CSS Modules (`$style`) | — |
-| Язык | TypeScript strict | — |
-| Пакеты | pnpm 11.x | — |
-| API | `NUXT_PUBLIC_API_BASE` пустой → same-origin | `useApi` / `useApiFetch` / `serverApi` |
+| Слой      | Сейчас                                      | План                                   |
+| --------- | ------------------------------------------- | -------------------------------------- |
+| Framework | Nuxt 4.4, Vue 3.5                           | —                                      |
+| Модули    | `@nuxt/eslint`                              | + Nuxt UI (нед. 10)                    |
+| Backend   | Nitro (каркас)                              | `server/api/*`                         |
+| БД        | —                                           | PostgreSQL + Prisma (нед. 2)           |
+| Auth      | —                                           | Better Auth + Prisma (нед. 4)          |
+| Стили     | SCSS, CSS Modules (`$style`)                | —                                      |
+| Язык      | TypeScript strict                           | —                                      |
+| Пакеты    | pnpm 11.x                                   | —                                      |
+| API       | `NUXT_PUBLIC_API_BASE` пустой → same-origin | `useApi` / `useApiFetch` / `serverApi` |
 
 ## Структура
 

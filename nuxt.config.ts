@@ -72,5 +72,15 @@ export default defineNuxtConfig({
         target: 'es2022',
       },
     },
+    /** Better Auth: полный trace @better-auth/core (иначе на Linux PM2 — ERR_MODULE_NOT_FOUND env/index.mjs). */
+    externals: {
+      inline: [
+        'better-auth',
+        '@better-auth/core',
+        '@better-auth/telemetry',
+        '@better-auth/utils',
+        '@better-auth/prisma-adapter',
+      ],
+    },
   },
 })

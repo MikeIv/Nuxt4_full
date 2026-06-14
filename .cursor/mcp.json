@@ -1,12 +1,16 @@
 {
-  "$schema": "https://json.schemastore.org/mcp.json",
   "mcpServers": {
-    "nuxt": {
-      "url": "https://mcp.nuxt.com/mcp"
-    },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@context7/mcp-server"]
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "nuxt_remote": {
+      "type": "http",
+      "url": "https://nuxt.com/mcp"
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }

@@ -17,6 +17,10 @@ export const auth = betterAuth({
 
   appName: 'Task Board',
 
+  telemetry: {
+    enabled: false,
+  },
+
   // Берём секрет из runtimeConfig
   secret: useRuntimeConfig().authSecret,
 
