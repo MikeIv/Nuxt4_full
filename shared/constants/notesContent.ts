@@ -12,7 +12,7 @@ export const NOTES_DOCUMENTS = [
   {
     id: 'ops-playbook',
     title: 'Решение проблем',
-    description: 'PM2, PostgreSQL, .env — типовые инциденты',
+    description: 'PM2, PostgreSQL, pnpm db:check — диагностика и инциденты',
   },
   {
     id: 'server-access',

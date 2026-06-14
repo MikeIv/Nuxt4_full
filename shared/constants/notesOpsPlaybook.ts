@@ -14,15 +14,55 @@ export interface OpsPlaybookCase {
   prevention: string[]
 }
 
+export interface OpsPlaybookTool {
+  id: string
+  title: string
+  summary: string
+  command: string
+  scriptPath: string
+  does: string[]
+  avoid: string[]
+  exampleOk: string
+  exampleFail: string
+}
+
 export interface OpsPlaybook {
   title: string
   lead: string
+  tool: OpsPlaybookTool
   cases: OpsPlaybookCase[]
 }
 
 export const NOTES_OPS_PLAYBOOK: OpsPlaybook = {
   title: 'Решение проблем на сервере',
   lead: 'Типовые инциденты fabsearch.ru: PostgreSQL, PM2, .env и health-check. Команды копируй в SSH на сервере.',
+  tool: {
+    id: 'db-check',
+    title: 'Проверка PostgreSQL — pnpm db:check',
+    summary:
+      'Безопасная диагностика подключения к БД: маскирует пароль, сверяет .env с PM2 и выполняет SELECT 1. Не трогает prisma/schema.prisma.',
+    command: `cd /var/www/fabsearch
+pnpm db:check`,
+    scriptPath: 'scripts/check-db.mjs',
+    does: [
+      'Читает DATABASE_URL из `.env` и показывает строку с замаскированным паролем',
+      'Если запущен PM2 — сравнивает DATABASE_URL процесса с `.env` и предупреждает о расхождении',
+      'Подключается через `pg` и выполняет `SELECT 1`, выводит `user` и `database`',
+      'Работает локально и на сервере (из корня проекта)',
+    ],
+    avoid: [
+      'Не используй `prisma db pull` для «проверки пароля» — перезапишет `prisma/schema.prisma`',
+      'Не полагайся на сторонние скрипты с `--force` introspect',
+    ],
+    exampleOk: `=== Проверка PostgreSQL ===
+DATABASE_URL из .env: postgresql://nuxtuser:****@localhost:5432/nuxt4_full?schema=public
+DATABASE_URL в PM2: postgresql://nuxtuser:****@localhost:5432/nuxt4_full?schema=public
+
+Подключение...
+OK: user=nuxtuser, database=nuxt4_full`,
+    exampleFail: `FAIL: password authentication failed for user "nuxtuser"
+Подсказка: /notes → Документы → Решение проблем (PM2 + DATABASE_URL)`,
+  },
   cases: [
     {
       id: 'pm2-database-url',
@@ -31,20 +71,17 @@ export const NOTES_OPS_PLAYBOOK: OpsPlaybook = {
         'PostgreSQL принимает пароль, node с dotenv — OK, но приложение в PM2 падает с password authentication failed.',
       symptoms: [
         'В логах: `28P01` / `password authentication failed for user "nuxtuser"`',
-        '`node -e "require(\'dotenv\').config()..."` → DB OK',
-        '`pm2 env 0 | grep DATABASE_URL` показывает другой пароль, чем в `.env`',
+        '`pnpm db:check` показывает расхождение .env и PM2 или FAIL с 28P01',
         '`/api/health` → 500, Prisma `$queryRaw` падает',
       ],
       cause:
         'PM2 кэширует переменные окружения при первом `pm2 start`. `pm2 restart` не перечитывает `.env`. После смены пароля в PostgreSQL или правки `.env` процесс продолжает работать со старым `DATABASE_URL`.',
       steps: [
         {
-          title: '1. Сравнить .env и PM2',
+          title: '1. Проверить .env, PM2 и подключение',
           code: `cd /var/www/fabsearch
-grep DATABASE_URL .env
-node -e "require('dotenv').config(); console.log(process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ':***@'))"
-pm2 env 0 | grep DATABASE_URL`,
-          note: 'Пароли должны совпадать. На сервере БД: `nuxt4_full` (с подчёркиванием).',
+pnpm db:check`,
+          note: 'Подробности — блок «Проверка PostgreSQL» выше. БД на сервере: `nuxt4_full`.',
         },
         {
           title: '2. Синхронизировать пароль PostgreSQL и .env',
@@ -66,7 +103,7 @@ set -a
 source .env
 set +a
 
-node -e "require('dotenv').config(); const {Pool}=require('pg'); const p=new Pool({connectionString:process.env.DATABASE_URL}); p.query('select 1').then(()=>{console.log('DB OK'); p.end()}).catch(e=>{console.error('DB FAIL', e.message); p.end(); process.exit(1)})"
+pnpm db:check
 
 pm2 start .output/server/index.mjs \\
   --name fabsearch \\
@@ -74,7 +111,7 @@ pm2 start .output/server/index.mjs \\
   --update-env
 
 pm2 save
-pm2 env 0 | grep DATABASE_URL`,
+pnpm db:check`,
         },
         {
           title: '4. Проверка',
@@ -92,7 +129,7 @@ pm2 restart fabsearch --update-env`,
       prevention: [
         'После смены пароля в UI «Общие настройки» — скопируй DATABASE_URL в `.env` на сервере.',
         'Не используй `sed` для `prisma.task` → `prisma.tasks` и не запускай `prisma db pull`.',
-        'Проверяй `pm2 env 0 | grep DATABASE_URL` после деплоя.',
+        'Проверяй `pnpm db:check` после смены `.env` или деплоя.',
         "Рассмотри `ecosystem.config.cjs` с `require('dotenv').config()` — см. docs/fabsearch_deployment_cheatsheet.md.",
       ],
     },

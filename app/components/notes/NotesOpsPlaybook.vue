@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { NOTES_OPS_PLAYBOOK } from '#shared/constants/notesOpsPlaybook'
 
-const { title, lead, cases } = NOTES_OPS_PLAYBOOK
+const { title, lead, tool, cases } = NOTES_OPS_PLAYBOOK
 
-const tocItems = cases.map((item, index) => ({
-  id: item.id,
-  label: `${index + 1}. ${item.title}`,
-}))
+const tocItems = [
+  { id: tool.id, label: tool.title },
+  ...cases.map((item, index) => ({
+    id: item.id,
+    label: `${index + 1}. ${item.title}`,
+  })),
+]
 </script>
 
 <template>
@@ -18,13 +21,57 @@ const tocItems = cases.map((item, index) => ({
     </header>
 
     <nav :class="$style.toc" aria-label="Содержание playbook">
-      <p :class="$style.tocTitle">Кейсы</p>
+      <p :class="$style.tocTitle">Содержание</p>
       <ol :class="$style.tocList">
         <li v-for="item in tocItems" :key="item.id">
-          <a :href="`#${item.id}`" :class="$style.tocLink">{{ item.label }}</a>
+          <a
+            :href="`#${item.id}`"
+            :class="[$style.tocLink, item.id === tool.id && $style.tocLinkAccent]"
+          >
+            {{ item.label }}
+          </a>
         </li>
       </ol>
     </nav>
+
+    <section :id="tool.id" :class="[$style.case, $style.tool]">
+      <h3 :class="$style.caseTitle">
+        <span :class="$style.toolBadge">Утилита</span>
+        {{ tool.title }}
+      </h3>
+      <p :class="$style.caseSummary">{{ tool.summary }}</p>
+
+      <NotesCodeBlock :code="tool.command" label="Команда" />
+
+      <div :class="$style.block">
+        <h4 :class="$style.blockTitle">Что делает</h4>
+        <ul :class="$style.list">
+          <li v-for="(line, lineIndex) in tool.does" :key="lineIndex">{{ line }}</li>
+        </ul>
+      </div>
+
+      <div :class="$style.block">
+        <h4 :class="$style.blockTitle">Чего избегать</h4>
+        <ul :class="$style.list">
+          <li v-for="(line, lineIndex) in tool.avoid" :key="lineIndex">{{ line }}</li>
+        </ul>
+      </div>
+
+      <p :class="$style.scriptPath">
+        Исходник: <code :class="$style.inlineCode">{{ tool.scriptPath }}</code>
+      </p>
+
+      <div :class="$style.examples">
+        <div :class="$style.example">
+          <h4 :class="$style.blockTitle">Успех</h4>
+          <NotesCodeBlock :code="tool.exampleOk" />
+        </div>
+        <div :class="$style.example">
+          <h4 :class="$style.blockTitle">Ошибка (28P01)</h4>
+          <NotesCodeBlock :code="tool.exampleFail" />
+        </div>
+      </div>
+    </section>
 
     <div :class="$style.cases">
       <section
@@ -147,6 +194,59 @@ const tocItems = cases.map((item, index) => ({
     outline-offset: 2px;
     border-radius: var(--fs-radius-sm);
   }
+}
+
+.tocLinkAccent {
+  color: var(--fs-color-success);
+  font-weight: 600;
+}
+
+.tool {
+  border-color: rgb(51 174 39 / 0.35);
+  background: linear-gradient(
+    180deg,
+    rgb(51 174 39 / 0.06) 0%,
+    var(--fs-color-bg) fn.rem(120)
+  );
+}
+
+.toolBadge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  padding: fn.rem(2) fn.rem(8);
+  border-radius: var(--fs-radius-sm);
+  background: rgb(51 174 39 / 0.14);
+  color: var(--fs-color-success);
+  @include typo.fs-text-tag;
+}
+
+.scriptPath {
+  margin: 0 0 var(--fs-space-2);
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-body;
+}
+
+.inlineCode {
+  padding: fn.rem(2) fn.rem(6);
+  border-radius: var(--fs-radius-sm);
+  background: rgb(23 53 87 / 0.06);
+  color: var(--fs-color-primary-strong);
+  font-family: ui-monospace, monospace;
+  font-size: 0.92em;
+}
+
+.examples {
+  display: grid;
+  gap: var(--fs-space-2);
+
+  @media (width >= 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.example {
+  min-width: 0;
 }
 
 .cases {
