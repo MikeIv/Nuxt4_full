@@ -4,20 +4,63 @@ const props = defineProps<{
   label?: string
 }>()
 
-const toast = useToast()
-const copied = ref(false)
+type CodeLineType = 'command' | 'comment'
 
-const copyCode = async () => {
+interface CodeLine {
+  text: string
+  type: CodeLineType
+}
+
+const COPY_ALL_RESET_MS = 2000
+const COPY_LINE_RESET_MS = 1500
+
+const toast = useToast()
+const copiedAll = ref(false)
+const copiedLineIndex = ref<number | null>(null)
+
+const lines = computed<CodeLine[]>(() =>
+  props.code.split('\n').flatMap((line) => {
+    const trimmed = line.trim()
+
+    if (!trimmed) {
+      return []
+    }
+
+    return [
+      {
+        text: line,
+        type: trimmed.startsWith('#') ? 'comment' : 'command',
+      },
+    ]
+  }),
+)
+
+const copyText = async (text: string, onSuccess: () => void) => {
   try {
-    await navigator.clipboard.writeText(props.code)
-    copied.value = true
+    await navigator.clipboard.writeText(text)
+    onSuccess()
     toast.success('Скопировано в буфер обмена')
-    window.setTimeout(() => {
-      copied.value = false
-    }, 2000)
   } catch {
     toast.error('Не удалось скопировать')
   }
+}
+
+const copyCode = async () => {
+  await copyText(props.code, () => {
+    copiedAll.value = true
+    window.setTimeout(() => {
+      copiedAll.value = false
+    }, COPY_ALL_RESET_MS)
+  })
+}
+
+const copyLine = async (text: string, index: number) => {
+  await copyText(text.trim(), () => {
+    copiedLineIndex.value = index
+    window.setTimeout(() => {
+      copiedLineIndex.value = null
+    }, COPY_LINE_RESET_MS)
+  })
 }
 </script>
 
@@ -28,13 +71,34 @@ const copyCode = async () => {
       <button
         type="button"
         :class="$style.copyBtn"
-        :aria-label="copied ? 'Скопировано' : 'Скопировать код'"
+        :aria-label="copiedAll ? 'Скопировано' : 'Скопировать весь блок'"
         @click="copyCode"
       >
-        {{ copied ? 'Скопировано' : 'Копировать' }}
+        {{ copiedAll ? 'Скопировано' : 'Копировать' }}
       </button>
     </div>
-    <pre :class="$style.pre"><code :class="$style.code">{{ code }}</code></pre>
+    <div :class="$style.body">
+      <code :class="$style.code">
+        <template v-for="(line, index) in lines" :key="index">
+          <button
+            v-if="line.type === 'command'"
+            type="button"
+            :class="[
+              $style.line,
+              $style.lineCommand,
+              copiedLineIndex === index && $style.lineCopied,
+            ]"
+            :title="`Скопировать: ${line.text.trim()}`"
+            @click="copyLine(line.text, index)"
+          >
+            {{ line.text }}
+          </button>
+          <span v-else-if="line.type === 'comment'" :class="[$style.line, $style.lineComment]">
+            {{ line.text }}
+          </span>
+        </template>
+      </code>
+    </div>
   </div>
 </template>
 
@@ -53,8 +117,8 @@ const copyCode = async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--fs-space-2);
-  padding: fn.rem(8) fn.rem(12);
+  gap: var(--fs-space-1);
+  padding: fn.rem(6) var(--fs-space-1);
   border-bottom: 1px solid var(--fs-color-border-light);
   background: rgb(23 53 87 / 0.04);
 }
@@ -87,18 +151,53 @@ const copyCode = async () => {
   }
 }
 
-.pre {
-  margin: 0;
-  padding: var(--fs-space-2);
+.body {
   overflow-x: auto;
 }
 
 .code {
   display: block;
-  color: var(--fs-color-primary-strong);
   font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
-  font-size: fn.rem(13);
-  line-height: 1.55;
+}
+
+.line {
+  display: block;
+  width: 100%;
+  text-align: left;
   white-space: pre;
+}
+
+.lineCommand {
+  padding: var(--fs-space-1) var(--fs-space-3);
+  border: none;
+  border-radius: var(--fs-radius-sm);
+  background: transparent;
+  color: var(--fs-color-primary-strong);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: rgb(23 53 87 / 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fs-color-primary);
+    outline-offset: 1px;
+  }
+}
+
+.lineCopied {
+  background: rgb(235 153 20 / 0.14);
+}
+
+.lineComment {
+  padding-inline: var(--fs-space-3);
+  color: var(--fs-color-text-muted);
+  line-height: 1.35;
+  @include typo.fs-text-tag;
 }
 </style>
