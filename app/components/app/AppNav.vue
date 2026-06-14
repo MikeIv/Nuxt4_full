@@ -10,8 +10,7 @@ const navItems = [
   <header :class="$style.root">
     <div :class="$style.inner">
       <NuxtLink to="/" :class="$style.brand">
-        <span :class="$style.brandMark" aria-hidden="true" />
-        <span :class="$style.brandText">Nuxt4_full</span>
+        <AppLogoFull />
       </NuxtLink>
 
       <nav :class="$style.nav" aria-label="Основная навигация">
@@ -58,28 +57,14 @@ const navItems = [
 
 .brand {
   display: inline-flex;
-  gap: fn.rem(10);
   align-items: center;
   min-width: 0;
-  color: var(--fs-color-text);
 
   &:focus-visible {
     border-radius: var(--fs-radius-sm);
     outline: 2px solid var(--fs-color-primary);
     outline-offset: 2px;
   }
-}
-
-.brandMark {
-  width: fn.rem(12);
-  height: fn.rem(12);
-  border-radius: 999px;
-  background: var(--fs-gradient-auth);
-  box-shadow: var(--fs-shadow-glow);
-}
-
-.brandText {
-  @include typo.fs-text-h4;
 }
 
 .nav {

@@ -50,6 +50,8 @@ const stackItems: StackItem[] = [
 const { data: health, pending: healthPending, error: healthError } =
   await useApiFetch<HealthResponse>('/api/health')
 
+const { currentWorkingWeekId } = useRoadmapProgress()
+
 const healthErrorMessage = computed(() => {
   const err = healthError.value
   if (!err) {
@@ -67,7 +69,7 @@ const healthErrorMessage = computed(() => {
     <div :class="$style.shell">
       <header :class="$style.hero">
         <p :class="$style.badge">Fullstack learning sandbox</p>
-        <h1 :class="$style.title">Nuxt4_full</h1>
+        <h1 :class="$style.title">Fabsearch</h1>
         <p :class="$style.lead">
           Песочница для прокачки backend: Nitro → Prisma → auth → деплой. Capstone — mini-SaaS
           «Task Board».
@@ -76,7 +78,7 @@ const healthErrorMessage = computed(() => {
         <div :class="$style.heroMeta">
           <span :class="$style.metaItem">
             <span :class="$style.metaLabel">Фаза</span>
-            <span :class="$style.metaValue">Неделя 1</span>
+            <span :class="$style.metaValue">Неделя {{ currentWorkingWeekId }}</span>
           </span>
           <span :class="$style.metaDivider" aria-hidden="true" />
           <span :class="$style.metaItem">
