@@ -165,9 +165,7 @@ sudo certbot renew --dry-run`,
       number: 5,
       title: 'Развёртывание обновлений (Workflow)',
       type: 'code',
-      code: `cd /var/www/fabsearch
-
-# 1. Получить последние изменения
+      code: `# 1. Получить последние изменения
 git pull origin main
 
 # 2. Установить зависимости (только pnpm, не npm install)

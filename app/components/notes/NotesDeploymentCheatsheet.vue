@@ -17,6 +17,7 @@ const tocItems = sections.map((section) => ({
 }))
 
 const sshCommand = `ssh root@${meta.ip}`
+const cdCommand = `cd ${meta.projectPath}`
 </script>
 
 <template>
@@ -48,6 +49,8 @@ const sshCommand = `ssh root@${meta.ip}`
     </header>
 
     <NotesCodeBlock :code="sshCommand" label="Подключение к серверу" />
+
+    <NotesCodeBlock :code="cdCommand" label="Переход в папку проекта" />
 
     <NotesCodeBlock :code="DEPLOY_QUICK_COMMAND" label="Деплой обновлений (универсальный)" />
 
