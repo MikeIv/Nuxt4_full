@@ -112,13 +112,22 @@ pm2 restart fabsearch
 
 > **Prisma:** в коде только имена **моделей** из `schema.prisma`, не таблиц БД:
 > `prisma.task`, `prisma.user`, `prisma.notesAccessSettings` — **не** `prisma.tasks`, `prisma.users`, `prisma.notes_access_settings`.
-> Не правь `server/utils/*.ts` через `sed`. Если уже правили — откат:
+> Не правь `server/utils/*.ts` через `sed` и **не запускай** `prisma db pull` (перезапишет схему).
+>
+> **Если `git pull` ругается на локальные изменения** или сборка видит `prisma.tasks`:
 >
 > ```bash
-> git restore server/utils/tasks.ts server/utils/notesAccess.ts
-> pnpm exec prisma generate
+> cd /var/www/fabsearch
+> git fetch origin main
+> git reset --hard origin/main
+> pnpm install --frozen-lockfile
+> pnpm exec prisma migrate deploy
+> rm -rf .output node_modules/.prisma
 > pnpm run build
+> pm2 restart fabsearch
 > ```
+>
+> Проверка схемы: `grep '^model ' prisma/schema.prisma` — должны быть `User`, `Task`, `NotesAccessSettings`.
 
 ---
 
