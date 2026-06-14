@@ -17,6 +17,8 @@ const tocItems = sections.map((section) => ({
 }))
 
 const sshCommand = `ssh root@${meta.ip}`
+const deployCommand =
+  'git pull && pnpm install --frozen-lockfile && rm -rf .output && pnpm build && pm2 restart fabsearch'
 </script>
 
 <template>
@@ -48,6 +50,8 @@ const sshCommand = `ssh root@${meta.ip}`
     </header>
 
     <NotesCodeBlock :code="sshCommand" label="Подключение к серверу" />
+
+    <NotesCodeBlock :code="deployCommand" label="Деплой обновлений (универсальный)" />
 
     <nav :class="$style.toc" aria-label="Содержание шпаргалки">
       <p :class="$style.tocTitle">Содержание</p>
