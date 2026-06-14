@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { UiTabItem } from '~/components/ui/UiTabs.vue'
 import {
+  isProtectedNotesDocument,
   NOTE_LINKS,
   NOTES_DOCUMENTS,
   USEFUL_ITEMS,
   type NotesDocumentId,
 } from '#shared/constants/notesContent'
+import { formatApiError } from '#shared/utils/formatApiError'
 
 definePageMeta({
   layout: 'default',
@@ -17,14 +19,117 @@ useHead({
 
 type NotesTab = 'documents' | 'links' | 'useful'
 
+const SERVER_ACCESS_ID: NotesDocumentId = 'server-access'
+
 const activeTab = ref<NotesTab>('documents')
 const activeDocument = ref<NotesDocumentId>('project-docs')
+
+const {
+  isConfigured,
+  isUnlocked,
+  refresh: refreshAccessStatus,
+  setupPassword,
+  unlock,
+  forgotPassword,
+} = useNotesAccess()
+
+const toast = useToast()
+const accessDialogOpen = ref(false)
+const accessDialogMode = ref<'setup' | 'unlock'>('unlock')
+const accessDialogLoading = ref(false)
+const pendingDocument = ref<NotesDocumentId | null>(null)
 
 const tabItems: UiTabItem[] = [
   { value: 'documents', label: 'Документы' },
   { value: 'links', label: 'Ссылки' },
   { value: 'useful', label: 'Полезное' },
 ]
+
+const openAccessDialog = (mode: 'setup' | 'unlock', docId: NotesDocumentId) => {
+  pendingDocument.value = docId
+  accessDialogMode.value = mode
+  accessDialogOpen.value = true
+}
+
+const selectDocument = async (docId: NotesDocumentId) => {
+  const doc = NOTES_DOCUMENTS.find((item) => item.id === docId)
+  if (!doc) {
+    return
+  }
+
+  if (isProtectedNotesDocument(doc)) {
+    await refreshAccessStatus()
+
+    if (isUnlocked.value) {
+      activeDocument.value = docId
+      return
+    }
+
+    openAccessDialog(isConfigured.value ? 'unlock' : 'setup', docId)
+    return
+  }
+
+  activeDocument.value = docId
+}
+
+const completeAccess = async () => {
+  accessDialogOpen.value = false
+  await refreshAccessStatus()
+
+  if (pendingDocument.value) {
+    activeDocument.value = pendingDocument.value
+    pendingDocument.value = null
+  }
+}
+
+const handleAccessClose = () => {
+  accessDialogOpen.value = false
+  pendingDocument.value = null
+}
+
+const handleAccessAction = async (
+  action: () => Promise<unknown>,
+  successMessage: string,
+  errorMessage: string,
+  complete = false,
+) => {
+  accessDialogLoading.value = true
+
+  try {
+    await action()
+    toast.success(successMessage)
+    if (complete) {
+      await completeAccess()
+    }
+  } catch (error) {
+    toast.error(formatApiError(error, errorMessage))
+  } finally {
+    accessDialogLoading.value = false
+  }
+}
+
+const handleSetupSubmit = (password: string, confirmPassword: string) =>
+  handleAccessAction(
+    () => setupPassword({ password, confirmPassword }),
+    'Пароль установлен',
+    'Не удалось установить пароль',
+    true,
+  )
+
+const handleUnlockSubmit = (password: string) =>
+  handleAccessAction(
+    () => unlock({ password }),
+    'Доступ открыт',
+    'Неверный пароль',
+    true,
+  )
+
+const handleForgotPassword = () =>
+  handleAccessAction(
+    forgotPassword,
+    'Пароль отправлен на gagarahome@yandex.ru',
+    'Не удалось отправить пароль на почту',
+  )
 </script>
 
 <template>
@@ -64,7 +169,7 @@ const tabItems: UiTabItem[] = [
                       activeDocument === doc.id && $style.docNavBtnActive,
                     ]"
                     :aria-current="activeDocument === doc.id ? 'true' : undefined"
-                    @click="activeDocument = doc.id"
+                    @click="selectDocument(doc.id)"
                   >
                     <span :class="$style.docNavBtnTitle">{{ doc.title }}</span>
                     <span :class="$style.docNavBtnDesc">{{ doc.description }}</span>
@@ -76,8 +181,25 @@ const tabItems: UiTabItem[] = [
             <div :class="$style.docContent">
               <NotesProjectDocs v-if="activeDocument === 'project-docs'" />
               <NotesDeploymentCheatsheet v-else-if="activeDocument === 'deployment-cheatsheet'" />
+              <NotesServerAccess v-else-if="activeDocument === SERVER_ACCESS_ID && isUnlocked" />
+              <p
+                v-else-if="activeDocument === SERVER_ACCESS_ID"
+                :class="$style.lockedHint"
+              >
+                Раздел «Серверные доступы» закрыт. Нажмите подраздел слева и введите пароль.
+              </p>
             </div>
           </div>
+
+          <NotesAccessDialog
+            :open="accessDialogOpen"
+            :mode="accessDialogMode"
+            :loading="accessDialogLoading"
+            @close="handleAccessClose"
+            @submit-setup="handleSetupSubmit"
+            @submit-unlock="handleUnlockSubmit"
+            @forgot-password="handleForgotPassword"
+          />
         </section>
 
         <!-- Ссылки -->
@@ -237,6 +359,15 @@ const tabItems: UiTabItem[] = [
 
 .docContent {
   min-width: 0;
+}
+
+.lockedHint {
+  margin: 0;
+  padding: var(--fs-space-3);
+  border: 1px dashed var(--fs-color-border-light);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-body;
 }
 
 .linkList,

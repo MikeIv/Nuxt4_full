@@ -9,9 +9,21 @@ export const NOTES_DOCUMENTS = [
     title: 'Шпаргалка по деплою и управлению',
     description: 'PM2, Nginx, SSL, workflow обновлений fabsearch.ru',
   },
+  {
+    id: 'server-access',
+    title: 'Серверные доступы',
+    description: 'Пароли env, БД и psql — доступ по паролю',
+    protected: true,
+  },
 ] as const
 
 export type NotesDocumentId = (typeof NOTES_DOCUMENTS)[number]['id']
+
+export type NotesDocument = (typeof NOTES_DOCUMENTS)[number]
+
+export function isProtectedNotesDocument(doc: NotesDocument): boolean {
+  return 'protected' in doc && doc.protected === true
+}
 
 export interface NoteLink {
   title: string

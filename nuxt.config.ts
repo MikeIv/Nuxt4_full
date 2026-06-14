@@ -38,6 +38,12 @@ export default defineNuxtConfig({
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL,
     authSecret: process.env.AUTH_SECRET,
+    notesAccessResetEmail: process.env.NOTES_ACCESS_RESET_EMAIL ?? 'gagarahome@yandex.ru',
+    smtpHost: process.env.SMTP_HOST ?? '',
+    smtpPort: process.env.SMTP_PORT ?? '465',
+    smtpUser: process.env.SMTP_USER ?? '',
+    smtpPass: process.env.SMTP_PASS ?? '',
+    smtpFrom: process.env.SMTP_FROM ?? '',
 
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',

@@ -79,3 +79,12 @@ enum Role {
   USER
   ADMIN
 }
+
+model NotesAccessSettings {
+  id             String   @id @default("default")
+  passwordHash   String
+  passwordCipher String
+  updatedAt      DateTime @updatedAt
+
+  @@map("notes_access_settings")
+}
