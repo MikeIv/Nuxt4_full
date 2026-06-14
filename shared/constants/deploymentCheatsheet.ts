@@ -166,14 +166,18 @@ sudo certbot renew --dry-run`,
 # 1. Получить последние изменения
 git pull origin main
 
-# 2. Установить новые зависимости (если были)
-npm install
+# 2. Установить зависимости (только pnpm, не npm install)
+corepack enable
+pnpm install --frozen-lockfile
 
-# 3. Применить миграции Prisma (если были)
-npx prisma migrate deploy
+# Если install падает после npm или lockfile сбился:
+# rm -rf node_modules package-lock.json && pnpm install --frozen-lockfile
+
+# 3. Применить миграции Prisma (если менялась схема)
+pnpm exec prisma migrate deploy
 
 # 4. Пересобрать проект
-npm run build
+pnpm run build
 
 # 5. Перезапустить приложение
 pm2 restart fabsearch`,
@@ -210,10 +214,11 @@ sudo journalctl -u pm2-root -f`,
         {
           title: 'При обновлении кода',
           items: [
-            'git pull',
-            'npm install',
-            'npx prisma migrate deploy (если менялась схема БД)',
-            'npm run build',
+            'git pull origin main',
+            'corepack enable && pnpm install --frozen-lockfile',
+            'rm -rf node_modules package-lock.json — только если раньше ставили через npm или install падает',
+            'pnpm exec prisma migrate deploy (если менялась схема БД)',
+            'pnpm run build',
             'pm2 restart fabsearch',
           ],
         },

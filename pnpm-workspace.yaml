@@ -4,12 +4,12 @@ packages:
 
 allowBuilds:
   '@parcel/watcher': true
-  '@prisma/client': set this to true or false
+  '@prisma/client': true
   '@prisma/engines': false
   esbuild: true
   prisma: false
   unrs-resolver: true
-  vue-demi: set this to true or false
+  vue-demi: true
 
 overrides:
   glob: ^13.0.0

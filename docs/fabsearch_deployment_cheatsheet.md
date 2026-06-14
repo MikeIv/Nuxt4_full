@@ -1,9 +1,9 @@
 # Fabsearch.ru — Шпаргалка по деплою и управлению
 
-**Проект:** Nuxt 4 Fullstack Sandbox  
-**Домен:** https://fabsearch.ru  
-**Сервер:** Reg.ru VPS (Stdp C2-M2-D40)  
-**IP:** 80.78.247.58  
+**Проект:** Nuxt 4 Fullstack Sandbox
+**Домен:** https://fabsearch.ru
+**Сервер:** Reg.ru VPS (Stdp C2-M2-D40)
+**IP:** 80.78.247.58
 **Папка проекта:** `/var/www/fabsearch`
 
 ---
@@ -92,14 +92,18 @@ cd /var/www/fabsearch
 # 1. Получить последние изменения
 git pull origin main
 
-# 2. Установить новые зависимости (если были)
-npm install
+# 2. Установить зависимости (только pnpm, не npm install)
+corepack enable
+pnpm install --frozen-lockfile
 
-# 3. Применить миграции Prisma (если были)
-npx prisma migrate deploy
+# Если install падает после npm или lockfile сбился:
+# rm -rf node_modules package-lock.json && pnpm install --frozen-lockfile
+
+# 3. Применить миграции Prisma (если менялась схема)
+pnpm exec prisma migrate deploy
 
 # 4. Пересобрать проект
-npm run build
+pnpm run build
 
 # 5. Перезапустить приложение
 pm2 restart fabsearch
@@ -135,11 +139,12 @@ sudo journalctl -u pm2-root -f
 
 ### При обновлении кода:
 
-1. `git pull`
-2. `npm install`
-3. `npx prisma migrate deploy` (если менялась схема БД)
-4. `npm run build`
-5. `pm2 restart fabsearch`
+1. `git pull origin main`
+2. `corepack enable && pnpm install --frozen-lockfile`
+3. `rm -rf node_modules package-lock.json` — только если раньше ставили через npm или install падает
+4. `pnpm exec prisma migrate deploy` (если менялась схема БД)
+5. `pnpm run build`
+6. `pm2 restart fabsearch`
 
 ### Перед важными изменениями:
 
@@ -162,7 +167,7 @@ sudo journalctl -u pm2-root -f
 
 ---
 
-**Создано:** 13 июня 2026  
+**Создано:** 13 июня 2026
 **Автор:** Grok (xAI) для Mike
 
 ---
