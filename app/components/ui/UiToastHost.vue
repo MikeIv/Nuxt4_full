@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { toasts, dismiss } = useToast()
+const { toasts, dismiss } = useAppToast()
 </script>
 
 <template>

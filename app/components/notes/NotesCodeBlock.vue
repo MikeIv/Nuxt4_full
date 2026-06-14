@@ -14,9 +14,24 @@ interface CodeLine {
 const COPY_ALL_RESET_MS = 2000
 const COPY_LINE_RESET_MS = 1500
 
-const toast = useToast()
+const { copyToClipboard } = useCopyToClipboard()
 const copiedAll = ref(false)
 const copiedLineIndex = ref<number | null>(null)
+
+const flashCopyState = (target: 'all' | number, resetMs: number) => {
+  if (target === 'all') {
+    copiedAll.value = true
+    window.setTimeout(() => {
+      copiedAll.value = false
+    }, resetMs)
+    return
+  }
+
+  copiedLineIndex.value = target
+  window.setTimeout(() => {
+    copiedLineIndex.value = null
+  }, resetMs)
+}
 
 const lines = computed<CodeLine[]>(() =>
   props.code.split('\n').flatMap((line) => {
@@ -35,32 +50,18 @@ const lines = computed<CodeLine[]>(() =>
   }),
 )
 
-const copyText = async (text: string, onSuccess: () => void) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    onSuccess()
-    toast.success('Скопировано в буфер обмена')
-  } catch {
-    toast.error('Не удалось скопировать')
+const copyCode = async () => {
+  const copied = await copyToClipboard(props.code)
+  if (copied) {
+    flashCopyState('all', COPY_ALL_RESET_MS)
   }
 }
 
-const copyCode = async () => {
-  await copyText(props.code, () => {
-    copiedAll.value = true
-    window.setTimeout(() => {
-      copiedAll.value = false
-    }, COPY_ALL_RESET_MS)
-  })
-}
-
 const copyLine = async (text: string, index: number) => {
-  await copyText(text.trim(), () => {
-    copiedLineIndex.value = index
-    window.setTimeout(() => {
-      copiedLineIndex.value = null
-    }, COPY_LINE_RESET_MS)
-  })
+  const copied = await copyToClipboard(text.trim())
+  if (copied) {
+    flashCopyState(index, COPY_LINE_RESET_MS)
+  }
 }
 </script>
 

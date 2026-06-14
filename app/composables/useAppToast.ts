@@ -9,7 +9,16 @@ export interface ToastItem {
 const TOAST_DURATION_MS = 4000
 const dismissTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
-export function useToast() {
+function createToastId(): string {
+  if (typeof globalThis.crypto?.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID()
+  }
+
+  return `toast-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+}
+
+/** Проектные toast-уведомления (не путать с @nuxt/ui useToast). */
+export function useAppToast() {
   const toasts = useState<ToastItem[]>('ui-toasts', () => [])
 
   const dismiss = (id: string) => {
@@ -23,7 +32,7 @@ export function useToast() {
   }
 
   const push = (message: string, variant: ToastVariant) => {
-    const id = globalThis.crypto.randomUUID()
+    const id = createToastId()
     toasts.value = [...toasts.value, { id, message, variant }]
 
     dismissTimers.set(

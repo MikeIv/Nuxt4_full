@@ -14,7 +14,7 @@ const props = withDefaults(
 
 const COPY_RESET_MS = 2000
 
-const toast = useToast()
+const { copyToClipboard } = useCopyToClipboard()
 const {
   savedPassword,
   password,
@@ -35,16 +35,15 @@ const fullSql = computed(
 )
 
 const copySql = async () => {
-  try {
-    await navigator.clipboard.writeText(fullSql.value)
-    copied.value = true
-    toast.success('Скопировано в буфер обмена')
-    window.setTimeout(() => {
-      copied.value = false
-    }, COPY_RESET_MS)
-  } catch {
-    toast.error('Не удалось скопировать')
+  const ok = await copyToClipboard(fullSql.value)
+  if (!ok) {
+    return
   }
+
+  copied.value = true
+  window.setTimeout(() => {
+    copied.value = false
+  }, COPY_RESET_MS)
 }
 </script>
 

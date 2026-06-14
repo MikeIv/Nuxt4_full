@@ -1,5 +1,5 @@
 export function useNotesEditablePasswordField(fallback?: string) {
-  const toast = useToast()
+  const toast = useAppToast()
   const passwordInputRef = ref<HTMLInputElement | null>(null)
   const { savedPassword, persistPassword } = useNotesDbPassword(fallback)
 

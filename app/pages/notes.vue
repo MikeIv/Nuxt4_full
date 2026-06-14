@@ -40,7 +40,7 @@ const {
   forgotPassword,
 } = useNotesAccess()
 
-const toast = useToast()
+const toast = useAppToast()
 const accessDialogOpen = ref(false)
 const accessDialogMode = ref<'setup' | 'unlock'>('unlock')
 const accessDialogLoading = ref(false)

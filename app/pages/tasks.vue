@@ -35,7 +35,7 @@ const {
   sortOptions,
 } = useTaskFilters(tasks)
 
-const toast = useToast()
+const toast = useAppToast()
 
 const newTitle = ref('')
 const newDesc = ref('')

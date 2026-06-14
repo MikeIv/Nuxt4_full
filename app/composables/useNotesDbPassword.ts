@@ -7,7 +7,7 @@ const DEFAULT_PASSWORD = 'НовыйСильныйПароль123!'
 
 export function useNotesDbPassword(fallback = DEFAULT_PASSWORD) {
   const api = useApi()
-  const toast = useToast()
+  const toast = useAppToast()
   const { isUnlocked } = useNotesAccess()
 
   const savedPassword = useState('notes-db-password', () => fallback)
