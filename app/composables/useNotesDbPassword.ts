@@ -2,6 +2,7 @@ import type {
   NotesDbPasswordResponse,
   NotesDbPasswordSaveResponse,
 } from '#shared/types/notesAccess'
+import { useAppToast } from '~/composables/useAppToast'
 
 const DEFAULT_PASSWORD = 'НовыйСильныйПароль123!'
 

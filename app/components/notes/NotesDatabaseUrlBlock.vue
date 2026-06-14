@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useCopyToClipboard } from '~/composables/useCopyToClipboard'
+
 const props = withDefaults(
   defineProps<{
     label?: string

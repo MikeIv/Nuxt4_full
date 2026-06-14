@@ -9,6 +9,7 @@ import {
   type NotesDocumentId,
 } from '#shared/constants/notesContent'
 import { formatApiError } from '#shared/utils/formatApiError'
+import { useAppToast } from '~/composables/useAppToast'
 
 definePageMeta({
   layout: 'default',

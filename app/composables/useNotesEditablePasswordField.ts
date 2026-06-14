@@ -1,3 +1,5 @@
+import { useAppToast } from '~/composables/useAppToast'
+
 export function useNotesEditablePasswordField(fallback?: string) {
   const toast = useAppToast()
   const passwordInputRef = ref<HTMLInputElement | null>(null)

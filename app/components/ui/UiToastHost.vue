@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAppToast } from '~/composables/useAppToast'
+
 const { toasts, dismiss } = useAppToast()
 </script>
 

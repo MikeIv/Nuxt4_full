@@ -1,3 +1,5 @@
+import { useAppToast } from '~/composables/useAppToast'
+
 const DEFAULT_SUCCESS_MESSAGE = 'Скопировано в буфер обмена'
 const DEFAULT_ERROR_MESSAGE = 'Не удалось скопировать'
 
