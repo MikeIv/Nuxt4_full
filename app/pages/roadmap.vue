@@ -46,7 +46,7 @@ const activeWeekProgress = computed(() => {
   <div :class="$style.page">
     <div :class="$style.backdrop" aria-hidden="true" />
 
-    <div :class="$style.shell">
+    <AppContainer :class="$style.shell">
       <header :class="$style.hero">
         <p :class="$style.badge">12-недельный план</p>
         <h1 :class="$style.title">Roadmap — прогресс</h1>
@@ -96,7 +96,7 @@ const activeWeekProgress = computed(() => {
           @toggle="toggle"
         />
       </div>
-    </div>
+    </AppContainer>
   </div>
 </template>
 
@@ -125,8 +125,6 @@ const activeWeekProgress = computed(() => {
 .shell {
   position: relative;
   z-index: 1;
-  width: min(100%, fn.rem(960));
-  margin-inline: auto;
 }
 
 .hero {

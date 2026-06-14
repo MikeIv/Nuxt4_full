@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import type { HealthResponse } from '#shared/types/health'
 
-interface DocLink {
-  title: string
-  hint: string
-  href: string
-  accent: string
-}
-
 interface StackItem {
   label: string
   status: 'now' | 'plan'
@@ -16,27 +9,6 @@ interface StackItem {
 useHead({
   title: 'Nuxt4_full — fullstack sandbox',
 })
-
-const docLinks: DocLink[] = [
-  {
-    title: 'План развёртывания',
-    hint: 'Этапы A–F, окружение, Cursor rules',
-    href: 'https://github.com/MikeIv/Nuxt4_full/blob/main/docs/deployment-plan.md',
-    accent: 'var(--fs-figma-main-building-main)',
-  },
-  {
-    title: 'Roadmap 12 недель',
-    hint: 'Nitro, Prisma, auth, деплой, capstone',
-    href: '/roadmap',
-    accent: 'var(--fs-figma-vertical-shop)',
-  },
-  {
-    title: 'Оглавление docs',
-    hint: 'Навигация по документации проекта',
-    href: 'https://github.com/MikeIv/Nuxt4_full/blob/main/docs/README.md',
-    accent: 'var(--fs-figma-main-building-whater-complex)',
-  },
-]
 
 const stackItems: StackItem[] = [
   { label: 'Nuxt 4.4', status: 'now' },
@@ -66,7 +38,7 @@ const healthErrorMessage = computed(() => {
   <div :class="$style.page">
     <div :class="$style.backdrop" aria-hidden="true" />
 
-    <div :class="$style.shell">
+    <AppContainer :class="$style.shell">
       <header :class="$style.hero">
         <p :class="$style.badge">Fullstack learning sandbox</p>
         <h1 :class="$style.title">Fabsearch</h1>
@@ -94,33 +66,6 @@ const healthErrorMessage = computed(() => {
           </span>
         </div>
       </header>
-
-      <section :class="$style.section">
-        <div :class="$style.sectionHead">
-          <h2 :class="$style.sectionTitle">Документация</h2>
-          <p :class="$style.sectionHint">Локально — каталог <code>docs/</code> в корне проекта</p>
-        </div>
-
-        <ul :class="$style.cards">
-          <li v-for="item in docLinks" :key="item.title">
-            <component
-              :is="item.href.startsWith('/') ? 'NuxtLink' : 'a'"
-              :class="$style.card"
-              :href="item.href.startsWith('/') ? undefined : item.href"
-              :to="item.href.startsWith('/') ? item.href : undefined"
-              :target="item.href.startsWith('/') ? undefined : '_blank'"
-              :rel="item.href.startsWith('/') ? undefined : 'noopener noreferrer'"
-              :style="{ '--card-accent': item.accent }"
-            >
-              <span :class="$style.cardTitle">{{ item.title }}</span>
-              <span :class="$style.cardHint">{{ item.hint }}</span>
-              <span :class="$style.cardAction">
-                {{ item.href.startsWith('/') ? 'Открыть →' : 'Открыть на GitHub →' }}
-              </span>
-            </component>
-          </li>
-        </ul>
-      </section>
 
       <section :class="$style.section">
         <div :class="$style.sectionHead">
@@ -185,13 +130,12 @@ const healthErrorMessage = computed(() => {
           <code>runtimeConfig</code> — см. <NuxtLink to="/roadmap">roadmap</NuxtLink>.
         </p>
       </footer>
-    </div>
+    </AppContainer>
   </div>
 </template>
 
 <style module lang="scss">
 @use '~/assets/styles/tools/functions' as fn;
-@use '~/assets/styles/tools/mixins' as mq;
 @use '~/assets/styles/tools/typography' as typo;
 @use '~/assets/styles/tools/margin' as margin;
 
@@ -216,8 +160,6 @@ const healthErrorMessage = computed(() => {
 .shell {
   position: relative;
   z-index: 1;
-  width: min(100%, fn.rem(960));
-  margin-inline: auto;
 }
 
 .hero {
@@ -331,69 +273,6 @@ const healthErrorMessage = computed(() => {
     color: var(--fs-color-primary-strong);
     font-size: 0.92em;
   }
-}
-
-.cards {
-  display: grid;
-  gap: var(--fs-margin-card-sm);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-
-  @include mq.from-tablet {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--fs-space-1);
-  min-height: 100%;
-  padding: var(--fs-margin-card);
-  border: 1px solid var(--fs-color-border-light);
-  border-radius: var(--fs-radius-lg);
-  background: var(--fs-color-bg);
-  box-shadow: var(--fs-shadow-sm);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-
-  &::before {
-    content: '';
-    width: fn.rem(40);
-    height: fn.rem(4);
-    border-radius: 999px;
-    background: var(--card-accent, var(--fs-color-primary));
-  }
-
-  &:hover {
-    border-color: var(--fs-color-border);
-    box-shadow: var(--fs-shadow-glow);
-    transform: translateY(fn.rem(-2));
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--fs-color-primary);
-    outline-offset: 2px;
-  }
-}
-
-.cardTitle {
-  color: var(--fs-color-text);
-  @include typo.fs-text-h4;
-}
-
-.cardHint {
-  flex: 1;
-  color: var(--fs-color-text-muted);
-  @include typo.fs-text-body;
-}
-
-.cardAction {
-  color: var(--fs-color-primary-strong);
-  @include typo.fs-text-header;
 }
 
 .stack {

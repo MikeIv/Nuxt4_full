@@ -2,13 +2,14 @@
 const navItems = [
   { to: '/', label: 'Главная' },
   { to: '/tasks', label: 'Задачи' },
+  { to: '/notes', label: 'Заметки' },
   { to: '/roadmap', label: 'Roadmap' },
 ] as const
 </script>
 
 <template>
   <header :class="$style.root">
-    <div :class="$style.inner">
+    <AppContainer :class="$style.inner">
       <NuxtLink to="/" :class="$style.brand">
         <AppLogoFull />
       </NuxtLink>
@@ -28,7 +29,7 @@ const navItems = [
           </span>
         </NuxtLink>
       </nav>
-    </div>
+    </AppContainer>
   </header>
 </template>
 
@@ -50,8 +51,6 @@ const navItems = [
   gap: var(--fs-space-2);
   align-items: center;
   justify-content: space-between;
-  width: min(100%, fn.rem(960));
-  margin-inline: auto;
   padding: var(--fs-space-2);
 }
 

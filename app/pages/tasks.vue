@@ -77,7 +77,9 @@ const handleCreate = async () => {
     await createTask({
       title,
       description: newDesc.value.trim() || undefined,
+      userId: "TEMP_USER_ID_FOR_TEST",   // ← Временно! Потом заменим на реального пользователя
     })
+
     toast.success(`Задача «${title}» создана`)
     newTitle.value = ''
     newDesc.value = ''
@@ -162,7 +164,7 @@ const handleToggle = async (id: string) => {
 
 <template>
   <div :class="$style.page">
-    <div :class="$style.shell">
+    <AppContainer>
       <header :class="$style.header">
         <h1 :class="$style.title">Задачи</h1>
         <p :class="$style.subtitle">Полный CRUD через API (Prisma + PostgreSQL)</p>
@@ -412,7 +414,7 @@ const handleToggle = async (id: string) => {
           </button>
         </div>
       </div>
-    </div>
+    </AppContainer>
   </div>
 </template>
 
@@ -444,11 +446,6 @@ const handleToggle = async (id: string) => {
 
 .page {
   padding: var(--fs-space-3) var(--fs-space-2) var(--fs-space-4);
-}
-
-.shell {
-  width: min(100%, fn.rem(960));
-  margin-inline: auto;
 }
 
 .header {
