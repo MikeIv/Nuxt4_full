@@ -129,6 +129,8 @@ pm2 restart fabsearch
 >
 > Проверка схемы: `grep '^model ' prisma/schema.prisma` — должны быть `User`, `Task`, `NotesAccessSettings`.
 
+> **28P01 / `password authentication failed for user "nuxtuser"`:** пошаговый playbook — `/notes` → Документы → **Решение проблем** (кейс PM2 + DATABASE_URL).
+
 ---
 
 ## 6. Полезные команды сервера

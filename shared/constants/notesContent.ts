@@ -10,6 +10,11 @@ export const NOTES_DOCUMENTS = [
     description: 'PM2, Nginx, SSL, workflow обновлений fabsearch.ru',
   },
   {
+    id: 'ops-playbook',
+    title: 'Решение проблем',
+    description: 'PM2, PostgreSQL, .env — типовые инциденты',
+  },
+  {
     id: 'server-access',
     title: 'Общие настройки',
     description: 'env и др.',

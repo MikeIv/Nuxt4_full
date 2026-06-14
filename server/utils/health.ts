@@ -1,7 +1,18 @@
 import type { H3Event } from 'h3'
 import { readBody } from 'h3'
+import { Prisma } from '@prisma/client'
 import type { HealthPostBody, HealthPostResponse, HealthResponse } from '#shared/types/health'
 import { prisma } from './prisma'
+
+function isDatabaseAuthError(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    (error.code === 'P1000' ||
+      error.code === 'P2010' ||
+      error.message.includes('28P01') ||
+      error.message.includes('authentication failed'))
+  )
+}
 
 /**
  * Возвращает полный HealthResponse
@@ -10,7 +21,16 @@ import { prisma } from './prisma'
 export async function getHealthPayload(): Promise<HealthResponse> {
   const config = useServerRuntimeConfig()
 
-  await prisma.$queryRaw`SELECT 1`
+  try {
+    await prisma.$queryRaw`SELECT 1`
+  } catch (error) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: isDatabaseAuthError(error)
+        ? 'Database authentication failed — проверьте пароль в DATABASE_URL (.env)'
+        : 'Database unavailable',
+    })
+  }
 
   return {
     status: 'ok',

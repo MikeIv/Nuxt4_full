@@ -190,6 +190,7 @@ const handleForgotPassword = () =>
             <div :class="$style.docContent">
               <NotesProjectDocs v-if="activeDocument === 'project-docs'" />
               <NotesDeploymentCheatsheet v-else-if="activeDocument === 'deployment-cheatsheet'" />
+              <NotesOpsPlaybook v-else-if="activeDocument === 'ops-playbook'" />
               <NotesServerAccess v-else-if="activeDocument === SERVER_ACCESS_ID && isUnlocked" />
               <p
                 v-else-if="activeDocument === SERVER_ACCESS_ID"
