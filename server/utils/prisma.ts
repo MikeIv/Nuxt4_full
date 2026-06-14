@@ -8,12 +8,6 @@ const globalForPrisma = globalThis as unknown as {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Явно указываем параметры
-  user: 'postgres',
-  password: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  database: 'nuxt4full',
 })
 
 const adapter = new PrismaPg(pool)

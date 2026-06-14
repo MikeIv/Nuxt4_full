@@ -19,6 +19,11 @@ const sshCommand = 'ssh root@80.78.247.58'
     </section>
 
     <section :class="$style.section">
+      <h3 :class="$style.sectionTitle">SQL</h3>
+      <NotesSqlPasswordBlock />
+    </section>
+
+    <section :class="$style.section">
       <h3 :class="$style.sectionTitle">DATABASE_URL (.env)</h3>
       <p :class="$style.placeholder">
         Добавьте строку подключения PostgreSQL для production.
