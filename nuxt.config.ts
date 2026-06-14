@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import packageJson from './package.json' with { type: 'json' }
+
 const isDev = process.env.NODE_ENV === 'development'
 
 export default defineNuxtConfig({
@@ -9,7 +11,7 @@ export default defineNuxtConfig({
 
   css: ['~/assets/styles/main.scss'],
 
-  modules: ['@nuxt/eslint'],
+  modules: ['@nuxt/eslint', '@onmax/nuxt-better-auth'],
 
   eslint: {
     config: {
@@ -35,9 +37,11 @@ export default defineNuxtConfig({
    */
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    authSecret: process.env.AUTH_SECRET,
+
     public: {
       apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '',
-      appVersion: process.env.NUXT_PUBLIC_APP_VERSION ?? process.env.npm_package_version ?? '0.0.0',
+      appVersion: process.env.NUXT_PUBLIC_APP_VERSION ?? packageJson.version,
       appName: process.env.NUXT_PUBLIC_APP_NAME ?? 'Nuxt4 Fullstack',
     },
   },

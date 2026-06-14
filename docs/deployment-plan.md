@@ -138,9 +138,9 @@ git config --get core.hooksPath   # → .husky/_
 
 1. **Стек:** Nuxt 4 + Nitro + Prisma + PostgreSQL.
 2. **API:** собственные `server/api/*`; `NUXT_PUBLIC_API_BASE` пустой → same-origin.
-3. **Auth (неделя 5):** `nuxt-auth-utils` или Lucia — одно на весь проект.
+3. **Auth (неделя 4):** **Better Auth** + Prisma; session-based, plugins (email/OAuth позже).
 4. **ORM:** Prisma.
-5. **Валидация (неделя 7):** Zod на границе API.
+5. **Валидация:** Zod для auth — нед. 4; tasks/API — нед. 6.
 6. **Клиент:** только `useApi` / `useApiFetch`, не сырой `fetch` в компонентах.
 
 ---

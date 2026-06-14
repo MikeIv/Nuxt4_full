@@ -15,6 +15,8 @@ const tocItems = sections.map((section) => ({
   id: section.id,
   label: `${section.number}. ${section.title}`,
 }))
+
+const sshCommand = `ssh root@${meta.ip}`
 </script>
 
 <template>
@@ -45,11 +47,18 @@ const tocItems = sections.map((section) => ({
       </dl>
     </header>
 
+    <NotesCodeBlock :code="sshCommand" label="Подключение к серверу" />
+
     <nav :class="$style.toc" aria-label="Содержание шпаргалки">
       <p :class="$style.tocTitle">Содержание</p>
       <ol :class="$style.tocList">
         <li v-for="item in tocItems" :key="item.id">
-          <a :href="`#${item.id}`" :class="$style.tocLink">{{ item.label }}</a>
+          <a
+            :href="`#${item.id}`"
+            :class="[$style.tocLink, item.id === 'deploy' && $style.tocLinkAccent]"
+          >
+            {{ item.label }}
+          </a>
         </li>
       </ol>
     </nav>
@@ -259,6 +268,14 @@ const tocItems = sections.map((section) => ({
     outline: 2px solid var(--fs-color-primary);
     outline-offset: 2px;
     border-radius: var(--fs-radius-sm);
+  }
+}
+
+.tocLinkAccent {
+  color: var(--fs-color-primary);
+
+  &:hover {
+    color: var(--fs-color-warning);
   }
 }
 

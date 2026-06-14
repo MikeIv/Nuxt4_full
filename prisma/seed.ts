@@ -1,47 +1,55 @@
 import { prisma } from '../server/utils/prisma'
 
 async function main() {
-  console.log('🌱 Seeding database...')
+  // Создаём тестового пользователя
+  const defaultUser = await prisma.user.upsert({
+    where: { email: 'test@example.com' },
+    update: {},
+    create: {
+      email: 'test@example.com',
+      name: 'Test User',
+      role: 'USER',
+    },
+  })
 
-  const count = await prisma.task.count()
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'ADMIN',
+    },
+  })
 
-  if (count === 0) {
-    await prisma.task.createMany({
-      data: [
-        {
-          title: 'Изучить Nitro и первый backend',
-          description: 'Завершить Неделю 1 полностью',
-          completed: true,
-        },
-        {
-          title: 'Настроить PostgreSQL + Prisma',
-          description: 'День 1-3 Недели 2',
-          completed: true,
-        },
-        {
-          title: 'Сделать полноценный CRUD задач',
-          description: 'Неделя 2 — главная цель',
-          completed: false,
-        },
-        {
-          title: 'Подключить аутентификацию',
-          description: 'Неделя 4',
-          completed: false,
-        },
-      ],
-    })
-    console.log('✅ Добавлено 4 тестовые задачи')
-  } else {
-    console.log(`ℹ️ В базе уже ${count} задач`)
-  }
+  await prisma.task.createMany({
+    data: [
+      {
+        title: 'Купить продукты',
+        description: 'Молоко, хлеб, яйца',
+        completed: false,
+        userId: defaultUser.id,
+      },
+      {
+        title: 'Закончить roadmap',
+        description: 'Неделя 4',
+        completed: true,
+        userId: defaultUser.id,
+      },
+      {
+        title: 'Проверить админку',
+        description: '',
+        completed: false,
+        userId: adminUser.id,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
+  console.log('✅ Seed completed with users and tasks')
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+main().catch((e) => {
+  console.error(e)
+  process.exit(1)
+})

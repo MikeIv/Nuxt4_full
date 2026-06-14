@@ -5,6 +5,7 @@ declare module 'nuxt/schema' {
 
     /** Приватный DATABASE_URL для Prisma (нед. 2). Только server, не попадает в клиент. */
     databaseUrl?: string
+    authSecret: string
   }
 
   interface PublicRuntimeConfig {

@@ -11,6 +11,7 @@ export interface Task {
 export interface CreateTaskInput {
   title: string
   description?: string
+  completed?: boolean
 }
 
 export interface UpdateTaskInput {

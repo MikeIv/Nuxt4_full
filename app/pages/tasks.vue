@@ -77,7 +77,6 @@ const handleCreate = async () => {
     await createTask({
       title,
       description: newDesc.value.trim() || undefined,
-      userId: "TEMP_USER_ID_FOR_TEST",   // ← Временно! Потом заменим на реального пользователя
     })
 
     toast.success(`Задача «${title}» создана`)

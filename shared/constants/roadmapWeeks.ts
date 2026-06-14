@@ -98,7 +98,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       {
         topic: '✅ `server/middleware/log.ts` — порядок middleware → handler',
         description:
-          'Сделано. Лог [nitro] method path на каждый HTTP-запрос до handler. На нед. 4 — duration, apiHandler.',
+          'Сделано. Лог [nitro] method path на каждый HTTP-запрос до handler. На нед. 5 — duration, apiHandler.',
       },
       {
         topic: '✅ runtimeConfig + типизация',
@@ -202,7 +202,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     id: 2,
     title: 'Prisma + PostgreSQL + Task CRUD',
     theme: 'Docker, schema, CRUD /api/tasks (v2)',
-    goal: 'PostgreSQL + Prisma + CRUD tasks. Порядок: types → utils → GET/POST → PATCH/DELETE → curl verify → docs. Zod минимально; apiHandler — нед. 4. Темп: ~1–2 ч/день.',
+    goal: 'PostgreSQL + Prisma + CRUD tasks. Порядок: types → utils → GET/POST → PATCH/DELETE → curl verify → docs. Zod минимально; apiHandler — нед. 5. Темп: ~1–2 ч/день.',
     theory: theorySteps([
       {
         topic: 'Docker Compose + PostgreSQL',
@@ -386,140 +386,262 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   },
   {
     id: 4,
-    title: 'HTTP, middleware, ошибки',
-    theme: 'apiHandler, единый формат API',
-    goal: 'Единый стиль API — унификация createError и { data, success } из нед. 2.',
+    title: 'Better Auth + RBAC',
+    theme: 'День 1: установка + Prisma-схема + базовая настройка Better Auth',
+    goal: 'Production-ready auth (Better Auth + Prisma): register/login/logout, защита API и UI, роли USER/ADMIN. День 1 — фундамент: пакеты, User/Session, betterAuth(), миграция, pnpm dev без ошибок. ~7–10 ч.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Что такое Better Auth? (30–45 мин)',
+        description:
+          'Современная auth-библиотека (2025–2026): email/password, cookie-sessions, OAuth, 2FA, organizations, rate limiting. Меньше boilerplate, чем Lucia. Интеграция с Nuxt: better-auth.com/docs/integrations/nuxt + модуль @onmax/nuxt-better-auth.',
+      },
+      {
+        topic: 'День 1 — Ключевые понятия',
+        description:
+          'Adapter — связь Better Auth с Prisma (@better-auth/prisma-adapter). Better Auth Instance — главный объект betterAuth(). Schema Generation — CLI для таблиц User/Session (или ручная схема). runtimeConfig — AUTH_SECRET и др. только server-side.',
+      },
+      {
+        topic: 'День 1 — Источники перед практикой',
+        description:
+          'Nuxt Integration: better-auth.com/docs/integrations/nuxt. Prisma Adapter: better-auth.com/docs/adapters/prisma. Модуль: @onmax/nuxt-better-auth@alpha.',
+      },
+      {
+        topic: 'Nuxt integration (дни 2–5)',
+        description:
+          'Middleware, composables, routeRules. Меньше ручной работы с sessions/cookies vs Lucia.',
+      },
+      {
+        topic: 'Server vs pages middleware',
+        description: 'Guards для /api/tasks*; app/middleware/auth.ts для /tasks. 401 без сессии.',
+      },
+      {
+        topic: 'Authentication vs authorization (RBAC)',
+        description: 'День 6: role USER | ADMIN; owner checks; DELETE task — владелец или ADMIN.',
+      },
+      {
+        topic: 'CJ-style UX',
+        description: 'Loading/error states на login/register; редиректы после auth; user menu.',
+      },
+    ]),
+    practice: practiceSteps(4, [
+      {
+        label: 'День 1 — Шаг 1: Установка пакетов',
+        what: 'Основной пакет, Prisma adapter и Nuxt-модуль.',
+        where: 'package.json.',
+        how: 'pnpm add better-auth @better-auth/prisma-adapter @onmax/nuxt-better-auth@alpha.',
+        verify: 'Пакеты в dependencies; pnpm install без ошибок.',
+      },
+      {
+        label: 'День 1 — Шаг 2: Prisma schema (User + Session + Task.userId)',
+        what: 'Модели Better Auth + role для RBAC + связь Task → User.',
+        where: 'prisma/schema.prisma.',
+        how: 'User (id, email, emailVerified, image, role @default("USER"), sessions, tasks). Session (token, expiresAt, userId, ipAddress, userAgent). Task: userId + relation onDelete Cascade.',
+        verify: 'schema.prisma валиден; связи User ↔ Session ↔ Task согласованы.',
+      },
+      {
+        label: 'День 1 — Шаг 3: server/utils/auth.ts',
+        what: 'Better Auth instance с prismaAdapter и emailAndPassword.',
+        where: 'server/utils/auth.ts.',
+        how: 'betterAuth({ database: prismaAdapter(prisma, { provider: "postgresql" }), emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 8 }, appName: "Task Board", secret: process.env.AUTH_SECRET }).',
+        verify: 'typecheck OK; импорт prisma из server/utils/prisma.ts.',
+      },
+      {
+        label: 'День 1 — Шаг 4: nuxt.config.ts — модуль',
+        what: 'Подключить @onmax/nuxt-better-auth.',
+        where: 'nuxt.config.ts.',
+        how: "modules: ['@onmax/nuxt-better-auth']; секция betterAuth: { … } по доке модуля.",
+        verify: 'Nuxt стартует; модуль в списке modules.',
+      },
+      {
+        label: 'День 1 — Шаг 5: Переменные окружения',
+        what: 'DATABASE_URL и AUTH_SECRET (мин. 32 символа).',
+        where: '.env, .env.example, nuxt.config runtimeConfig (private).',
+        how: 'openssl rand -hex 32 для AUTH_SECRET. DATABASE_URL=postgresql://…. Не коммитить .env.',
+        verify: 'AUTH_SECRET в private runtimeConfig; .env.example обновлён.',
+      },
+      {
+        label: 'День 1 — Шаг 6: Миграция + generate',
+        what: 'Применить схему к PostgreSQL.',
+        where: 'prisma/migrations/.',
+        how: 'pnpm exec prisma migrate dev --name add_better_auth && pnpm exec prisma generate.',
+        verify: 'Миграция применена; Prisma Client сгенерирован.',
+      },
+      {
+        label: 'День 1 — Шаг 7: Проверка старта',
+        what: 'Сервер без ошибок Prisma/auth; таблицы в Studio.',
+        where: 'терминал, Prisma Studio.',
+        how: 'pnpm dev — смотреть логи Nitro. pnpm prisma studio — таблицы User и Session.',
+        verify: 'Checkpoint: pnpm dev без ошибок auth/Prisma; User и Session видны в Studio.',
+      },
+      {
+        label: 'День 2: Register / Login / Logout (API)',
+        what: 'emailAndPassword + /api/auth/* handlers.',
+        where: 'server/utils/auth.ts, server/api/auth/*, shared/types/auth.ts.',
+        how: 'createAuth с plugins; catch-all или отдельные handlers по доке Nuxt.',
+        verify: 'Checkpoint: register → login → logout через Postman/curl.',
+      },
+      {
+        label: 'День 3: Protected routes (server)',
+        what: '401 без сессии; Task.userId; guard на /api/tasks*.',
+        where: 'server/middleware/ или guards в server/utils/auth.ts.',
+        how: 'Защитить /api/tasks*; связать Task с User (миграция при необходимости).',
+        verify: 'Checkpoint: GET /api/tasks без cookie → 401.',
+      },
+      {
+        label: 'День 4: useAuth + Login/Register pages',
+        what: 'Composable + формы; редиректы и loading states.',
+        where: 'app/composables/useAuth.ts, app/pages/login.vue, app/pages/register.vue.',
+        how: 'useApi для мутаций; редирект после логина → /tasks; CSS Modules.',
+        verify: 'Checkpoint: полный флоу в браузере — register → login → задачи.',
+      },
+      {
+        label: 'День 5: User menu + Pages middleware',
+        what: 'Защита /tasks; условный UI; меню пользователя.',
+        where: 'app/middleware/auth.ts, layout/header, useAuth().user.',
+        how: 'Редирект с /tasks на /login; имя + кнопка «Выйти»; routeRules (опц.).',
+        verify: 'Checkpoint: без логина /tasks недоступна.',
+      },
+      {
+        label: 'День 6: RBAC + owner checks',
+        what: 'Поле role; requireRole; ограничение DELETE.',
+        where: 'prisma/schema.prisma (User.role), server/utils/auth.ts.',
+        how: 'DELETE task — владелец или ADMIN; опц. GET /api/admin/users.',
+        verify: 'Checkpoint: USER → admin-действия 403; ADMIN удаляет чужие задачи.',
+      },
+      {
+        label: 'День 7: Refactor + security + architecture.md',
+        what: 'Thin handlers, lint/build, полный тест auth flow.',
+        where: 'server/utils/, docs/architecture.md.',
+        how: 'pnpm lint:all && pnpm build; секция auth в architecture.md.',
+        verify: 'Checkpoint: register → CRUD tasks → logout → 401; architecture.md с секцией auth.',
+      },
+    ]),
+    doneWhen: doneWhen(4, [
+      'День 1: better-auth + @better-auth/prisma-adapter + @onmax/nuxt-better-auth установлены',
+      'День 1: prisma/schema.prisma — User + Session + Task.userId; server/utils/auth.ts с betterAuth()',
+      'День 1: миграция add_better_auth + prisma generate; pnpm dev без ошибок',
+      'День 1: AUTH_SECRET в runtimeConfig / .env (не в git)',
+      'Register, login, logout (API + UI)',
+      '/api/tasks защищён — 401 без сессии',
+      '/tasks недоступна без логина (pages middleware)',
+      'Роли USER/ADMIN; DELETE — владелец или ADMIN',
+      'AUTH_SECRET только server-side',
+      'docs/architecture.md обновлён',
+      'pnpm lint:all, build — чисто',
+    ]),
+  },
+  {
+    id: 5,
+    title: 'Error Handling + API + Zod',
+    theme: 'apiHandler, unified responses, валидация',
+    goal: 'Единый стиль API: apiHandler, createError, полная Zod-валидация, { data, success, error }.',
     theory: theoryItems(
       'REST, статусы, CORS (same-origin в Nuxt)',
       'Nitro middleware, createError',
     ),
-    practice: practice(4, [
-      'server/utils/apiHandler.ts',
+    practice: practice(5, [
+      'server/utils/apiHandler.ts — обёртка handler + try/catch',
       'server/middleware/log.ts — method + path + duration',
       'POST /api/echo + страница /playground',
       'docs/api-conventions.md — { data, success, error? }',
     ]),
-    doneWhen: doneWhen(4, ['Ошибки → предсказуемый JSON', 'Middleware логирует duration в dev']),
-  },
-  {
-    id: 5,
-    title: 'Аутентификация',
-    theme: 'Register, login, session',
-    goal: 'Sessions, register, login.',
-    theory: theoryItems(
-      'Session vs JWT, cookies httpOnly',
-      'Выбрать один: nuxt-auth-utils (рекомендуется) или Lucia',
-    ),
-    practice: practice(5, [
-      'User + passwordHash',
-      '/api/auth/register, login, logout, me',
-      '/login, /register, middleware auth.ts',
-      'Task → userId',
-    ]),
-    doneWhen: doneWhen(5, ['Без login нельзя создавать «свои» tasks', 'Session secret в .env']),
+    doneWhen: doneWhen(5, ['Ошибки → предсказуемый JSON', 'Middleware логирует duration в dev']),
   },
   {
     id: 6,
-    title: 'Авторизация (RBAC)',
-    theme: 'Роли, защита routes',
-    goal: 'Authentication vs authorization.',
-    theory: theoryItems('RBAC на server-side', 'requireUser / requireAdmin helpers'),
-    practice: practice(6, [
-      'Role: USER, ADMIN',
-      'requireUser, requireAdmin',
-      'GET /api/admin/users — только ADMIN',
-      'DELETE task — владелец или ADMIN',
-    ]),
-    doneWhen: doneWhen(6, ['USER → admin API = 403', 'Защита на server, не только UI']),
-  },
-  {
-    id: 7,
-    title: 'Zod, API design',
-    theme: 'Валидация, пагинация',
-    goal: 'Валидация и «взрослый» REST.',
+    title: 'Advanced CRUD + Projects',
+    theme: 'Relations, пагинация, filters, optimistic',
+    goal: 'Projects + relations, пагинация, filters, optimistic updates (CJ-style).',
     theory: theoryItems('Zod на границе API', 'Пагинация и фильтры в query'),
-    practice: practice(7, [
-      'readValidatedBody(event, schema)',
-      'Zod для auth и tasks',
+    practice: practice(6, [
+      'readValidatedBody / server/utils/validate.ts',
+      'Zod для tasks (create/update/query)',
       'Пагинация ?page=&limit=&q=',
       'Модель Project, relation с Task',
       '/projects, /projects/[id]',
     ]),
-    doneWhen: doneWhen(7, ['Invalid body → 400 с issues', 'Пагинация на 20+ seed']),
+    doneWhen: doneWhen(6, ['Invalid body → 400 с issues', 'Пагинация на 20+ seed']),
   },
   {
-    id: 8,
-    title: 'Тестирование и файлы',
-    theme: 'Vitest, upload',
-    goal: 'Тесты API и загрузка файлов.',
+    id: 7,
+    title: 'Testing + File Uploads',
+    theme: 'Vitest, avatars',
+    goal: 'Vitest + file uploads (аватары, как в Travel Log).',
     theory: theoryItems('Vitest + @nuxt/test-utils', 'Upload и лимиты размера'),
-    practice: practice(8, [
+    practice: practice(7, [
       'Vitest + @nuxt/test-utils',
       'Тесты: health, auth, task CRUD',
       'Upload avatar → POST /api/users/avatar',
       '/profile',
     ]),
-    doneWhen: doneWhen(8, ['pnpm test проходит', 'Upload с лимитом размера']),
+    doneWhen: doneWhen(7, ['pnpm test проходит', 'Upload с лимитом размера']),
   },
   {
-    id: 9,
-    title: 'Логи, кэш, деплой',
-    theme: 'Pino, Redis (opt), production',
-    goal: 'Production-ready observability и деплой.',
+    id: 8,
+    title: 'Logging, Cache, Deploy',
+    theme: 'Pino, health, production',
+    goal: 'Pino logging, health checks, deploy (Vercel/Railway + Prisma), migrations on start.',
     theory: theoryItems('Structured logging', 'Health check с DB', 'Deploy Nuxt + Postgres'),
-    practice: practice(9, [
+    practice: practice(8, [
       'Pino в server/utils/logger.ts',
       '(Optional) Redis cache',
       'Health + DB check',
       'Deploy (Railway / Hetzner / Vercel)',
       'docs/deployment-production.md',
     ]),
-    doneWhen: doneWhen(9, ['Staging URL, health db: connected', 'Migrations on deploy']),
+    doneWhen: doneWhen(8, ['Staging URL, health db: connected', 'Migrations on deploy']),
   },
   {
-    id: 10,
-    title: 'Админка',
-    theme: 'Dashboard / Nuxt UI',
-    goal: 'Admin UI для управления данными.',
+    id: 9,
+    title: 'Admin Dashboard',
+    theme: 'Nuxt UI tables + /admin',
+    goal: 'Admin Dashboard (@nuxt/ui + protected /admin).',
     theory: theoryItems('@nuxt/ui', 'Admin layout и таблицы'),
-    practice: practice(10, [
+    practice: practice(9, [
       '@nuxt/ui, layout /admin',
       'Users, tasks, projects tables',
       'GET /api/admin/stats',
     ]),
-    doneWhen: doneWhen(10, ['ADMIN в /admin', 'USER → 403']),
+    doneWhen: doneWhen(9, ['ADMIN в /admin', 'USER → 403']),
   },
   {
-    id: 11,
-    title: 'Real-time',
-    theme: 'SSE / WebSocket',
-    goal: 'Live updates на клиенте.',
+    id: 10,
+    title: 'Real-time (SSE)',
+    theme: 'Live updates задач',
+    goal: 'SSE live updates на /tasks.',
     theory: theoryItems('SSE vs WebSocket в Nitro', 'Подписка на изменения tasks'),
-    practice: practice(11, [
+    practice: practice(10, [
       'SSE /api/tasks/stream или WebSocket',
       'Live update на /tasks',
       'docs/realtime.md',
     ]),
-    doneWhen: doneWhen(11, ['Два браузера — изменения синхронизируются']),
+    doneWhen: doneWhen(10, ['Два браузера — изменения синхронизируются']),
   },
   {
-    id: 12,
-    title: 'Capstone: mini-SaaS',
-    theme: 'Stripe, CI/CD, polish',
-    goal: 'Финальный продукт Task Board с billing.',
-    theory: theoryItems('Multi-tenant workspace', 'Stripe webhooks', 'CI pipeline'),
-    practice: practice(12, [
+    id: 11,
+    title: 'SaaS Core (Workspaces + Billing)',
+    theme: 'Multi-tenant, Stripe',
+    goal: 'Workspaces (multi-tenant) + Stripe webhooks.',
+    theory: theoryItems('Workspace + members', 'Stripe test checkout', 'Free plan limits'),
+    practice: practice(11, [
       'Workspace, WorkspaceMember',
       'Stripe test checkout + webhook',
       'Free plan: max 3 projects',
+    ]),
+    doneWhen: doneWhen(11, ['Stripe test session работает', 'Workspace изолирован от других']),
+  },
+  {
+    id: 12,
+    title: 'Polish + CI/CD + Docs',
+    theme: 'Финальный релиз',
+    goal: 'Polish, CI/CD, README — финальный релиз Task Board.',
+    theory: theoryItems('CI pipeline', 'README и demo', 'Edge cases UX'),
+    practice: practice(12, [
       '.github/workflows/ci.yml',
       'README: demo, stack, screenshots',
+      'Полировка UX, edge cases',
     ]),
-    doneWhen: doneWhen(12, [
-      'CI зелёный',
-      'Stripe test session работает',
-      'Можешь объяснить путь: кнопка → API → БД → UI',
-    ]),
+    doneWhen: doneWhen(12, ['CI зелёный', 'Можешь объяснить путь: кнопка → API → БД → UI']),
   },
 ]
 
@@ -539,7 +661,7 @@ export function isRoadmapLabelCompletedByDefault(label: string): boolean {
 /**
  * The week the student is currently actively working on.
  * This determines the default active tab when opening /roadmap.
- * Bumped to 3 after Week 2 reached 100% (all practice + doneWhen items marked completed via ✅ defaults).
+ * Bumped to 4 after Week 3 (Better Auth + RBAC — план 2026-06-10).
  */
 export const CURRENT_ROADMAP_WEEK_ID = 4
 

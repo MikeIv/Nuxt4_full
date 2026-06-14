@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { HealthResponse } from '#shared/types/health'
+import { formatDateTime } from '#shared/utils/formatDateTime'
 
 interface StackItem {
   label: string
@@ -23,6 +24,10 @@ const { data: health, pending: healthPending, error: healthError } =
   await useApiFetch<HealthResponse>('/api/health')
 
 const { currentWorkingWeekId } = useRoadmapProgress()
+
+const currentYear = new Date().getFullYear()
+
+const healthTimestampLabel = computed(() => formatDateTime(health.value?.timestamp))
 
 const healthErrorMessage = computed(() => {
   const err = healthError.value
@@ -118,7 +123,7 @@ const healthErrorMessage = computed(() => {
             </div>
             <div :class="[$style.healthRow, $style.healthRowFull]">
               <dt :class="$style.healthTerm">Timestamp</dt>
-              <dd :class="[$style.healthValue, $style.healthTimestamp]">{{ health?.timestamp }}</dd>
+              <dd :class="[$style.healthValue, $style.healthTimestamp]">{{ healthTimestampLabel }}</dd>
             </div>
           </dl>
         </div>
@@ -126,8 +131,7 @@ const healthErrorMessage = computed(() => {
 
       <footer :class="$style.footer">
         <p :class="$style.footerText">
-          UI-токены — UI Kit «Олимпийский» (Grand). Неделя 1: POST, middleware, полировка
-          <code>runtimeConfig</code> — см. <NuxtLink to="/roadmap">roadmap</NuxtLink>.
+          ©fabsearch.ru, {{ currentYear }}
         </p>
       </footer>
     </AppContainer>
@@ -399,7 +403,6 @@ const healthErrorMessage = computed(() => {
 }
 
 .healthTimestamp {
-  word-break: break-all;
   color: var(--fs-color-text-muted);
   @include typo.fs-text-tag;
 }

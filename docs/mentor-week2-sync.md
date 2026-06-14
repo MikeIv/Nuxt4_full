@@ -41,10 +41,10 @@
 6. **curl-чеклист** + persistence после restart → checkpoint: volume живой
 7. Рефактор handlers + `architecture.md` + lint/build
 
-### Явное разделение с нед. 4
+### Явное разделение с нед. 5+
 
 На нед. 2 — минимальный Zod + `createError`.
-**`apiHandler.ts` и `docs/api-conventions.md`** — остаются на нед. 4, чтобы не смешивать «первый CRUD» и «единый HTTP-слой».
+**`apiHandler.ts` и unified API** — [неделя 5](roadmap-12-weeks.md#недели-5-12-коротко-с-акцентом-на-cj). **Auth (Better Auth + RBAC)** — [неделя 4](roadmap-12-weeks.md#неделя-4--better-auth--rbac--protected-routes-старт-сегодня) (обновлено 2026-06-10).
 
 ### curl-чеклист (день 6)
 

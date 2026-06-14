@@ -1,5 +1,6 @@
 {
   "name": "nuxt4-full",
+  "version": "0.0.1",
   "description": "Fullstack learning sandbox: Nuxt 4, Nitro, Prisma, auth, mini-SaaS capstone",
   "type": "module",
   "private": true,
@@ -30,38 +31,36 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.6.15",
+    "@onmax/nuxt-better-auth": "0.0.2-alpha.32",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "better-auth": "^1.6.15",
     "dotenv": "^17.4.2",
-    "nuxt": "^4.4.5",
+    "nuxt": "^4.4.8",
     "pg": "^8.21.0",
-    "vue": "^3.5.34"
+    "vue": "^3.5.35"
   },
-  "packageManager": "pnpm@11.1.1+sha512.d1fdf5f73c617b64fa1a56a81c3c8dfe0e966e33a6010aa256b517ae77be21d93e05affc0de1a83b0e4f29d569f68b446ae8f068cd7247c0bb3df0fb4d7bdf9a",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "unrs-resolver"
-    ]
-  },
+  "packageManager": "pnpm@11.5.3+sha512.7ac1c919341c213a34dc0d02afb7143c5c26ac26ee8c4782deea821b8ac64d2134a081fd8941dae6e29bbb48f58dfc2b7fbceeccc07cb2f09d219d342a4969ed",
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
-    "@types/node": "^25.7.0",
+    "@types/node": "^25.9.2",
     "@types/pg": "^8.20.0",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-prettier": "^5.5.6",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.4",
-    "postcss": "^8.5.14",
+    "lint-staged": "^17.0.7",
+    "postcss": "^8.5.15",
     "postcss-html": "^1.8.1",
-    "prettier": "^3.8.3",
+    "prettier": "^3.8.4",
     "prisma": "^7.8.0",
-    "sass": "^1.99.0",
-    "stylelint": "^17.11.0",
+    "sass": "^1.100.0",
+    "stylelint": "^17.13.0",
     "stylelint-config-recommended-vue": "^1.6.1",
     "stylelint-order": "^8.1.1",
     "tsx": "^4.22.4",
     "typescript": "~5.8.3",
-    "vue-tsc": "^3.2.8"
+    "vue-tsc": "^3.3.4"
   }
 }
