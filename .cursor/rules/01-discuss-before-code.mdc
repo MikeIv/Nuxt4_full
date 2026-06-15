@@ -1,6 +1,6 @@
 ---
-description: Discuss — уточнение до кода (M+)
-alwaysApply: true
+description: Discuss — уточнение до кода (M+); fast-path при полном промпте
+alwaysApply: false
 ---
 
 # Discuss

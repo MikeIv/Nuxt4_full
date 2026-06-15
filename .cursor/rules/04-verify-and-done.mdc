@@ -1,6 +1,6 @@
 ---
-description: Verify, security (Nuxt/Nitro), code-review — критерии «готово»
-alwaysApply: true
+description: Verify, security (Nuxt/Nitro), code-review — полный чеклист «готово»
+alwaysApply: false
 ---
 
 # Verify
@@ -9,10 +9,16 @@ alwaysApply: true
 
 - [ ] brief / план
 - [ ] проверки по классу (ниже)
-- [ ] релевантные тесты
-- [ ] UI — dev-сервер (`90-project-context`)
+- [ ] тесты — по политике (ниже)
+- [ ] UI — dev-сервер при изменении UI
 - [ ] Security (ниже)
 - [ ] нет `console.log` / мёртвого кода
+
+## Тесты
+
+- **S/M** без новой бизнес-логики — не требуются
+- **M+** API/auth/business logic — smoke или unit, если инфраструктура есть
+- **L+** — тест обязателен или явное «нет тестов, потому что…»
 
 ## Security (Nuxt/Nitro)
 
@@ -35,7 +41,11 @@ alwaysApply: true
 
 ## Code-review
 
-Триггеры: запрос, `/code-review`, Verify **L+**. Протокол — `.cursor/commands/code-review.md`.
+| Триггер                         | Режим                                               |
+| ------------------------------- | --------------------------------------------------- |
+| Запрос, `/code-review`          | Полный протокол — `.cursor/commands/code-review.md` |
+| Verify **L+**                   | Полный                                              |
+| **M** + `server/api/*` или auth | Mini: CRITICAL/HIGH из severity ниже                |
 
 Severity: **CRITICAL** секреты, XSS, ввод, auth · **HIGH** stack, raw `fetch`, `any` · **MEDIUM** a11y, edge · **LOW** стиль.
 

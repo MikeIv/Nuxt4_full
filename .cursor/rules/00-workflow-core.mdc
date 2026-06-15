@@ -1,5 +1,5 @@
 ---
-description: Цикл GSD — классы задач, фазы, стоп-сигналы
+description: GSD — классы задач, фазы, стоп-сигналы, краткий Verify
 alwaysApply: true
 ---
 
@@ -7,15 +7,19 @@ alwaysApply: true
 
 Перед нетривиальной задачей — **класс** и **фаза**. Фазы не пропускать без согласия.
 
-| Класс | Примеры | Процесс |
-|-------|---------|---------|
-| **S** | typo, rename | Правка + проверка |
-| **M** | фича, 1–3 файла | Discuss → Execute → Verify |
-| **L** | модуль, >5 файлов | Discuss → Plan → Execute (волнами) → Verify |
-| **XL** | миграция | Полный цикл + `.planning/` |
+| Класс  | Примеры           | Процесс                                     |
+| ------ | ----------------- | ------------------------------------------- |
+| **S**  | typo, rename      | Execute → Verify                            |
+| **M**  | фича, 1–3 файла   | Discuss → Execute → Verify                  |
+| **L**  | модуль, >5 файлов | Discuss → Plan → Execute (волнами) → Verify |
+| **XL** | миграция          | Полный цикл + `.planning/`                  |
 
-**Фазы:** Discuss → Plan (L+) → Execute → Verify (`04`).
+**Фазы:** Discuss (`01`) → Plan (`02`, L+) → Execute (`03`) → Verify (`04`).
+
+**Verify (кратко):** S — lint · M — lint (+ `pnpm typecheck` при API/auth) · L+ — lint + build + `/code-review`. M + `server/api/*` или auth — mini-review CRITICAL/HIGH из `04`.
+
+**Принципы:** минимальный diff · эталон из репо (`90`) · причина, не симптом (M+) · типы первыми (L+/API) · неуверенность → Discuss.
 
 **Стоп:** противоречивые требования; auth/роли/миграции БД/удаление данных; нет env/API; scope меняется — спросить.
 
-**Язык:** ответы — русский. **Приоритет:** репо `rules/` > User Rules.
+**Язык:** русский. **Приоритет:** репо `rules/` > User Rules.

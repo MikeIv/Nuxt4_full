@@ -1,5 +1,5 @@
 ---
-description: Контекст Nuxt4_full — стек, команды, ограничения
+description: Nuxt4_full — фаза, команды, эталоны, MCP, ограничения
 alwaysApply: true
 ---
 
@@ -7,13 +7,7 @@ alwaysApply: true
 
 **Пакет:** `nuxt4-full` · **Remote:** GitHub `MikeIv/Nuxt4_full` · **SSR:** по умолчанию.
 
-**Фаза:** нед. 4 — Better Auth + RBAC. Roadmap: `docs/roadmap-12-weeks.md`. Архитектура: `docs/architecture.md`. Сессии: `.planning/PROJECT.md`.
-
-## Стек
-
-Nuxt 4.4, Vue 3.5, TS strict, pnpm 11, SCSS + CSS Modules (`$style`). Nitro `server/api/*`. БД: PostgreSQL + Prisma. Auth: Better Auth (план). API: `useApi` / `useApiFetch` / `serverApi`; `NUXT_PUBLIC_API_BASE` пустой → same-origin.
-
-**Структура:** `app/` (srcDir) · `server/{api,routes,middleware,plugins,utils}` · `shared/{types,utils}` · `types/` · `server/types/`. Thin handlers: логика в `server/utils/`, не в `api/*.ts`.
+**Фаза:** нед. 4 — Better Auth + RBAC. Детали: `.planning/PROJECT.md`, `docs/architecture.md`, `docs/roadmap-12-weeks.md`.
 
 ## Команды
 
@@ -21,15 +15,26 @@ Nuxt 4.4, Vue 3.5, TS strict, pnpm 11, SCSS + CSS Modules (`$style`). Nitro `ser
 pnpm dev | typecheck | verify | build | lint:all
 ```
 
-## Соглашения
+## Эталоны (читать, не искать)
 
-- GitHub + `gh pr`; workflow `00`–`07`, `nuxt-template.mdc`
-- Коммиты — по просьбе; Husky + lint-staged; pre-push typecheck
-- Клиент: `useApi` / `useApiFetch`, не raw `fetch` в SFC
-- Не коммитить `.env`
+| Что             | Путь                                                  |
+| --------------- | ----------------------------------------------------- |
+| Thin handler    | `server/api/health.get.ts` → `server/utils/health.ts` |
+| API client      | `app/composables/useApi.ts`                           |
+| CRUD composable | `app/composables/useTasks.ts`                         |
+| API response    | `server/utils/apiResponse.ts`                         |
+| Типы API        | `shared/types/`                                       |
 
-## Не трогать без согласования
+Стек и код-стиль — `nuxt-template.mdc` (при правках `app/`, `server/`, `shared/`).
 
-Prisma/Docker/PostgreSQL — по roadmap; `srcDir`, ESLint/Husky pipeline; массовые `--fs-*`; рефактор `useApi`/`serverApi` «на старте».
+## MCP
 
-**Задача M+:** `cp .planning/brief-template.md .planning/brief.md`
+- Доки библиотек → **context7**
+- Nuxt API / модули → **nuxt_remote**
+- Код проекта → read/grep; широкий поиск → Task explore
+
+## Ограничения
+
+- GitHub + `gh pr`; коммиты — по просьбе; не коммитить `.env`
+- Prisma/Docker/PostgreSQL — по roadmap; не трогать `srcDir`, ESLint/Husky pipeline, массовые `--fs-*`, рефактор `useApi`/`serverApi` без запроса
+- **M+:** `cp .planning/brief-template.md .planning/brief.md`
