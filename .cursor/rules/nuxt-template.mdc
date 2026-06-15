@@ -1,75 +1,34 @@
 ---
-description: Nuxt 4 / Vue 3 — стек, данные, стили, линты, MCP (шаблон Grand)
+description: Nuxt 4 / Vue 3 — стек, стили, линты
 alwaysApply: true
 ---
 
-# Nuxt / Vue — правила для агента
+# Nuxt / Vue
 
-**Язык:** ответы пользователю на русском.
-
-> Адаптируйте секции под проект после копирования (см. INSTALL-NUXT-VUE.md, шаг 4).
+Ответы — русский.
 
 ## TypeScript
 
-- Без `any`; при необходимости `unknown` + сужение
-- Строгий режим Nuxt; не ослаблять без причины
-- В `catch` без ошибки — `catch {}` или префикс `_`
+Без `any` (`unknown` + сужение). Strict Nuxt. `catch` без ошибки — `catch {}` или `_`.
 
 ## Nuxt 4 (`srcDir: app/`)
 
-- Приложение: `app/`. Nitro: `server/`. Общее: `shared/types`, `shared/utils`
-- Данные в SFC: `useFetch` / `useAsyncData`
-- К бэкенду с общим префиксом — **`useApi()`** / **`useApiFetch()`**; в Nitro — **`serverApi(event?)`**
-- База: **`runtimeConfig.public.apiBase`** (`NUXT_PUBLIC_API_BASE`)
-- Прямой `$fetch` — только где не нужен общий `baseURL`
-- Документация: [Nuxt 4](https://nuxt.com/docs/4.x/getting-started/introduction); MCP: `https://mcp.nuxt.com/mcp`
+`app/` · `server/` · `shared/types`, `shared/utils`. SFC: `useFetch` / `useAsyncData`. API: **`useApi()`** / **`useApiFetch()`**; Nitro: **`serverApi(event?)`**. Base: **`runtimeConfig.public.apiBase`**. `$fetch` — только без общего baseURL. Docs: [Nuxt 4](https://nuxt.com/docs/4.x/getting-started/introduction).
 
 ## Vue 3
 
-- Только Composition API, `<script setup lang="ts">`
-- Типизировать `defineProps` / `defineEmits`
-- Не импортировать вручную автоимпортируемые API Vue/Nuxt
+Composition API, `<script setup lang="ts">`. Типизировать props/emits. Без ручного импорта автоимпортов.
 
-### SFC: порядок и стили
-
-**Область:** все `*.vue` в `app/`.
-
-- Порядок: **script setup** → **template** → **style module lang="scss"** (если есть стили)
-- По умолчанию **CSS Modules**: `$style`, без `scoped` (если проект не договорился иначе)
+**SFC:** script → template → `style module lang="scss"`. CSS Modules: `$style`.
 
 ## Стили
 
-- Токены: `app/assets/styles/` (`--fs-*`, variables, tools)
-- Без `!important`, кроме сторонних виджетов
-- Margin UI Kit (если используется): `--fs-margin-*`, миксины `tools/_margin.scss`
-- Padding/gap: `--fs-space-*`
-- SVG: `app/assets/icons/`; коллекции в `nuxt.config.ts`
+Токены `app/assets/styles/` (`--fs-*`). Без `!important` (кроме виджетов). Gap: `--fs-space-*`. SVG: `app/assets/icons/`. Sass: `@use`/`@forward`, `@if`/`@else`.
 
-### Sass
+## a11y
 
-- **`@use` / `@forward`**, не `@import`
-- Не использовать устаревший Sass-`if()` — `@if` / `@else`
-- [Sass docs](https://sass-lang.com/documentation)
-
-## Разметка и a11y
-
-- Семантика, иерархия заголовков, `button` / `a` по назначению, `aria-*` при необходимости
+Семантика, заголовки, `button`/`a` по назначению, `aria-*` при нужде.
 
 ## Линтинг
 
-- ESLint + Prettier; `*.vue` часто в `.prettierignore`
-- Stylelint для SFC
-- Husky + lint-staged при наличии
-
-## Миграция с React
-
-- Пошагово; состояние — composables / `useState`; сервер — `server/api`
-
-## MCP (локально, опционально)
-
-`.cursor/mcp.json` — см. INSTALL-NUXT-VUE.md. Каталог `.cursor/` полностью локальный (`.gitignore`).
-
-## Поведение агента
-
-- **Процесс:** `00-workflow-core` … `06-fundamental-principles`, `90-project-context.mdc`, `.planning/PROJECT.md`
-- Минимальный diff; при нехватке контекста — волны и `state.md`
+ESLint + Prettier (`*.vue` в `.prettierignore`). Stylelint SFC. Husky + lint-staged.

@@ -1,44 +1,17 @@
 # Agent workflow — Nuxt4_full
 
-Правила Cursor в репозитории: каталог `.cursor/` (rules, commands, `mcp.json`).
+Правила: `.cursor/rules/` · Продукт: `90-project-context.mdc`, `.planning/PROJECT.md`.
 
-Контекст продукта: `.cursor/rules/90-project-context.mdc` и `.planning/PROJECT.md`. Синхронизация с шаблоном: `d:\_WEB\_Work\_Cursor-rules-template\INSTALL-NUXT-VUE.md`.
+| Правило         | Назначение                               |
+| --------------- | ---------------------------------------- |
+| `00`–`04`       | GSD: Discuss → Plan → Execute → Verify   |
+| `06`            | Принципы: типы, эталоны, причина/симптом |
+| `07`            | Экономия токенов (чат + контекст)        |
+| `90`            | Контекст проекта                         |
+| `nuxt-template` | Стек Nuxt/Vue                            |
 
-## Правила (`.cursor/rules/`)
+`/code-review` — `.cursor/commands/code-review.md` · MCP: `.cursor/mcp.json`
 
-| Файл                        | Назначение                               |
-| --------------------------- | ---------------------------------------- |
-| `00-workflow-core`          | S/M/L/XL, фазы GSD + Superpowers, Verify |
-| `01-discuss-before-code`    | Уточнение до кода                        |
-| `02-planning-gsd`           | `.planning/`, волны                      |
-| `03-execution-discipline`   | Минимальный diff, `useApi`               |
-| `04-verify-and-done`        | Lint, security Nuxt, code-review         |
-| `05-context-hygiene`        | Узкий контекст                           |
-| `06-fundamental-principles` | Мета-принципы                            |
-| `90-project-context`        | Nuxt4_full: стек, roadmap, ограничения   |
-| `nuxt-template`             | Nuxt 4, Vue, SCSS, линты                 |
+**Задача агенту:** `Класс M. Задача: … Done when: …`
 
-## Slash-команды (`.cursor/commands/`)
-
-| Команда        | Назначение                 |
-| -------------- | -------------------------- |
-| `/code-review` | Review локальных изменений |
-
-## MCP (`.cursor/mcp.json`)
-
-Nuxt MCP, Context7 — см. файл в репозитории.
-
-## Задача агенту
-
-```text
-Класс M. Задача: …
-Done when: …
-```
-
-```bash
-cp .planning/brief-template.md .planning/brief.md
-```
-
-## Обновление правил из шаблона
-
-Workflow `00–06` и `nuxt-template.mdc` — diff с `_Cursor-rules-template`. `90-project-context.mdc` — не перезаписывать, только дополнять.
+Синхронизация workflow из `_Cursor-rules-template`; `90-project-context` — только дополнять.

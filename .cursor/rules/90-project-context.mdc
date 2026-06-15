@@ -1,108 +1,35 @@
 ---
-description: Контекст Nuxt4_full — fullstack learning sandbox, GitHub, roadmap
+description: Контекст Nuxt4_full — стек, команды, ограничения
 alwaysApply: true
 ---
 
-# Nuxt4_full — контекст проекта
+# Nuxt4_full
 
-## Продукт
+**Пакет:** `nuxt4-full` · **Remote:** GitHub `MikeIv/Nuxt4_full` · **SSR:** по умолчанию.
 
-- **Пакет:** `nuxt4-full` (`package.json`)
-- **Назначение:** fullstack-песочница для прокачки backend (Nitro → Prisma → auth → деплой)
-- **Capstone:** mini-SaaS «Task Board»
-- **Remote:** https://github.com/MikeIv/Nuxt4_full.git
-- **SSR:** по умолчанию Nuxt (не отключать без задачи)
-
-## Обучение
-
-| Документ          | Путь                       |
-| ----------------- | -------------------------- |
-| Roadmap 12 недель | `docs/roadmap-12-weeks.md` |
-| Архитектура папок | `docs/architecture.md`     |
-| Развёртывание A–F | `docs/deployment-plan.md`  |
-| Контекст сессий   | `.planning/PROJECT.md`     |
-
-**Текущая фаза:** нед. 3 ✅ → **нед. 4** (Better Auth + RBAC, план 2026-06-10).
+**Фаза:** нед. 4 — Better Auth + RBAC. Roadmap: `docs/roadmap-12-weeks.md`. Архитектура: `docs/architecture.md`. Сессии: `.planning/PROJECT.md`.
 
 ## Стек
 
-| Слой      | Сейчас                                      | План                                   |
-| --------- | ------------------------------------------- | -------------------------------------- |
-| Framework | Nuxt 4.4, Vue 3.5                           | —                                      |
-| Модули    | `@nuxt/eslint`                              | + Nuxt UI (нед. 10)                    |
-| Backend   | Nitro (каркас)                              | `server/api/*`                         |
-| БД        | —                                           | PostgreSQL + Prisma (нед. 2)           |
-| Auth      | —                                           | Better Auth + Prisma (нед. 4)          |
-| Стили     | SCSS, CSS Modules (`$style`)                | —                                      |
-| Язык      | TypeScript strict                           | —                                      |
-| Пакеты    | pnpm 11.x                                   | —                                      |
-| API       | `NUXT_PUBLIC_API_BASE` пустой → same-origin | `useApi` / `useApiFetch` / `serverApi` |
+Nuxt 4.4, Vue 3.5, TS strict, pnpm 11, SCSS + CSS Modules (`$style`). Nitro `server/api/*`. БД: PostgreSQL + Prisma. Auth: Better Auth (план). API: `useApi` / `useApiFetch` / `serverApi`; `NUXT_PUBLIC_API_BASE` пустой → same-origin.
 
-## Структура
-
-Полная схема: `docs/architecture.md`.
-
-```
-app/                 # srcDir — pages, layouts, composables, assets/
-server/
-  api/               # thin handlers → /api/*
-  routes/            # вне /api
-  middleware/        # каждый запрос
-  plugins/           # старт Nitro
-  utils/             # логика (health, apiResponse; позже prisma, auth)
-shared/              # НЕ удалять — #shared, isomorphic types + utils
-  types/             # контракты API client ↔ server
-  utils/             # normalizeApiBaseUrl и т.п.
-types/               # augmentation Nuxt (nuxt-public.d.ts)
-server/types/        # server-only — с нед. 2+
-public/              # статика as-is
-scripts/             # pre-commit.mjs в корне
-docs/                # deployment-plan, roadmap, architecture.md
-```
-
-**Слои типов:** `types/` (ambient) → `shared/types/` (API) → `server/types/` (internal).
-**Thin handlers:** бизнес-логика только в `server/utils/`, не в `api/*.ts`.
+**Структура:** `app/` (srcDir) · `server/{api,routes,middleware,plugins,utils}` · `shared/{types,utils}` · `types/` · `server/types/`. Thin handlers: логика в `server/utils/`, не в `api/*.ts`.
 
 ## Команды
 
 ```bash
-cp .env.example .env   # один раз
-pnpm install
-pnpm dev               # :3000 или следующий свободный порт
-pnpm typecheck         # TS (server/api, app) — автоматически на pre-push
-pnpm verify            # lint:all + typecheck — перед деплоем
-pnpm build
-pnpm lint:all
+pnpm dev | typecheck | verify | build | lint:all
 ```
 
 ## Соглашения
 
-- **Платформа:** GitHub (`MikeIv/Nuxt4_full`) — не GitLab / `gh` для MR этого репо
-- **Правила агента:** `.cursor/` в репозитории; обновления workflow — из `d:\_WEB\_Work\_Cursor-rules-template\`
-- Workflow: `00-workflow-core` … `06-fundamental-principles`
-- Стек Nuxt: `nuxt-template.mdc`
-- Verify / security: `04-verify-and-done.mdc`
-- MCP: `.cursor/mcp.json` — Nuxt, Context7
-- Коммиты — только по явной просьбе; pre-commit: Husky + lint-staged; pre-push: `pnpm typecheck`
-
-## API
-
-- `NUXT_PUBLIC_API_BASE` **пустой** → запросы на same-origin (`server/api/*`)
-- Клиент: только `useApi` / `useApiFetch`, не сырой `fetch` в компонентах
+- GitHub + `gh pr`; workflow `00`–`07`, `nuxt-template.mdc`
+- Коммиты — по просьбе; Husky + lint-staged; pre-push typecheck
+- Клиент: `useApi` / `useApiFetch`, не raw `fetch` в SFC
 - Не коммитить `.env`
 
 ## Не трогать без согласования
 
-- Prisma, Docker, PostgreSQL — по [неделе 2](docs/roadmap-12-weeks.md#неделя-2--prisma--postgresql--task-crud) и далее по roadmap; не опережать без задачи
-- Глобальная смена `srcDir`, ESLint/Husky pipeline
-- Массовое изменение SCSS-токенов `--fs-*` без задачи
-- `useApi` / `useApiFetch` / `serverApi` — рабочая основа; не рефакторить «на старте»
+Prisma/Docker/PostgreSQL — по roadmap; `srcDir`, ESLint/Husky pipeline; массовые `--fs-*`; рефактор `useApi`/`serverApi` «на старте».
 
-## Планирование
-
-- `.planning/PROJECT.md` — постоянный контекст
-- Задача M+: `cp .planning/brief-template.md .planning/brief.md`
-
-## Шаблон-источник кода
-
-`d:\_WEB\_Work\_NUXT4_Template\`
+**Задача M+:** `cp .planning/brief-template.md .planning/brief.md`
