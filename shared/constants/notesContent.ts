@@ -21,6 +21,11 @@ export const NOTES_DOCUMENTS = [
     protected: true,
     devOnly: true,
   },
+  {
+    id: 'cursor-help',
+    title: 'Cursor справка',
+    description: 'brief, команды, workflow агента',
+  },
 ] as const
 
 export type NotesDocumentId = (typeof NOTES_DOCUMENTS)[number]['id']
