@@ -66,6 +66,7 @@ export default defineNuxtConfig({
 
   nitro: {
     compressPublicAssets: true,
+    preset: 'node-server',
     /** Поднимаем target, чтобы работал top-level await в server/utils (нужен для Prisma singleton + ESM interop). */
     esbuild: {
       options: {

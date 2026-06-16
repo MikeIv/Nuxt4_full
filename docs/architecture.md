@@ -6,6 +6,8 @@
 
 **Неделя 3 (факт):** страница `/tasks` — `useTasks`, optimistic updates, фильтры, toast, SSR через `useApiFetch`.
 
+**Неделя 4 (факт, день 1):** Better Auth + Prisma adapter, `User` / `Session` / `Verification`, catch-all `/api/auth/*`, миграции OK, `pnpm dev` без ошибок auth.
+
 ---
 
 ## Обзор потока данных
@@ -53,7 +55,7 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 | ------- | --------------------------------------------------- |
 | Нед. 1  | Client → middleware → `server/api` → `server/utils` |
 | Нед. 2+ | + Prisma → PostgreSQL                               |
-| Нед. 5+ | + auth middleware, session                          |
+| Нед. 4+ | + Better Auth (`/api/auth/*`), cookie-сессии        |
 
 ---
 
@@ -296,6 +298,48 @@ app/pages/tasks.vue
 shared/types/task.ts
 shared/utils/formatApiError.ts
 ```
+
+---
+
+# Архитектура auth (Неделя 4, день 1)
+
+## Поток `/api/auth/*`
+
+```
+Client (браузер / curl)
+    ▼
+server/api/auth/[...all].ts     ← auth.handler(toWebRequest(event))
+    ▼
+server/utils/auth.ts            ← betterAuth({ prismaAdapter, emailAndPassword })
+    ▼
+server/utils/prisma.ts  →  PostgreSQL (users, sessions, verifications)
+```
+
+Модуль `@onmax/nuxt-better-auth` подключён в `nuxt.config.ts`; client config — `app/auth.config.ts`. Серверный instance — `server/utils/auth.ts`.
+
+## Endpoints (день 1)
+
+| Метод | Путь                      | Назначение                  |
+| ----- | ------------------------- | --------------------------- |
+| GET   | `/api/auth/get-session`   | Текущая сессия (или `null`) |
+| GET   | `/api/auth/ok`            | Healthcheck Better Auth     |
+| POST  | `/api/auth/sign-up/email` | Регистрация                 |
+| POST  | `/api/auth/sign-in/email` | Вход                        |
+| POST  | `/api/auth/sign-out`      | Выход                       |
+
+> `/api/auth/session` не существует — у Better Auth endpoint называется `get-session`.
+
+## Секреты и env
+
+| Переменная            | Где                                | Назначение                                             |
+| --------------------- | ---------------------------------- | ------------------------------------------------------ |
+| `DATABASE_URL`        | `.env`, `prisma.config.ts`         | Prisma + PostgreSQL                                    |
+| `SHADOW_DATABASE_URL` | `.env` (опц.)                      | `prisma migrate dev` — тот же user/pass, другое имя БД |
+| `AUTH_SECRET`         | `.env`, `runtimeConfig.authSecret` | Подпись сессий Better Auth                             |
+
+Не использовать `NUXT_PUBLIC_*` для auth-секретов.
+
+**День 2+:** guards на `/api/tasks*`, UI login/register, `app/middleware/auth.ts`.
 
 ---
 

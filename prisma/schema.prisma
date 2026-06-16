@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ==================== BETTER AUTH ====================
+// ==================== BETTER AUTH MODELS ====================
 
 model User {
   id            String    @id @default(cuid())
@@ -20,8 +20,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   sessions Session[]
+  accounts Account[]
   tasks    Task[]
-  Account  Account[]
 
   @@map("users")
 }
@@ -59,33 +59,45 @@ model Account {
   @@map("accounts")
 }
 
-// ==================== ТВОЯ МОДЕЛЬ ====================
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  @@unique([identifier, value])
+  @@map("verifications")
+}
+
+// ==================== ТВОИ МОДЕЛИ ====================
 
 model Task {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String?
-  completed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  completed   Boolean @default(false)
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("tasks")
+}
+
+model NotesAccessSettings {
+  id               String  @id @default("default")
+  passwordHash     String
+  passwordCipher   String
+  dbPasswordCipher String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("notes_access_settings")
 }
 
 enum Role {
   USER
   ADMIN
-}
-
-model NotesAccessSettings {
-  id               String   @id @default("default")
-  passwordHash     String
-  passwordCipher   String
-  dbPasswordCipher String?
-  updatedAt        DateTime @updatedAt
-
-  @@map("notes_access_settings")
 }
