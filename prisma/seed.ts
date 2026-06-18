@@ -1,21 +1,34 @@
+import 'dotenv/config'
+
 import { hashPassword } from 'better-auth/crypto'
 import { prisma } from '../server/utils/prisma'
 
 const SEED_PASSWORD = 'password123'
 
-async function ensureCredentialAccount(userId: string, password: string) {
-  const existing = await prisma.account.findFirst({
-    where: { userId, providerId: 'credential' },
-  })
+const SEED_USERS = [
+  { email: 'test@example.com', name: 'Test User', role: 'USER' as const },
+  { email: 'admin@example.com', name: 'Admin User', role: 'ADMIN' as const },
+] as const
 
-  if (existing) {
-    return existing
-  }
-
+async function upsertCredentialAccount(userId: string, password: string) {
   const hashedPassword = await hashPassword(password)
 
-  return prisma.account.create({
-    data: {
+  // Better Auth ожидает accountId === userId для credential; удаляем битые строки.
+  await prisma.account.deleteMany({
+    where: { userId, providerId: 'credential', accountId: { not: userId } },
+  })
+
+  return prisma.account.upsert({
+    where: {
+      providerId_accountId: {
+        providerId: 'credential',
+        accountId: userId,
+      },
+    },
+    update: {
+      password: hashedPassword,
+    },
+    create: {
       id: crypto.randomUUID(),
       accountId: userId,
       providerId: 'credential',
@@ -32,41 +45,35 @@ async function createAuthUser(
   password = SEED_PASSWORD,
 ) {
   const userId = crypto.randomUUID()
-  const hashedPassword = await hashPassword(password)
 
   const user = await prisma.user.upsert({
     where: { email },
-    update: { name, role },
+    update: { name, role, emailVerified: true },
     create: {
       id: userId,
       email,
       name,
       emailVerified: true,
       role,
-      accounts: {
-        create: {
-          id: crypto.randomUUID(),
-          accountId: userId,
-          providerId: 'credential',
-          password: hashedPassword,
-        },
-      },
     },
   })
 
-  await ensureCredentialAccount(user.id, password)
+  await upsertCredentialAccount(user.id, password)
   return user
 }
 
 async function main() {
-  const defaultUser = await createAuthUser('test@example.com', 'Test User', 'USER')
-  const adminUser = await createAuthUser('admin@example.com', 'Admin User', 'ADMIN')
+  const seededUsers = await Promise.all(
+    SEED_USERS.map((entry) => createAuthUser(entry.email, entry.name, entry.role)),
+  )
 
   await prisma.task.deleteMany({
     where: {
-      userId: { in: [defaultUser.id, adminUser.id] },
+      userId: { in: seededUsers.map((user) => user.id) },
     },
   })
+
+  const [defaultUser, adminUser] = seededUsers
 
   await prisma.task.createMany({
     data: [
@@ -96,7 +103,11 @@ async function main() {
   console.log(`   admin@example.com / ${SEED_PASSWORD} (ADMIN)`)
 }
 
-main().catch((e) => {
-  console.error(e)
-  process.exit(1)
-})
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })

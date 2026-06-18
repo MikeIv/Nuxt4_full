@@ -377,7 +377,7 @@ Admin-only: `GET /api/admin/users` → `requireRole(event, 'ADMIN')`.
 
 ## Seed (dev)
 
-`pnpm db:seed` — `test@example.com` (USER) и `admin@example.com` (ADMIN), пароль `password123`.
+`pnpm db:seed` — `test@example.com` (USER) и `admin@example.com` (ADMIN), пароль `password123`. Повторный seed **сбрасывает пароль** seed-пользователей на `password123` (upsert в `accounts`).
 
 ---
 
