@@ -26,6 +26,11 @@ export const NOTES_DOCUMENTS = [
     title: 'Cursor справка',
     description: 'brief, команды, workflow агента',
   },
+  {
+    id: 'better-auth',
+    title: 'Авторизация Better Auth',
+    description: 'модуль, API, роли USER/ADMIN, seed',
+  },
 ] as const
 
 export type NotesDocumentId = (typeof NOTES_DOCUMENTS)[number]['id']

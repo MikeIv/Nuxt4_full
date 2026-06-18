@@ -193,6 +193,7 @@ const handleForgotPassword = () =>
               <NotesDeploymentCheatsheet v-else-if="activeDocument === 'deployment-cheatsheet'" />
               <NotesOpsPlaybook v-else-if="activeDocument === 'ops-playbook'" />
               <NotesCursorHelp v-else-if="activeDocument === 'cursor-help'" />
+              <NotesBetterAuth v-else-if="activeDocument === 'better-auth'" />
               <NotesServerAccess v-else-if="activeDocument === SERVER_ACCESS_ID && isUnlocked" />
               <p
                 v-else-if="activeDocument === SERVER_ACCESS_ID"
