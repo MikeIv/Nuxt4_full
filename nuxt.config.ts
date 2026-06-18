@@ -57,6 +57,12 @@ export default defineNuxtConfig({
     devLogs: isDev,
   },
 
+  routeRules: {
+    '/tasks': { auth: { only: 'user', redirectTo: '/login' } },
+    '/login': { auth: { only: 'guest', redirectTo: '/tasks' } },
+    '/register': { auth: { only: 'guest', redirectTo: '/tasks' } },
+  },
+
   vite: {
     build: {
       target: 'esnext',

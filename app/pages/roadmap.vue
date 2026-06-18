@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import type { UiTabItem } from '~/components/ui/UiTabs.vue'
+import { getMaxRoadmapDay } from '#shared/constants/roadmapWeeks'
 
 useHead({
   title: 'Roadmap — прогресс обучения',
 })
 
-const { weeks, isDone, toggle, weekStats, overallStats, currentWorkingWeekId } = useRoadmapProgress()
+const { weeks, isDone, toggle, weekStats, overallStats, overallChecklistStats, currentWorkingWeekId } =
+  useRoadmapProgress()
 
 // Default active tab is driven by the composable's currentWorkingWeekId.
 // This value starts from CURRENT_ROADMAP_WEEK_ID on first visit and automatically
@@ -36,10 +38,14 @@ const tabItems = computed<UiTabItem[]>(() =>
 const activeWeek = computed(() => weeks.find((week) => String(week.id) === activeWeekId.value))
 
 const overall = computed(() => overallStats())
+const checklistOverall = computed(() => overallChecklistStats())
 const activeWeekProgress = computed(() => {
   const week = activeWeek.value
   return week ? weekStats(week) : { done: 0, total: 0, percent: 0 }
 })
+const activeWeekHasDays = computed(() =>
+  activeWeek.value ? getMaxRoadmapDay(activeWeek.value) > 0 : false,
+)
 </script>
 
 <template>
@@ -57,20 +63,33 @@ const activeWeekProgress = computed(() => {
 
         <div :class="$style.stats">
           <div :class="$style.stat">
-            <span :class="$style.statLabel">Всего</span>
-            <span :class="$style.statValue">{{ overall.done }} / {{ overall.total }}</span>
+            <span :class="$style.statLabel">Пункты</span>
+            <span :class="$style.statValue">
+              {{ checklistOverall.done }} / {{ checklistOverall.total }}
+            </span>
+            <span :class="[$style.statHint, $style.statHintPlaceholder]" aria-hidden="true"
+              >&#8203;</span
+            >
           </div>
           <div :class="$style.statDivider" aria-hidden="true" />
           <div :class="$style.stat">
             <span :class="$style.statLabel">Текущая неделя</span>
-            <span :class="$style.statValue">
-              {{ activeWeekProgress.done }} / {{ activeWeekProgress.total }}
+            <span :class="$style.statValue">{{ activeWeek?.id ?? '—' }} / {{ weeks.length }}</span>
+            <span
+              :class="[$style.statHint, !activeWeekHasDays && $style.statHintPlaceholder]"
+              :aria-hidden="!activeWeekHasDays"
+            >
+              <template v-if="activeWeekHasDays">
+                день {{ activeWeekProgress.done }} / {{ activeWeekProgress.total }}
+              </template>
+              <template v-else>&#8203;</template>
             </span>
           </div>
           <div :class="$style.statDivider" aria-hidden="true" />
           <div :class="$style.stat">
             <span :class="$style.statLabel">Общий прогресс</span>
             <span :class="$style.statValue">{{ overall.percent }}%</span>
+            <span :class="$style.statHint">{{ overall.done }} / {{ overall.total }} недель</span>
           </div>
         </div>
       </header>
@@ -163,7 +182,7 @@ const activeWeekProgress = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: var(--fs-space-2);
-  align-items: center;
+  align-items: flex-start;
   margin-top: var(--fs-margin-title-content);
   padding-top: var(--fs-space-2);
   border-top: 1px solid var(--fs-color-border-light);
@@ -173,6 +192,7 @@ const activeWeekProgress = computed(() => {
   display: flex;
   flex-direction: column;
   gap: fn.rem(4);
+  min-height: fn.rem(52);
 }
 
 .statLabel {
@@ -187,9 +207,19 @@ const activeWeekProgress = computed(() => {
   @include typo.fs-text-header;
 }
 
+.statHint {
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-tag;
+}
+
+.statHintPlaceholder {
+  visibility: hidden;
+}
+
 .statDivider {
+  align-self: stretch;
   width: 1px;
-  height: fn.rem(32);
+  min-height: fn.rem(52);
   background: var(--fs-color-border-light);
 }
 

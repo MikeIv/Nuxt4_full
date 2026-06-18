@@ -5,6 +5,7 @@ import { useAppToast } from '~/composables/useAppToast'
 
 definePageMeta({
   layout: 'default',
+  auth: { only: 'user', redirectTo: '/login' },
 })
 
 useHead({

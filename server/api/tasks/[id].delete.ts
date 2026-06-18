@@ -8,8 +8,8 @@ export default defineEventHandler(async (event): Promise<{ data: { success: bool
     })
   }
 
-  const userId = requireAuthUser(event).id
-  const success = await deleteTask(id, userId)
+  const user = requireAuthUser(event)
+  const success = await deleteTask(id, user)
 
   if (!success) {
     throw createError({

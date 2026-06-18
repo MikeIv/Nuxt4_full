@@ -85,17 +85,45 @@
 
 **Done when (день 1):** пакеты установлены; schema + `auth.ts` готовы; миграция OK; сервер стартует; AUTH_SECRET настроен. `docs/architecture.md` — короткая заметка про auth (можно в конце дня).
 
-**День 2–3 — Базовый Auth + Защита API**
+**День 2 — Register / Login / Logout (API) + server middleware**
 
-- Используй `createAuth` с `emailAndPassword`, plugins.
-- API routes: `/api/auth/*` (Better Auth предоставляет catch-all или отдельные handlers).
-- Защити существующие `/api/tasks*` через middleware/guard.
+**Цель:** auth API работает через curl; `/api/tasks*` требует сессию.
 
-**День 4–5 — Клиентская часть**
+1. **Catch-all:** `server/api/auth/[...all].ts` → `auth.handler(toWebRequest(event))` (официальная дока; без `toWebRequest` — только если проверил).
+2. **Проверка API:** `POST /api/auth/sign-up/email`, `sign-in/email`, `sign-out`, `GET /api/auth/get-session` (не `/api/auth/session`).
+3. **`getSession(event)`** в `server/utils/auth.ts` → `auth.api.getSession({ headers: event.headers })`.
+4. **`server/middleware/auth.ts`:** пропускать `/api/auth/**`, `/api/health`, `/api/notes-access/**`; иначе 401; `event.context.user`.
+5. **`/api/tasks*`:** thin handlers → `event.context.user.id` → `getAllTasks(userId)` в utils.
 
-- `app/composables/useAuth.ts` (или авто-импорты из модуля).
-- Страницы `/login`, `/register`.
-- `app/middleware/auth.ts` + `routeRules` (если используешь модуль).
+**Done when (день 2):** sign-up/sign-in/sign-out через curl; GET `/api/tasks` без cookie → 401; с cookie → список задач.
+
+**День 3 — Защита API (углубление)**
+
+**Цель:** все tasks routes защищены; owner-only CRUD.
+
+1. **curl-чеклист:** GET/POST/PATCH/DELETE `/api/tasks*` без сессии → 401.
+2. **Owner checks:** PATCH/DELETE чужой задачи → 404; только свои задачи в списке.
+3. **Типы:** `event.context.session` / `user` в augmentation (без `any`).
+4. **Убрать** `resolveDefaultTaskUserId` — только реальный `userId` из сессии.
+
+**Done when (день 3):** User A не видит задачи User B; typecheck чистый.
+
+**День 4–5 — Клиентская часть** (по плану ментора — после server-side)
+
+- `app/composables/useAuth.ts` (или composables `@onmax/nuxt-better-auth`).
+- Страницы `/login`, `/register` — формы + loading/error.
+- `app/middleware/auth.ts` — `/tasks` только с сессией; `/login` редирект если уже вошёл.
+
+**Частые проблемы (день 2–3):**
+
+| Проблема                                | Решение                                                                                |
+| --------------------------------------- | -------------------------------------------------------------------------------------- |
+| 404 на `/api/auth/session`              | Endpoint — `/api/auth/get-session`                                                     |
+| `auth.handler(event)` vs `toWebRequest` | Официальная дока — `toWebRequest(event)`; убрать только если handler работает без него |
+| Cookie не отправляются                  | same-origin; проверь Set-Cookie после sign-in                                          |
+| AUTH_SECRET пустой                      | `.env` + `runtimeConfig.authSecret`                                                    |
+| Prisma User not found                   | Миграция + поля email, name, emailVerified                                             |
+| 401 на `/api/health`                    | Добавь `/api/health` в исключения middleware                                           |
 
 **День 6 — RBAC**
 

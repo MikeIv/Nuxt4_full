@@ -387,8 +387,8 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 4,
     title: 'Better Auth + RBAC',
-    theme: 'День 1 ✓ — Better Auth фундамент; день 2: Register/Login/Logout',
-    goal: 'Production-ready auth (Better Auth + Prisma): register/login/logout, защита API и UI, роли USER/ADMIN. День 1 — фундамент: пакеты, User/Session, betterAuth(), миграция, pnpm dev без ошибок. ~7–10 ч.',
+    theme: 'Better Auth + RBAC — register/login, protected routes, roles USER/ADMIN',
+    goal: 'Production-ready auth (Better Auth + Prisma): register/login/logout, защита API и UI, роли USER/ADMIN. ~7–10 ч.',
     theory: theorySteps([
       {
         topic: 'День 1 — Что такое Better Auth? (30–45 мин)',
@@ -474,42 +474,86 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Checkpoint: pnpm dev без ошибок auth/Prisma; User и Session видны в Studio.',
       },
       {
-        label: 'День 2: Register / Login / Logout (API)',
-        what: 'emailAndPassword + /api/auth/* handlers.',
-        where: 'server/utils/auth.ts, server/api/auth/*, shared/types/auth.ts.',
-        how: 'createAuth с plugins; catch-all или отдельные handlers по доке Nuxt.',
-        verify: 'Checkpoint: register → login → logout через Postman/curl.',
+        label: '✅ День 2 — Шаг 1: Catch-all /api/auth/*',
+        what: 'Проксировать все auth-запросы в Better Auth handler.',
+        where: 'server/api/auth/[...all].ts, server/utils/auth.ts.',
+        how: 'import { auth } from "../../utils/auth"; auth.handler(toWebRequest(event)). Официальная дока Nuxt/Better Auth — с toWebRequest; без него можно только если проверил, что handler отвечает.',
+        verify: 'pnpm dev; GET /api/auth/sign-in/email → 405 (method not allowed) — норма.',
       },
       {
-        label: 'День 3: Protected routes (server)',
-        what: '401 без сессии; Task.userId; guard на /api/tasks*.',
-        where: 'server/middleware/ или guards в server/utils/auth.ts.',
-        how: 'Защитить /api/tasks*; связать Task с User (миграция при необходимости).',
-        verify: 'Checkpoint: GET /api/tasks без cookie → 401.',
+        label: '✅ День 2 — Шаг 2: Register / Login / Logout (curl)',
+        what: 'Проверить email/password API без UI.',
+        where: 'терминал / Postman.',
+        how: 'POST /api/auth/sign-up/email { email, password, name }; POST /api/auth/sign-in/email; POST /api/auth/sign-out; GET /api/auth/get-session. Не /api/auth/session — такого endpoint нет.',
+        verify:
+          'sign-up → user в БД; sign-in → Set-Cookie + session; get-session → user; sign-out → null.',
       },
       {
-        label: 'День 4: useAuth + Login/Register pages',
+        label: '✅ День 2 — Шаг 3: getSession в server/utils/auth.ts',
+        what: 'Утилита для чтения сессии из заголовков запроса.',
+        where: 'server/utils/auth.ts.',
+        how: 'export async function getSession(event) { return auth.api.getSession({ headers: event.headers }) }.',
+        verify: 'typecheck OK; после sign-in getSession возвращает { session, user }.',
+      },
+      {
+        label: '✅ День 2 — Шаг 4: server/middleware/auth.ts',
+        what: '401 для защищённых API без сессии.',
+        where: 'server/middleware/auth.ts.',
+        how: 'Пропускать /api/auth/**, /api/health, /api/notes-access/**. Иначе getSession → 401. event.context.session и event.context.user для handlers.',
+        verify: 'GET /api/tasks без cookie → 401 JSON Unauthorized.',
+      },
+      {
+        label: '✅ День 2 — Шаг 5: /api/tasks* → userId из сессии',
+        what: 'Thin handlers читают user из context; Prisma-фильтр в utils.',
+        where: 'server/api/tasks*.ts, server/utils/tasks.ts.',
+        how: 'const userId = event.context.user?.id; getAllTasks(userId), createTask(body, userId). Убрать resolveDefaultTaskUserId после проверки.',
+        verify: 'С сессией — только свои задачи; без сессии — 401 (middleware).',
+      },
+      {
+        label: '✅ День 3 — Шаг 1: Проверка всех tasks routes',
+        what: '401 на GET/POST/PATCH/DELETE без cookie.',
+        where: 'curl / Postman.',
+        how: 'Прогнать все /api/tasks* без cookie → 401. С cookie после login → 200/201.',
+        verify: 'Checkpoint: 5 endpoints tasks защищены одинаково.',
+      },
+      {
+        label: '✅ День 3 — Шаг 2: Owner checks в utils',
+        what: 'PATCH/DELETE чужой задачи → 404 (не раскрывать существование).',
+        where: 'server/utils/tasks.ts, server/api/tasks/[id].*.',
+        how: 'getTaskById/updateTask/deleteTask с userId; handler → createError 404 если null.',
+        verify: 'User A не видит и не меняет задачи User B.',
+      },
+      {
+        label: '✅ День 3 — Шаг 3: Типизация event.context',
+        what: 'session и user в Nitro context без any.',
+        where: 'types/nuxt-h3.d.ts или server/types/.',
+        how: 'declare module h3 { interface H3EventContext { session?: …; user?: … } } — типы из auth.$Infer.Session.',
+        verify: 'typecheck OK; handlers используют event.context.user.id.',
+      },
+      {
+        label: '✅ День 4: useAuth + Login/Register pages',
         what: 'Composable + формы; редиректы и loading states.',
-        where: 'app/composables/useAuth.ts, app/pages/login.vue, app/pages/register.vue.',
-        how: 'useApi для мутаций; редирект после логина → /tasks; CSS Modules.',
+        where:
+          'app/composables/useAuth.ts (или composables модуля @onmax/nuxt-better-auth), app/pages/login.vue, app/pages/register.vue.',
+        how: 'useApi для POST sign-in/email, sign-up/email; useApiFetch get-session при старте; редирект после логина → /tasks; CSS Modules.',
         verify: 'Checkpoint: полный флоу в браузере — register → login → задачи.',
       },
       {
-        label: 'День 5: User menu + Pages middleware',
+        label: '✅ День 5: User menu + Pages middleware',
         what: 'Защита /tasks; условный UI; меню пользователя.',
-        where: 'app/middleware/auth.ts, layout/header, useAuth().user.',
-        how: 'Редирект с /tasks на /login; имя + кнопка «Выйти»; routeRules (опц.).',
-        verify: 'Checkpoint: без логина /tasks недоступна.',
+        where: 'app/middleware/auth.ts, layout/header.',
+        how: '/tasks без сессии → /login; /login|/register с сессией → /tasks. Имя + «Выйти». routeRules — опционально.',
+        verify: 'Checkpoint: без логина /tasks недоступна; с логином /login редиректит.',
       },
       {
-        label: 'День 6: RBAC + owner checks',
+        label: '✅ День 6: RBAC + owner checks',
         what: 'Поле role; requireRole; ограничение DELETE.',
         where: 'prisma/schema.prisma (User.role), server/utils/auth.ts.',
         how: 'DELETE task — владелец или ADMIN; опц. GET /api/admin/users.',
         verify: 'Checkpoint: USER → admin-действия 403; ADMIN удаляет чужие задачи.',
       },
       {
-        label: 'День 7: Refactor + security + architecture.md',
+        label: '✅ День 7: Refactor + security + architecture.md',
         what: 'Thin handlers, lint/build, полный тест auth flow.',
         where: 'server/utils/, docs/architecture.md.',
         how: 'pnpm lint:all && pnpm build; секция auth в architecture.md.',
@@ -522,12 +566,12 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       '✅ День 1: миграция add_better_auth_verification + prisma generate; pnpm dev без ошибок',
       '✅ День 1: AUTH_SECRET в runtimeConfig / .env (не в git)',
       '✅ День 1: docs/architecture.md — секция auth (день 1)',
-      'Register, login, logout (API + UI)',
-      '/api/tasks защищён — 401 без сессии',
-      '/tasks недоступна без логина (pages middleware)',
-      'Роли USER/ADMIN; DELETE — владелец или ADMIN',
-      'AUTH_SECRET только server-side',
-      'pnpm lint:all, build — чисто',
+      '✅ Register, login, logout (API + UI)',
+      '✅ /api/tasks защищён — 401 без сессии',
+      '✅ /tasks недоступна без логина (pages middleware)',
+      '✅ Роли USER/ADMIN; DELETE — владелец или ADMIN',
+      '✅ AUTH_SECRET только server-side',
+      '✅ pnpm lint:all, build — чисто',
     ]),
   },
   {
@@ -658,12 +702,127 @@ export function isRoadmapLabelCompletedByDefault(label: string): boolean {
   return /^\s*✅/.test(label)
 }
 
+export interface RoadmapProgressStats {
+  done: number
+  total: number
+  percent: number
+}
+
+/** Извлекает номер дня из label («День 1 — …», «День 1: …»). */
+export function parseRoadmapDay(label: string): number | null {
+  const match = /День\s*(\d+)/i.exec(label)
+  return match ? Number(match[1]) : null
+}
+
+function getWeekCheckItems(week: RoadmapWeek): RoadmapCheckItem[] {
+  return [...week.practice, ...week.doneWhen]
+}
+
+/** Максимальный номер дня в неделе (0 — если дней нет). */
+export function getMaxRoadmapDay(week: RoadmapWeek): number {
+  let max = 0
+
+  for (const item of getWeekCheckItems(week)) {
+    const day = parseRoadmapDay(item.label)
+    if (day !== null && day > max) {
+      max = day
+    }
+  }
+
+  return max
+}
+
+/** Прогресс по чеклисту (пункты practice + doneWhen). */
+export function getRoadmapChecklistStats(
+  week: RoadmapWeek,
+  isDone: (taskId: string) => boolean,
+): RoadmapProgressStats {
+  const ids = getRoadmapWeekTaskIds(week)
+  const done = ids.filter((id) => isDone(id)).length
+  const total = ids.length
+
+  return {
+    done,
+    total,
+    percent: total === 0 ? 0 : Math.round((done / total) * 100),
+  }
+}
+
+/**
+ * Прогресс недели для UI: по дням, если в labels есть «День N»;
+ * иначе — по чеклисту (неделя 1 и т.п.).
+ */
+export function getRoadmapWeekProgressStats(
+  week: RoadmapWeek,
+  isDone: (taskId: string) => boolean,
+): RoadmapProgressStats {
+  const maxDay = getMaxRoadmapDay(week)
+
+  if (maxDay === 0) {
+    return getRoadmapChecklistStats(week, isDone)
+  }
+
+  let completedDays = 0
+
+  for (let day = 1; day <= maxDay; day++) {
+    const dayItems = getWeekCheckItems(week).filter((item) => parseRoadmapDay(item.label) === day)
+
+    if (dayItems.length > 0 && dayItems.every((item) => isDone(item.id))) {
+      completedDays++
+    }
+  }
+
+  return {
+    done: completedDays,
+    total: maxDay,
+    percent: Math.round((completedDays / maxDay) * 100),
+  }
+}
+
+export function getRoadmapOverallChecklistStats(
+  isDone: (taskId: string) => boolean,
+): RoadmapProgressStats {
+  const ids = getAllRoadmapTaskIds()
+  const done = ids.filter((id) => isDone(id)).length
+  const total = ids.length
+
+  return {
+    done,
+    total,
+    percent: total === 0 ? 0 : Math.round((done / total) * 100),
+  }
+}
+
+/** Общий прогресс: среднее % по 12 неделям (дни или чеклист). */
+export function getRoadmapOverallWeekStats(
+  isDone: (taskId: string) => boolean,
+): RoadmapProgressStats {
+  const total = ROADMAP_WEEKS.length
+  let sumPercent = 0
+  let completedWeeks = 0
+
+  for (const week of ROADMAP_WEEKS) {
+    const stats = getRoadmapWeekProgressStats(week, isDone)
+    sumPercent += stats.percent
+
+    if (stats.percent === 100) {
+      completedWeeks++
+    }
+  }
+
+  return {
+    done: completedWeeks,
+    total,
+    percent: total === 0 ? 0 : Math.round(sumPercent / total),
+  }
+}
+
 /**
  * The week the student is currently actively working on.
  * This determines the default active tab when opening /roadmap.
  * Bumped to 4 after Week 3 (Better Auth + RBAC — план 2026-06-10).
  */
-export const CURRENT_ROADMAP_WEEK_ID = 4
+export const CURRENT_ROADMAP_WEEK_ID = 5
 
 export function getRoadmapTaskLabelMap(): Map<string, string> {
   const map = new Map<string, string>()

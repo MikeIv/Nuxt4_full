@@ -1,8 +1,9 @@
 import {
   CURRENT_ROADMAP_WEEK_ID,
-  getAllRoadmapTaskIds,
+  getRoadmapOverallChecklistStats,
+  getRoadmapOverallWeekStats,
   getRoadmapTaskLabelMap,
-  getRoadmapWeekTaskIds,
+  getRoadmapWeekProgressStats,
   isRoadmapLabelCompletedByDefault,
   ROADMAP_WEEKS,
   type RoadmapWeek,
@@ -111,27 +112,15 @@ export function useRoadmapProgress() {
   }
 
   function weekStats(week: RoadmapWeek): { done: number; total: number; percent: number } {
-    const ids = getRoadmapWeekTaskIds(week)
-    const done = ids.filter((id) => isDone(id)).length
-    const total = ids.length
-
-    return {
-      done,
-      total,
-      percent: total === 0 ? 0 : Math.round((done / total) * 100),
-    }
+    return getRoadmapWeekProgressStats(week, isDone)
   }
 
   function overallStats(): { done: number; total: number; percent: number } {
-    const ids = getAllRoadmapTaskIds()
-    const done = ids.filter((id) => isDone(id)).length
-    const total = ids.length
+    return getRoadmapOverallWeekStats(isDone)
+  }
 
-    return {
-      done,
-      total,
-      percent: total === 0 ? 0 : Math.round((done / total) * 100),
-    }
+  function overallChecklistStats(): { done: number; total: number; percent: number } {
+    return getRoadmapOverallChecklistStats(isDone)
   }
 
   function getCurrentWorkingWeek(): RoadmapWeek {
@@ -159,6 +148,7 @@ export function useRoadmapProgress() {
     toggle,
     weekStats,
     overallStats,
+    overallChecklistStats,
     // The week the user should be actively working on (auto-advances on 100% completion of previous).
     currentWorkingWeekId: currentWeekId,
   }

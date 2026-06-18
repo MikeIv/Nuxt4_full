@@ -1,0 +1,80 @@
+@use '~/assets/styles/tools/functions' as fn;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs-space-3);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: fn.rem(6);
+}
+
+.label {
+  color: var(--fs-color-text-muted);
+  font-size: fn.rem(13);
+  font-weight: 500;
+}
+
+.input {
+  padding: fn.rem(10) fn.rem(12);
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-color-bg);
+  color: var(--fs-color-text);
+  font: inherit;
+  transition: border-color 0.2s ease;
+
+  &:focus-visible {
+    border-color: var(--fs-color-primary);
+    outline: 2px solid rgb(235 153 20 / 0.25);
+    outline-offset: 1px;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.error {
+  margin: 0;
+  padding: fn.rem(10) fn.rem(12);
+  border-radius: var(--fs-radius-md);
+  background: rgb(220 38 38 / 0.08);
+  color: var(--fs-color-danger, #b91c1c);
+  font-size: fn.rem(14);
+}
+
+.submit {
+  padding: fn.rem(12) fn.rem(16);
+  border: none;
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-color-primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    opacity: 0.92;
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+}
+
+.link {
+  color: var(--fs-color-primary-strong);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

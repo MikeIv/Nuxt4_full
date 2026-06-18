@@ -1,3 +1,4 @@
+import type { AuthUser } from '#nuxt-better-auth'
 import { prisma } from './prisma'
 import type { CreateTaskInput, Task, UpdateTaskInput } from '#shared/types/task'
 
@@ -65,10 +66,20 @@ export async function updateTask(
   }
 }
 
-export async function deleteTask(id: string, userId: string): Promise<boolean> {
+export async function deleteTask(
+  id: string,
+  actor: Pick<AuthUser, 'id' | 'role'>,
+): Promise<boolean> {
   try {
     const existing = await prisma.task.findUnique({ where: { id } })
-    if (!existing || existing.userId !== userId) {
+    if (!existing) {
+      return false
+    }
+
+    const isOwner = existing.userId === actor.id
+    const isAdmin = actor.role === 'ADMIN'
+
+    if (!isOwner && !isAdmin) {
       return false
     }
 

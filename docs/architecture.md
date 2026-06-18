@@ -6,7 +6,7 @@
 
 **Неделя 3 (факт):** страница `/tasks` — `useTasks`, optimistic updates, фильтры, toast, SSR через `useApiFetch`.
 
-**Неделя 4 (факт, день 1):** Better Auth + Prisma adapter, `User` / `Session` / `Verification`, catch-all `/api/auth/*`, миграции OK, `pnpm dev` без ошибок auth.
+**Неделя 4 (факт):** Better Auth + Prisma adapter, `User` / `Session` / `Verification`, catch-all `/api/auth/*` (модуль), миграции OK, server middleware на `/api/tasks*`, UI login/register, RBAC USER/ADMIN.
 
 ---
 
@@ -301,23 +301,23 @@ shared/utils/formatApiError.ts
 
 ---
 
-# Архитектура auth (Неделя 4, день 1)
+# Архитектура auth (Неделя 4)
 
 ## Поток `/api/auth/*`
 
 ```
 Client (браузер / curl)
     ▼
-server/api/auth/[...all].ts     ← auth.handler(toWebRequest(event))
+@onmax/nuxt-better-auth   ← server/api/auth/[...all] (модуль)
     ▼
-server/utils/auth.ts            ← betterAuth({ prismaAdapter, emailAndPassword })
+server/auth.config.ts     ← defineServerAuth({ prismaAdapter, emailAndPassword })
     ▼
-server/utils/prisma.ts  →  PostgreSQL (users, sessions, verifications)
+server/utils/prisma.ts  →  PostgreSQL (users, sessions, accounts, verifications)
 ```
 
-Модуль `@onmax/nuxt-better-auth` подключён в `nuxt.config.ts`; client config — `app/auth.config.ts`. Серверный instance — `server/utils/auth.ts`.
+Client config — `app/auth.config.ts`. Composable — `useUserSession()` / `useAuth()`.
 
-## Endpoints (день 1)
+## Endpoints
 
 | Метод | Путь                      | Назначение                  |
 | ----- | ------------------------- | --------------------------- |
@@ -329,17 +329,55 @@ server/utils/prisma.ts  →  PostgreSQL (users, sessions, verifications)
 
 > `/api/auth/session` не существует — у Better Auth endpoint называется `get-session`.
 
+## Защита API (server middleware)
+
+```
+HTTP /api/tasks*
+    ▼
+server/middleware/auth.ts
+    ├─ пропуск: /api/auth/**, /api/health, /api/notes-access/**
+    └─ requireUserSession → event.context.user + session
+    ▼
+server/api/tasks*.ts → requireAuthUser(event) → server/utils/tasks.ts (userId filter)
+```
+
+Owner checks: PATCH/DELETE чужой задачи → 404. DELETE: владелец **или** `role === ADMIN`.
+
+Admin-only: `GET /api/admin/users` → `requireRole(event, 'ADMIN')`.
+
+## Защита UI (route rules + page meta)
+
+| Путь        | Правило                                         |
+| ----------- | ----------------------------------------------- |
+| `/tasks`    | `auth: { only: 'user', redirectTo: '/login' }`  |
+| `/login`    | `auth: { only: 'guest', redirectTo: '/tasks' }` |
+| `/register` | `auth: { only: 'guest', redirectTo: '/tasks' }` |
+
+Дублируется в `definePageMeta({ auth })` на страницах. User menu — `AppNav` + `useAuth()`.
+
+## RBAC
+
+| Роль  | Задачи                    | Admin API          |
+| ----- | ------------------------- | ------------------ |
+| USER  | CRUD только своих         | 403                |
+| ADMIN | CRUD своих + DELETE чужих | `/api/admin/users` |
+
+Поле `User.role` в Prisma; `additionalFields.role` в `server/auth.config.ts`; augmentation — `types/auth-user.d.ts`.
+
 ## Секреты и env
 
-| Переменная            | Где                                | Назначение                                             |
-| --------------------- | ---------------------------------- | ------------------------------------------------------ |
-| `DATABASE_URL`        | `.env`, `prisma.config.ts`         | Prisma + PostgreSQL                                    |
-| `SHADOW_DATABASE_URL` | `.env` (опц.)                      | `prisma migrate dev` — тот же user/pass, другое имя БД |
-| `AUTH_SECRET`         | `.env`, `runtimeConfig.authSecret` | Подпись сессий Better Auth                             |
+| Переменная                | Где                                | Назначение                                             |
+| ------------------------- | ---------------------------------- | ------------------------------------------------------ |
+| `DATABASE_URL`            | `.env`, `prisma.config.ts`         | Prisma + PostgreSQL                                    |
+| `SHADOW_DATABASE_URL`     | `.env` (опц.)                      | `prisma migrate dev` — тот же user/pass, другое имя БД |
+| `AUTH_SECRET`             | `.env`, `runtimeConfig.authSecret` | Подпись сессий Better Auth                             |
+| `NUXT_BETTER_AUTH_SECRET` | `.env`                             | Секрет модуля (см. `.env.example`)                     |
 
 Не использовать `NUXT_PUBLIC_*` для auth-секретов.
 
-**День 2+:** guards на `/api/tasks*`, UI login/register, `app/middleware/auth.ts`.
+## Seed (dev)
+
+`pnpm db:seed` — `test@example.com` (USER) и `admin@example.com` (ADMIN), пароль `password123`.
 
 ---
 
