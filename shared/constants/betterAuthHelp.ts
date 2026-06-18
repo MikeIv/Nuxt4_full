@@ -1,6 +1,6 @@
-import type { CursorHelpCard } from './cursorHelp'
+import type { NotesHelpCard } from './notesHelp'
 
-export const BETTER_AUTH_HELP_CARDS: CursorHelpCard[] = [
+export const BETTER_AUTH_HELP_CARDS: NotesHelpCard[] = [
   {
     id: 'overview',
     title: 'Обзор модуля',

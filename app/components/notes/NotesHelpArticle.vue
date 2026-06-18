@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { CursorHelpCard } from '#shared/constants/cursorHelp'
+import type { NotesHelpCard } from '#shared/constants/notesHelp'
 
 const props = defineProps<{
   title: string
   hint: string
-  cards: CursorHelpCard[]
+  cards: NotesHelpCard[]
   panelId: string
 }>()
 

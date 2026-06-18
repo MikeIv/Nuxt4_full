@@ -1,21 +1,11 @@
-export interface CursorHelpSection {
-  heading: string
-  paragraphs?: string[]
-  list?: string[]
-  code?: string
-  codes?: string[]
-  table?: { field: string; hint: string }[]
-}
+import type { NotesHelpCard } from './notesHelp'
 
-export interface CursorHelpCard {
-  id: string
-  title: string
-  hint: string
-  accent: string
-  sections: CursorHelpSection[]
-}
+export type {
+  NotesHelpCard as CursorHelpCard,
+  NotesHelpSection as CursorHelpSection,
+} from './notesHelp'
 
-export const CURSOR_HELP_CARDS: CursorHelpCard[] = [
+export const CURSOR_HELP_CARDS: NotesHelpCard[] = [
   {
     id: 'brief-template',
     title: 'Brief — шаблон задачи',

@@ -8,6 +8,7 @@ import {
   USEFUL_ITEMS,
   type NotesDocumentId,
 } from '#shared/constants/notesContent'
+import { NOTES_HELP_ARTICLES } from '#shared/constants/notesHelpArticles'
 import { formatApiError } from '#shared/utils/formatApiError'
 import { useAppToast } from '~/composables/useAppToast'
 
@@ -27,6 +28,8 @@ const activeTab = ref<NotesTab>('documents')
 const activeDocument = ref<NotesDocumentId>('project-docs')
 
 const visibleDocuments = computed(() => NOTES_DOCUMENTS.filter(isNotesDocumentVisible))
+
+const activeHelpArticle = computed(() => NOTES_HELP_ARTICLES[activeDocument.value] ?? null)
 
 if (process.env.NODE_ENV === 'production' && activeDocument.value === SERVER_ACCESS_ID) {
   activeDocument.value = 'project-docs'
@@ -192,8 +195,7 @@ const handleForgotPassword = () =>
               <NotesProjectDocs v-if="activeDocument === 'project-docs'" />
               <NotesDeploymentCheatsheet v-else-if="activeDocument === 'deployment-cheatsheet'" />
               <NotesOpsPlaybook v-else-if="activeDocument === 'ops-playbook'" />
-              <NotesCursorHelp v-else-if="activeDocument === 'cursor-help'" />
-              <NotesBetterAuth v-else-if="activeDocument === 'better-auth'" />
+              <NotesHelpArticle v-else-if="activeHelpArticle" v-bind="activeHelpArticle" />
               <NotesServerAccess v-else-if="activeDocument === SERVER_ACCESS_ID && isUnlocked" />
               <p
                 v-else-if="activeDocument === SERVER_ACCESS_ID"
