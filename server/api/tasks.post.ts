@@ -12,6 +12,7 @@ export default defineEventHandler(async (event): Promise<{ data: Task }> => {
     })
   }
 
-  const task = await createTask(body)
+  const userId = requireAuthUser(event).id
+  const task = await createTask(body, userId)
   return { data: task }
 })

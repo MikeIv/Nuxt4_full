@@ -9,7 +9,8 @@ export default defineEventHandler(async (event): Promise<{ data: Task | null }> 
   }
 
   const body = await requireBody<UpdateTaskInput>(event)
-  const task = await updateTask(id, body)
+  const userId = requireAuthUser(event).id
+  const task = await updateTask(id, body, userId)
 
   if (!task) {
     throw createError({

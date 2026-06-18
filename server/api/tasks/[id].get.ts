@@ -7,7 +7,8 @@ export default defineEventHandler(async (event): Promise<{ data: Task | null }> 
     throw createError({ statusCode: 400, statusMessage: 'ID is required' })
   }
 
-  const task = await getTaskById(id)
+  const userId = requireAuthUser(event).id
+  const task = await getTaskById(id, userId)
 
   if (!task) {
     throw createError({
