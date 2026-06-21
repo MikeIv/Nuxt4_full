@@ -1,6 +1,10 @@
 // Один раз при старте Nitro — в отличие от server/middleware/log.ts (на каждый запрос)
 
+import { getEnv } from '#shared/config/env'
+
 export default defineNitroPlugin(() => {
+  getEnv()
+
   if (!import.meta.dev) {
     return
   }
