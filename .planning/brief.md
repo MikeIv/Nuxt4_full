@@ -1,43 +1,30 @@
-# Brief: Неделя 4 — Lucia Auth + RBAC
+# Brief: Подраздел «Cursor справка» в заметках
 
-**Дата:** 2026-06-09
-**Класс:** L (7 дней, ~7–10 ч)
+**Дата:** 2026-06-15
+**Класс:** M
 
 ## Цель
 
-Session-based аутентификация (Lucia + Prisma): register/login/logout, защита API и UI, роли USER/ADMIN. Без JWT на этой неделе.
+Добавить подраздел «Cursor справка» в сайдбар заметок: карточки как в «Документация», но с раскрытием контента на странице. Первая карточка — справка по `brief-template.md`.
 
 ## Scope
 
-- **Включено:** Lucia, User/Session в Prisma, auth API, server + pages middleware, `useAuth`, login/register pages, RBAC, `Task.userId`, `docs/architecture.md`
-- **Исключено:** JWT, `apiHandler` (нед. 5), полный Zod для tasks (нед. 6), Nuxt UI, rate limiting (опционально день 7)
-
-## План по дням
-
-| День | Checkpoint                                         |
-| ---- | -------------------------------------------------- |
-| 1    | Миграция + `server/utils/lucia.ts` + `AUTH_SECRET` |
-| 2    | register/login/logout API + Zod (Postman/curl)     |
-| 3    | `/api/tasks` → 401 без сессии                      |
-| 4    | `/login`, `/register`, `useAuth`, редирект         |
-| 5    | pages middleware; user menu; `/tasks` закрыта      |
-| 6    | role USER/ADMIN; DELETE — владелец или admin       |
-| 7    | sessions, security, architecture.md, lint/build    |
+- Включено: `notesContent.ts`, `NotesCursorHelp.vue`, `cursorHelp.ts`, `notes.vue`
+- Исключено: другие карточки кроме brief, рефакторинг существующих подразделов
 
 ## Done when
 
-- [ ] Lucia + migrate User/Session
-- [ ] Auth API + UI работают end-to-end
-- [ ] `/api/tasks` и `/tasks` защищены
-- [ ] RBAC: user vs admin
-- [ ] `pnpm lint:all`, build, typecheck — чисто
+- [ ] Подраздел «Cursor справка» виден в сайдбаре
+- [ ] Карточки раскрывают контент внутри страницы
+- [ ] Карточка brief-template.md с адаптированным текстом
+- [ ] `pnpm lint:all` проходит
 
 ## Ограничения
 
-- Thin handlers; логика в `server/utils/`
-- Клиент: только `useApi` / `useApiFetch`
-- `AUTH_SECRET` — private runtimeConfig, не в git
+- Стиль карточек — как `NotesProjectDocs`
+- Минимальный diff
 
 ## Контекст
 
-Roadmap: [docs/roadmap-12-weeks.md](../docs/roadmap-12-weeks.md#неделя-4--lucia-auth--rbac). Бывш. нед. 5–6 (auth + RBAC) объединены в нед. 4.
+- Шаблон: `.planning/brief-template.md`
+- Команда Cursor: `/brief`

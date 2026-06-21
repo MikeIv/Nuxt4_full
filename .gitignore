@@ -33,3 +33,6 @@ CURSOR_RULES_EXPORT.md
 .cursorignore
 
 /generated/prisma
+
+# https://vercel.com/new
+docs/recovery-codes.txt
