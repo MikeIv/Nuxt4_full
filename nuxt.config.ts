@@ -2,6 +2,9 @@ import packageJson from './package.json' with { type: 'json' }
 
 const isDev = (process.env.NODE_ENV ?? 'development') === 'development'
 
+/** Vercel: preset `vercel` (Build Output API). Локально / PM2 / Railway: `node-server`. */
+const nitroPreset = process.env.NITRO_PRESET ?? (process.env.VERCEL ? 'vercel' : 'node-server')
+
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
@@ -76,7 +79,7 @@ export default defineNuxtConfig({
   nitro: {
     logLevel: isDev ? 'debug' : 'info',
     compressPublicAssets: true,
-    preset: 'node-server',
+    preset: nitroPreset,
     /** Поднимаем target, чтобы работал top-level await в server/utils (нужен для Prisma singleton + ESM interop). */
     esbuild: {
       options: {
