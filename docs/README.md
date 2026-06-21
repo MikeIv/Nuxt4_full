@@ -20,7 +20,3 @@ Fullstack-песочница для прокачки backend на Nuxt 4 + Nitro
 ## Remote
 
 https://github.com/MikeIv/Nuxt4_full.git
-
-## Шаблон-источник
-
-`d:\_WEB\_Work\_NUXT4_Template\`
