@@ -19,7 +19,7 @@
 **Правила проекта:**
 
 - API на клиенте — только `useApi` / `useApiFetch`.
-- Server routes — `server/api/`; auth — [неделя 4](#неделя-4--better-auth--rbac--protected-routes); Zod + unified API — [неделя 5](#недели-5-12-коротко-с-акцентом-на-cj).
+- Server routes — `server/api/`; auth — [неделя 4](#неделя-4--better-auth--rbac--protected-routes); Zod + unified API — [неделя 5](#неделя-5--error-handling--api--zod).
 - Минимальный diff.
 
 **Структура папок:** [architecture.md](architecture.md) — зачем `shared/`, куда класть handlers/utils/plugins, слои типов.
@@ -148,9 +148,80 @@
 
 ---
 
+## Неделя 5 — Error Handling + API + Zod
+
+**Цель недели:** единый контракт `{ data, success, error? }`, `apiHandler`, Zod-валидация tasks, адаптация `useApi`, глобальный `nitro.errorHandler`.
+
+| День | Checkpoint                                                |
+| ---- | --------------------------------------------------------- |
+| 1    | `response.ts` + `apiHandler.ts`; ответы через обёртку     |
+| 2    | `CreateTaskSchema` / `UpdateTaskSchema` + `validation.ts` |
+| 3    | GET/POST `/api/tasks` на apiHandler + Zod                 |
+| 4    | PATCH/DELETE/[id] + owner checks в едином стиле           |
+| 5    | `useApi` / `useApiFetch` — data или throw                 |
+| 6    | `nitro.errorHandler` — Zod, Prisma, Auth                  |
+| 7    | verify + `architecture.md` + commit                       |
+
+### День 1 — Утилиты ответов + базовый apiHandler
+
+**Цель:** фундамент unified API (объединение плана ментора + `response.ts`).
+
+1. **`server/utils/response.ts`:** `successResponse`, `errorResponse`, `sendApiResponse` → `{ data, success, error? }`.
+2. **`server/utils/apiHandler.ts`:** обёртка handler (try/catch, маппинг `createError` → error format).
+3. **`nuxt.config.ts`** — только если нужно (alias, env; `errorHandler` — заготовка на день 6).
+
+**Done when (день 1):** есть `apiHandler`; тестовый route возвращает unified format.
+
+### День 2 — Zod + схемы валидации
+
+1. **`zod`** в dependencies (если ещё нет).
+2. **`shared/validations/task.ts`:** `CreateTaskSchema`, `UpdateTaskSchema`; типы через `z.infer`.
+3. **`server/utils/validation.ts`:** `validateBody`, `validateQuery`.
+
+**Done when (день 2):** типизированные схемы; invalid body → 400 с issues.
+
+### День 3 — GET и POST задач
+
+Переписать `server/api/tasks.get.ts`, `server/api/tasks.post.ts` — `apiHandler` + Zod + `requireAuthUser`.
+
+**Done when (день 3):** GET/POST с новым форматом и валидацией.
+
+### День 4 — PATCH, DELETE, GET [id] + owner checks
+
+`server/api/tasks/[id].get.ts`, `[id].patch.ts`, `[id].delete.ts` — тот же стиль; owner/RBAC из нед. 4 без регрессий.
+
+**Done when (день 4):** полный CRUD tasks в едином стиле.
+
+### День 5 — Клиент (useApi)
+
+Обновить `app/composables/useApi.ts` / `useApiFetch`: `success: true` → data; иначе throw.
+
+**Done when (день 5):** composables (`useTasks`) без ручного разбора `{ data }`.
+
+### День 6 — Глобальный error handler
+
+`nitro.errorHandler`, `server/error-handler.ts` — Zod, Prisma (P2002/P2025), Better Auth.
+
+**Done when (день 6):** необработанные ошибки → тот же JSON-формат.
+
+### День 7 — Тестирование, полировка, документация
+
+Полный flow: register → CRUD → invalid body → logout. `pnpm lint:all && pnpm typecheck && pnpm build`. Обновить `docs/architecture.md` (+ опц. `docs/api-conventions.md`). Коммит.
+
+**Done when (неделя):**
+
+- Все tasks routes — unified API + Zod где нужно
+- `useApi` на клиенте согласован с сервером
+- Global error handler
+- verify + build чисто
+
+**Связь с нед. 1–2:** `apiResponse.ok()` на нед. 1–3 — постепенно мигрируем на `response.ts`. `server/middleware/log.ts` + duration — опционально в день 7.
+
+---
+
 ## Недели 5–12 (коротко, с акцентом на CJ)
 
-**Неделя 5**: Error handling, `apiHandler`, полная Zod-валидация, unified `{ data, success, error }` responses.
+**Неделя 5**: см. [детальный план выше](#неделя-5--error-handling--api--zod).
 
 **Неделя 6**: Projects + relations, пагинация, filters, optimistic updates (очень близко к CJ).
 
@@ -173,7 +244,7 @@ app/
   pages/           login, register, tasks, projects, admin...
 server/
   api/             auth/, tasks/ ...
-  utils/           auth.ts, prisma.ts, tasks.ts, apiHandler.ts
+  utils/           auth.ts, prisma.ts, tasks.ts, response.ts, apiHandler.ts, validation.ts
   middleware/
 shared/types/      auth.ts, tasks.ts...
 prisma/
@@ -192,4 +263,4 @@ docs/
 2. Адаптируй идеи под Prisma + Better Auth (не копируй Drizzle 1:1).
 3. После недели 6–7 реши, добавить ли `@onmax/nuxt-better-auth` модуль для declarative protection.
 
-**Next step**: Неделя 4 — день 1 (Setup). После дня 1–2 фиксируй выводы в `.planning/state.md`.
+**Next step**: Неделя 5 — день 2 (Zod-схемы + `validation.ts`). После каждого дня — checkpoint в `.planning/state.md`.

@@ -577,19 +577,124 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 5,
     title: 'Error Handling + API + Zod',
-    theme: 'apiHandler, unified responses, валидация',
-    goal: 'Единый стиль API: apiHandler, createError, полная Zod-валидация, { data, success, error }.',
-    theory: theoryItems(
-      'REST, статусы, CORS (same-origin в Nuxt)',
-      'Nitro middleware, createError',
-    ),
-    practice: practice(5, [
-      'server/utils/apiHandler.ts — обёртка handler + try/catch',
-      'server/middleware/log.ts — method + path + duration',
-      'POST /api/echo + страница /playground',
-      'docs/api-conventions.md — { data, success, error? }',
+    theme: 'День 1 ✓ — response + apiHandler; день 2: Zod + validation',
+    goal: 'Единый стиль API: { data, success, error? }, apiHandler, Zod для tasks, глобальный errorHandler, адаптация useApi. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Unified API responses',
+        description:
+          'Контракт { data, success, error? } вместо «голого» JSON. successResponse / errorResponse / sendApiResponse в server/utils/response.ts. apiHandler — обёртка handler с try/catch и единым форматом ответа.',
+      },
+      {
+        topic: 'День 2 — Zod на границе API',
+        description:
+          'Схемы в shared/validations/; validateBody / validateQuery в server/utils/validation.ts. z.infer для типов без дублирования. Invalid body → 400 с issues.',
+      },
+      {
+        topic: 'Дни 3–4 — Рефакторинг tasks API',
+        description:
+          'Thin handlers: apiHandler + Zod + utils. PATCH (не PUT) для update. Owner checks и RBAC из нед. 4 сохраняются.',
+      },
+      {
+        topic: 'День 5 — Клиент: useApi / useApiFetch',
+        description:
+          'Обёртки разворачивают success: true → data; success: false → throw с понятной ошибкой. Совместимость с SSR useApiFetch.',
+      },
+      {
+        topic: 'День 6 — nitro.errorHandler',
+        description:
+          'Необработанные ошибки (Zod, Prisma P2002/P2025, Better Auth) → тот же JSON-формат. server/error-handler.ts.',
+      },
+      {
+        topic: 'REST, статусы, createError',
+        description:
+          'Same-origin в Nuxt — CORS не нужен для /api/*. createError для контролируемых 4xx/5xx внутри handler.',
+      },
     ]),
-    doneWhen: doneWhen(5, ['Ошибки → предсказуемый JSON', 'Middleware логирует duration в dev']),
+    practice: practiceSteps(5, [
+      {
+        label: '✅ День 1 — Шаг 1: server/utils/response.ts',
+        what: 'Утилиты successResponse, errorResponse, sendApiResponse — единый контракт { data, success, error? }.',
+        where: 'server/utils/response.ts (рядом с apiResponse.ts; постепенная миграция с ok()).',
+        how: 'successResponse(data) → { data, success: true }; errorResponse(message, code?) → { success: false, error }; sendApiResponse(event, payload, status?).',
+        verify: 'typecheck OK; импорт из Nitro handler без циклических deps.',
+      },
+      {
+        label: '✅ День 1 — Шаг 2: server/utils/apiHandler.ts',
+        what: 'Главная обёртка handler: try/catch, маппинг createError → errorResponse, успех → successResponse.',
+        where: 'server/utils/apiHandler.ts.',
+        how: 'export function apiHandler<T>(fn: (event: H3Event) => Promise<T>) => defineEventHandler(async (event) => { … }).',
+        verify:
+          'Тестовый handler через apiHandler возвращает { success: true, data } или { success: false, error }.',
+      },
+      {
+        label: '✅ День 1 — Шаг 3: nuxt.config (при необходимости)',
+        what: 'Подключить alias, env, nitro.errorHandler hook — только если нужно для дня 1.',
+        where: 'nuxt.config.ts, shared/config/env.ts (опц.).',
+        how: 'Без лишних изменений srcDir/ESLint. errorHandler — заготовка на день 6.',
+        verify: 'pnpm dev стартует; checkpoint: есть apiHandler, ответы идут через response utils.',
+      },
+      {
+        label: 'День 2 — Шаг 1: Zod + схемы tasks',
+        what: 'CreateTaskSchema, UpdateTaskSchema (+ опц. query). Типы через z.infer.',
+        where: 'shared/validations/task.ts (или shared/validations/tasks.ts).',
+        how: 'pnpm add zod (если ещё нет). title min(1), description optional, completed boolean optional.',
+        verify: 'typecheck: export type CreateTaskInput = z.infer<typeof CreateTaskSchema>.',
+      },
+      {
+        label: 'День 2 — Шаг 2: server/utils/validation.ts',
+        what: 'validateBody, validateQuery — parse + createError 400 с Zod issues.',
+        where: 'server/utils/validation.ts.',
+        how: 'schema.safeParse(body) → throw createError({ statusCode: 400, data: { issues } }) при fail.',
+        verify: 'Invalid JSON body → 400 с issues в ответе (через apiHandler на день 3+).',
+      },
+      {
+        label: 'День 3 — GET и POST /api/tasks',
+        what: 'Переписать tasks.get.ts и tasks.post.ts на apiHandler + Zod.',
+        where: 'server/api/tasks.get.ts, server/api/tasks.post.ts.',
+        how: 'export default apiHandler(async (event) => { requireAuthUser; validateBody для POST; return success data из utils }).',
+        verify:
+          'Checkpoint: GET/POST с сессией — { success: true, data }; POST invalid body → 400.',
+      },
+      {
+        label: 'День 4 — PATCH, DELETE, GET [id] + owner checks',
+        what: 'Остальные tasks routes в едином стиле; owner/RBAC без регрессий.',
+        where: 'server/api/tasks/[id].get.ts, [id].patch.ts, [id].delete.ts.',
+        how: 'apiHandler + validateBody на PATCH; 404 чужой задачи; DELETE — владелец или ADMIN.',
+        verify: 'Checkpoint: полный CRUD curl/браузер; чужая задача → 404; USER не удаляет чужие.',
+      },
+      {
+        label: 'День 5 — useApi / useApiFetch',
+        what: 'Клиент разворачивает success: true → data; иначе throw ApiError.',
+        where: 'app/composables/useApi.ts, useApiFetch (если отдельно).',
+        how: 'После $fetch проверить payload.success; типизировать ApiResponse<T>. useTasks без ручного .data.data.',
+        verify:
+          'Checkpoint: useTasks/createTask возвращает чистые данные или кидает ошибку с message.',
+      },
+      {
+        label: 'День 6 — Глобальный error handler',
+        what: 'nitro.errorHandler + маппинг Zod, Prisma, Auth → unified JSON.',
+        where: 'server/error-handler.ts, nuxt.config.ts nitro.errorHandler.',
+        how: 'H3Error → errorResponse; Prisma P2025 → 404; P2002 → 409; необработанное → 500 без stack в prod.',
+        verify: 'Checkpoint: throw без catch в handler → тот же { success: false, error } формат.',
+      },
+      {
+        label: 'День 7 — Verify + docs + commit',
+        what: 'Полный auth + tasks flow; lint, typecheck, build; architecture.md.',
+        where: 'docs/architecture.md, docs/api-conventions.md (опц.).',
+        how: 'register → CRUD tasks → invalid body → logout; pnpm verify && pnpm build; секция API conventions.',
+        verify: 'Checkpoint: pnpm lint:all && pnpm typecheck && pnpm build — чисто; коммит нед. 5.',
+      },
+    ]),
+    doneWhen: doneWhen(5, [
+      'apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
+      'CreateTaskSchema / UpdateTaskSchema + validateBody',
+      'GET/POST/PATCH/DELETE /api/tasks — { data, success, error? }',
+      'useApi разворачивает success и бросает на error',
+      'nitro.errorHandler — необработанные ошибки в едином формате',
+      'pnpm lint:all, typecheck, build — чисто',
+      'docs/architecture.md — секция unified API (день 7)',
+    ]),
   },
   {
     id: 6,
@@ -598,8 +703,8 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     goal: 'Projects + relations, пагинация, filters, optimistic updates (CJ-style).',
     theory: theoryItems('Zod на границе API', 'Пагинация и фильтры в query'),
     practice: practice(6, [
-      'readValidatedBody / server/utils/validate.ts',
-      'Zod для tasks (create/update/query)',
+      'readValidatedBody / переиспользовать server/utils/validation.ts (нед. 5)',
+      'Zod query-схемы: page, limit, q (фильтры)',
       'Пагинация ?page=&limit=&q=',
       'Модель Project, relation с Task',
       '/projects, /projects/[id]',

@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 
-const PUBLIC_API_PREFIXES = ['/api/auth', '/api/health', '/api/notes-access'] as const
+const PUBLIC_API_PREFIXES = ['/api/auth', '/api/health', '/api/notes-access', '/api/echo'] as const
 
 function isPublicApiPath(path: string): boolean {
   return PUBLIC_API_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))

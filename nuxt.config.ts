@@ -1,13 +1,17 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 import packageJson from './package.json' with { type: 'json' }
+import { env } from './shared/config/env'
 
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = env.NODE_ENV === 'development'
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
 
   /** Исходники приложения в `app/`. Каталог `server/` — в корне репозитория. */
   srcDir: 'app/',
+
+  alias: {
+    '@shared': './shared',
+  },
 
   css: ['~/assets/styles/main.scss'],
 
@@ -71,6 +75,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    logLevel: env.NODE_ENV === 'development' ? 'debug' : 'info',
     compressPublicAssets: true,
     preset: 'node-server',
     /** Поднимаем target, чтобы работал top-level await в server/utils (нужен для Prisma singleton + ESM interop). */

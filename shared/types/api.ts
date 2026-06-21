@@ -1,7 +1,18 @@
 /**
- * Общие HTTP-типы без доменной логики. Расширяйте под контракт бэкенда.
+ * Общие HTTP-типы без доменной логики. Контракт unified API — нед. 5+.
  */
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 
-/** Заготовка под обёртки ответа API (пока не зафиксирован контракт). */
 export type UnknownJson = Record<string, unknown>
+
+/** Unified API envelope: server (response.ts) и client (useApi, день 5). */
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  data?: T
+  error?: {
+    message: string
+    code?: string
+    details?: unknown
+  }
+  statusCode: number
+}
