@@ -20,7 +20,7 @@ useHead({
   title: 'Заметки — Nuxt4_full',
 })
 
-type NotesTab = 'documents' | 'links' | 'useful'
+type NotesTab = 'documents' | 'links' | 'useful' | 'notebook'
 
 const SERVER_ACCESS_ID: NotesDocumentId = 'server-access'
 
@@ -54,6 +54,7 @@ const tabItems: UiTabItem[] = [
   { value: 'documents', label: 'Документы' },
   { value: 'links', label: 'Ссылки' },
   { value: 'useful', label: 'Полезное' },
+  { value: 'notebook', label: 'Блокнот' },
 ]
 
 const openAccessDialog = (mode: 'setup' | 'unlock', docId: NotesDocumentId) => {
@@ -236,7 +237,7 @@ const handleForgotPassword = () =>
         </section>
 
         <!-- Полезное -->
-        <section v-else :class="$style.section">
+        <section v-else-if="activeTab === 'useful'" :class="$style.section">
           <ul :class="$style.usefulList">
             <li
               v-for="item in USEFUL_ITEMS"
@@ -247,6 +248,11 @@ const handleForgotPassword = () =>
               <p :class="$style.usefulDesc">{{ item.description }}</p>
             </li>
           </ul>
+        </section>
+
+        <!-- Блокнот -->
+        <section v-else :class="$style.section">
+          <NotesNotebookTab />
         </section>
       </div>
     </AppContainer>
