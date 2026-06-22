@@ -89,7 +89,7 @@ export const USEFUL_ITEMS: UsefulItem[] = [
   {
     title: 'Пароль входа (Better Auth)',
     description:
-      'После seed: admin@example.com / password123 (ADMIN). Сброс: pnpm db:seed. Свой пароль: SEED_PASSWORD в prisma/seed.ts → seed. Email: Prisma Studio → users. Только dev — на prod не использовать.',
+      'После seed: admin@admin.com / 1234 (ADMIN). Сброс: pnpm db:seed. Свой пароль: SEED_PASSWORD в prisma/seed.ts → seed. Email: Prisma Studio → users. Только dev.',
   },
   {
     title: 'Histeria',

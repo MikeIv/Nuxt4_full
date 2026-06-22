@@ -99,8 +99,8 @@ async function main() {
   })
 
   console.log('✅ Seed completed')
-  console.log(`   test@example.com / ${SEED_PASSWORD} (USER)`)
-  console.log(`   admin@example.com / ${SEED_PASSWORD} (ADMIN)`)
+  console.log(`   ${SEED_USERS[0].email} / ${SEED_PASSWORD} (USER)`)
+  console.log(`   ${SEED_USERS[1].email} / ${SEED_PASSWORD} (ADMIN)`)
 }
 
 main()

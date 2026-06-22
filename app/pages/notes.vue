@@ -251,7 +251,7 @@ const handleForgotPassword = () =>
         </section>
 
         <!-- Блокнот -->
-        <section v-else :class="$style.section">
+        <section v-else-if="activeTab === 'notebook'" :class="$style.section">
           <NotesNotebookTab />
         </section>
       </div>

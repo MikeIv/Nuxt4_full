@@ -102,11 +102,14 @@ const saveEdit = async () => {
   }
 
   try {
-    await updateEntry(id, {
+    const updated = await updateEntry(id, {
       title,
       description: editDesc.value.trim() || null,
       code: editCode.value.trim() || null,
     })
+
+    if (!updated) return
+
     toast.success(`Заметка «${title}» обновлена`)
     cancelEdit()
   } catch (e) {

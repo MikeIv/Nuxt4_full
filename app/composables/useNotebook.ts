@@ -27,6 +27,12 @@ const unwrapNotebookEntries = (response: unknown): NotebookEntry[] => {
   return envelope.data ?? []
 }
 
+function assertLoggedIn(loggedIn: Ref<boolean>) {
+  if (!loggedIn.value) {
+    throw new Error('Требуется авторизация')
+  }
+}
+
 export const useNotebook = () => {
   const api = useApi()
   const { loggedIn } = useAuth()
@@ -82,8 +88,18 @@ export const useNotebook = () => {
     entries.value = getEntries().toSpliced(index, 0, entry)
   }
 
+  const patchEntryInCache = (id: string, patch: Partial<NotebookEntry>) => {
+    const list = getEntries()
+    const index = list.findIndex((item) => item.id === id)
+    const current = list[index]
+    if (index === -1 || !current) return
+
+    entries.value = list.with(index, { ...current, ...patch })
+  }
+
   const createEntry = async (input: CreateNotebookEntryInput) => {
-    if (!loggedIn.value || isCreating.value) return
+    assertLoggedIn(loggedIn)
+    if (isCreating.value) return
 
     const optimisticEntry = createOptimisticEntry(input)
 
@@ -96,7 +112,8 @@ export const useNotebook = () => {
         body: input,
       })
 
-      await refresh()
+      removeEntryFromCache(optimisticEntry.id)
+      prependEntryToCache(response.data)
       return response.data
     } catch (e) {
       removeEntryFromCache(optimisticEntry.id)
@@ -107,7 +124,8 @@ export const useNotebook = () => {
   }
 
   const updateEntry = async (id: string, payload: UpdateNotebookEntryInput) => {
-    if (!loggedIn.value || updatingId.value !== null) return
+    assertLoggedIn(loggedIn)
+    if (updatingId.value !== null) return
 
     updatingId.value = id
 
@@ -117,7 +135,10 @@ export const useNotebook = () => {
         body: payload,
       })
 
-      await refresh()
+      if (response.data) {
+        patchEntryInCache(id, response.data)
+      }
+
       return response.data
     } finally {
       updatingId.value = null
@@ -125,7 +146,8 @@ export const useNotebook = () => {
   }
 
   const deleteEntry = async (id: string) => {
-    if (!loggedIn.value || deletingId.value !== null) return
+    assertLoggedIn(loggedIn)
+    if (deletingId.value !== null) return
 
     const removed = removeEntryFromCache(id)
     if (!removed) return
@@ -134,7 +156,6 @@ export const useNotebook = () => {
 
     try {
       await api(`/api/notebook/${id}`, { method: 'DELETE' })
-      await refresh()
     } catch (e) {
       restoreEntryAt(removed.index, removed.entry)
       throw e
