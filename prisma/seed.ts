@@ -3,11 +3,11 @@ import 'dotenv/config'
 import { hashPassword } from 'better-auth/crypto'
 import { prisma } from '../server/utils/prisma'
 
-const SEED_PASSWORD = 'password123'
+const SEED_PASSWORD = '1234'
 
 const SEED_USERS = [
-  { email: 'test@example.com', name: 'Test User', role: 'USER' as const },
-  { email: 'admin@example.com', name: 'Admin User', role: 'ADMIN' as const },
+  { email: 'test@test.com', name: 'Test User', role: 'USER' as const },
+  { email: 'admin@admin.com', name: 'Mike', role: 'ADMIN' as const },
 ] as const
 
 async function upsertCredentialAccount(userId: string, password: string) {

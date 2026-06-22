@@ -83,15 +83,16 @@ export const NOTE_LINKS: NoteLink[] = [
 
 export const USEFUL_ITEMS: UsefulItem[] = [
   {
-    title: 'pnpm dev',
-    description: 'Локальный dev-сервер на :3000 (или следующий свободный порт).',
+    title: 'pnpm db:studio',
+    description: 'Prisma Studio — GUI для просмотра и редактирования таблиц БД на :5555.',
   },
   {
-    title: 'pnpm verify',
-    description: 'Lint + typecheck перед деплоем.',
+    title: 'Пароль входа (Better Auth)',
+    description:
+      'После seed: admin@example.com / password123 (ADMIN). Сброс: pnpm db:seed. Свой пароль: SEED_PASSWORD в prisma/seed.ts → seed. Email: Prisma Studio → users. Только dev — на prod не использовать.',
   },
   {
-    title: 'useApi / useApiFetch',
-    description: 'Клиентские запросы к API — только через composables проекта.',
+    title: 'Histeria',
+    description: 'cd C:\\_VPN_Histeria\n' + '.\\hysteria.exe client -c' + ' config.yaml',
   },
 ]

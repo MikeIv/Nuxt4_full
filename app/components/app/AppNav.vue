@@ -31,24 +31,23 @@ const handleSignOut = async () => {
         <AppLogoFull />
       </NuxtLink>
 
-      <div :class="$style.right">
-        <nav :class="$style.nav" aria-label="Основная навигация">
-          <NuxtLink
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            :class="$style.link"
-            active-class=""
+      <nav :class="$style.nav" aria-label="Основная навигация">
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.to"
+          :to="item.to"
+          :class="$style.link"
+          active-class=""
+        >
+          <span
+            :class="[$style.linkInner, $route.path === item.to && $style.linkActive]"
           >
-            <span
-              :class="[$style.linkInner, $route.path === item.to && $style.linkActive]"
-            >
-              {{ item.label }}
-            </span>
-          </NuxtLink>
-        </nav>
+            {{ item.label }}
+          </span>
+        </NuxtLink>
+      </nav>
 
-        <div v-if="ready" :class="$style.auth">
+      <div v-if="ready" :class="$style.auth">
           <template v-if="loggedIn">
             <span :class="$style.userMeta">
               <span :class="$style.userName">{{ displayName }}</span>
@@ -71,7 +70,6 @@ const handleSignOut = async () => {
             </NuxtLink>
           </template>
         </div>
-      </div>
     </AppContainer>
   </header>
 </template>
@@ -90,10 +88,10 @@ const handleSignOut = async () => {
 }
 
 .inner {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   gap: var(--fs-space-2);
   align-items: center;
-  justify-content: space-between;
   padding: var(--fs-space-2);
 }
 
@@ -102,6 +100,7 @@ const handleSignOut = async () => {
   align-items: center;
   min-width: 0;
   flex-shrink: 0;
+  justify-self: start;
 
   &:focus-visible {
     border-radius: var(--fs-radius-sm);
@@ -110,17 +109,12 @@ const handleSignOut = async () => {
   }
 }
 
-.right {
-  display: flex;
-  gap: fn.rem(12);
-  align-items: center;
-  min-width: 0;
-}
-
 .nav {
   display: flex;
   gap: fn.rem(8);
   flex-wrap: wrap;
+  justify-content: center;
+  justify-self: center;
 }
 
 .link {
@@ -156,6 +150,12 @@ const handleSignOut = async () => {
   gap: fn.rem(8);
   align-items: center;
   flex-shrink: 0;
+  justify-self: end;
+  padding: fn.rem(6) fn.rem(10);
+  border: 1px solid rgb(235 153 20 / 0.32);
+  border-radius: var(--fs-radius-lg);
+  background: rgb(235 153 20 / 0.16);
+  box-shadow: var(--fs-shadow-sm);
 }
 
 .userMeta {
@@ -171,8 +171,9 @@ const handleSignOut = async () => {
 
 .userName {
   overflow: hidden;
-  color: var(--fs-color-text-muted);
+  color: var(--fs-color-primary-strong);
   font-size: fn.rem(13);
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -180,7 +181,7 @@ const handleSignOut = async () => {
 .roleBadge {
   padding: fn.rem(2) fn.rem(6);
   border-radius: var(--fs-radius-sm);
-  background: rgb(235 153 20 / 0.12);
+  background: rgb(255 255 255 / 0.72);
   color: var(--fs-color-primary-strong);
   font-size: fn.rem(10);
   font-weight: 700;
@@ -191,10 +192,10 @@ const handleSignOut = async () => {
 .authLink {
   display: inline-flex;
   align-items: center;
-  padding: fn.rem(8) fn.rem(12);
-  border: 1px solid var(--fs-color-border-light);
+  padding: fn.rem(6) fn.rem(10);
+  border: 1px solid transparent;
   border-radius: var(--fs-radius-md);
-  background: transparent;
+  background: var(--fs-color-bg);
   color: var(--fs-color-text-muted);
   font: inherit;
   font-size: fn.rem(13);
@@ -206,7 +207,8 @@ const handleSignOut = async () => {
     border-color 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--fs-color-surface);
+    border-color: var(--fs-color-border-light);
+    background: var(--fs-color-bg);
     color: var(--fs-color-text);
   }
 
@@ -218,7 +220,13 @@ const handleSignOut = async () => {
 
 .authLinkPrimary {
   border-color: rgb(235 153 20 / 0.35);
-  background: rgb(235 153 20 / 0.08);
+  background: rgb(235 153 20 / 0.12);
   color: var(--fs-color-primary-strong);
+
+  &:hover {
+    border-color: rgb(235 153 20 / 0.5);
+    background: rgb(235 153 20 / 0.18);
+    color: var(--fs-color-primary-strong);
+  }
 }
 </style>

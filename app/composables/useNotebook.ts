@@ -42,6 +42,7 @@ export const useNotebook = () => {
     transform: unwrapNotebookEntries,
     immediate: false,
     watch: false,
+    server: false,
   })
 
   watch(
@@ -58,6 +59,7 @@ export const useNotebook = () => {
   )
 
   const isCreating = ref(false)
+  const updatingId = ref<string | null>(null)
   const deletingId = ref<string | null>(null)
 
   const getEntries = () => entries.value ?? []
@@ -81,7 +83,7 @@ export const useNotebook = () => {
   }
 
   const createEntry = async (input: CreateNotebookEntryInput) => {
-    if (isCreating.value) return
+    if (!loggedIn.value || isCreating.value) return
 
     const optimisticEntry = createOptimisticEntry(input)
 
@@ -105,17 +107,25 @@ export const useNotebook = () => {
   }
 
   const updateEntry = async (id: string, payload: UpdateNotebookEntryInput) => {
-    const response = await api<NotebookEntryEnvelope>(`/api/notebook/${id}`, {
-      method: 'PATCH',
-      body: payload,
-    })
+    if (!loggedIn.value || updatingId.value !== null) return
 
-    await refresh()
-    return response.data
+    updatingId.value = id
+
+    try {
+      const response = await api<NotebookEntryEnvelope>(`/api/notebook/${id}`, {
+        method: 'PATCH',
+        body: payload,
+      })
+
+      await refresh()
+      return response.data
+    } finally {
+      updatingId.value = null
+    }
   }
 
   const deleteEntry = async (id: string) => {
-    if (deletingId.value !== null) return
+    if (!loggedIn.value || deletingId.value !== null) return
 
     const removed = removeEntryFromCache(id)
     if (!removed) return
@@ -133,6 +143,7 @@ export const useNotebook = () => {
     }
   }
 
+  const isUpdating = (id: string) => updatingId.value === id
   const isDeleting = (id: string) => deletingId.value === id
   const entriesView = computed(() => entries.value ?? [])
 
@@ -145,6 +156,7 @@ export const useNotebook = () => {
     createEntry,
     updateEntry,
     deleteEntry,
+    isUpdating,
     isDeleting,
   }
 }
