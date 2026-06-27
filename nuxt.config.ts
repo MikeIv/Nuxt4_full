@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     logLevel: isDev ? 'debug' : 'info',
     compressPublicAssets: true,
     preset: nitroPreset,
+    errorHandler: './server/error-handler',
     /** Поднимаем target, чтобы работал top-level await в server/utils (нужен для Prisma singleton + ESM interop). */
     esbuild: {
       options: {

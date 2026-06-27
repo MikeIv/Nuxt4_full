@@ -577,7 +577,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 5,
     title: 'Error Handling + API + Zod',
-    theme: 'День 1–4 ✓ — tasks CRUD на apiHandler; день 5: useApi',
+    theme: 'Неделя 5 ✓ — unified API, useApi, errorHandler',
     goal: 'Единый стиль API: { data, success, error? }, apiHandler, Zod для tasks, глобальный errorHandler, адаптация useApi. ~7 дней.',
     theory: theorySteps([
       {
@@ -664,7 +664,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Checkpoint: полный CRUD curl/браузер; чужая задача → 404; USER не удаляет чужие.',
       },
       {
-        label: 'День 5 — useApi / useApiFetch',
+        label: '✅ День 5 — useApi / useApiFetch',
         what: 'Клиент разворачивает success: true → data; иначе throw ApiError.',
         where: 'app/composables/useApi.ts, useApiFetch (если отдельно).',
         how: 'После $fetch проверить payload.success; типизировать ApiResponse<T>. useTasks без ручного .data.data.',
@@ -672,14 +672,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Checkpoint: useTasks/createTask возвращает чистые данные или кидает ошибку с message.',
       },
       {
-        label: 'День 6 — Глобальный error handler',
+        label: '✅ День 6 — Глобальный error handler',
         what: 'nitro.errorHandler + маппинг Zod, Prisma, Auth → unified JSON.',
         where: 'server/error-handler.ts, nuxt.config.ts nitro.errorHandler.',
         how: 'H3Error → errorResponse; Prisma P2025 → 404; P2002 → 409; необработанное → 500 без stack в prod.',
         verify: 'Checkpoint: throw без catch в handler → тот же { success: false, error } формат.',
       },
       {
-        label: 'День 7 — Verify + docs + commit',
+        label: '✅ День 7 — Verify + docs + commit',
         what: 'Полный auth + tasks flow; lint, typecheck, build; architecture.md.',
         where: 'docs/architecture.md, docs/api-conventions.md (опц.).',
         how: 'register → CRUD tasks → invalid body → logout; pnpm verify && pnpm build; секция API conventions.',
@@ -687,13 +687,13 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
       },
     ]),
     doneWhen: doneWhen(5, [
-      'apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
+      '✅ apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
       '✅ CreateTaskSchema / UpdateTaskSchema + validateBody',
       '✅ GET/POST/PATCH/DELETE /api/tasks — { data, success, error? }',
-      'useApi разворачивает success и бросает на error',
-      'nitro.errorHandler — необработанные ошибки в едином формате',
-      'pnpm lint:all, typecheck, build — чисто',
-      'docs/architecture.md — секция unified API (день 7)',
+      '✅ useApi разворачивает success и бросает на error',
+      '✅ nitro.errorHandler — необработанные ошибки в едином формате',
+      '✅ pnpm lint:all, typecheck, build — чисто',
+      '✅ docs/architecture.md — секция unified API (день 7)',
     ]),
   },
   {
@@ -925,9 +925,9 @@ export function getRoadmapOverallWeekStats(
 /**
  * The week the student is currently actively working on.
  * This determines the default active tab when opening /roadmap.
- * Bumped to 4 after Week 3 (Better Auth + RBAC — план 2026-06-10).
+ * Bumped to 6 after Week 5 (Unified API + Zod + errorHandler).
  */
-export const CURRENT_ROADMAP_WEEK_ID = 5
+export const CURRENT_ROADMAP_WEEK_ID = 6
 
 export function getRoadmapTaskLabelMap(): Map<string, string> {
   const map = new Map<string, string>()

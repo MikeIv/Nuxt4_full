@@ -1,13 +1,9 @@
 /**
  * Единый источник правды для UI задач (Неделя 3).
- * — Список: useApiFetch (SSR, key `tasks`, transform → Task[]).
+ * — Список: useApiFetch (SSR, key `tasks`).
  * — Мутации: useApi (императивно); create/delete/toggle — optimistic + rollback.
- * — update/create/delete: refresh() после успешного ответа сервера.
  */
 import type { Task, CreateTaskInput, UpdateTaskInput } from '#shared/types/task'
-
-type TaskEnvelope = { data: Task }
-type TasksEnvelope = { data: Task[] }
 
 const OPTIMISTIC_ID_PREFIX = 'optimistic:'
 
@@ -24,11 +20,6 @@ const createOptimisticTask = (input: CreateTaskInput): Task => {
   }
 }
 
-const unwrapTasks = (response: unknown): Task[] => {
-  const envelope = response as TasksEnvelope
-  return envelope.data ?? []
-}
-
 export const useTasks = () => {
   const api = useApi()
 
@@ -39,7 +30,6 @@ export const useTasks = () => {
     refresh,
   } = useApiFetch<Task[]>('/api/tasks', {
     key: 'tasks',
-    transform: unwrapTasks,
   })
 
   const togglingId = ref<string | null>(null)
@@ -84,13 +74,13 @@ export const useTasks = () => {
     prependTaskToCache(optimisticTask)
 
     try {
-      const response = await api<TaskEnvelope>('/api/tasks', {
+      const task = await api<Task>('/api/tasks', {
         method: 'POST',
         body: input,
       })
 
       await refresh()
-      return response.data
+      return task
     } catch (e) {
       removeTaskFromCache(optimisticTask.id)
       throw e
@@ -100,13 +90,13 @@ export const useTasks = () => {
   }
 
   const updateTask = async (id: string, payload: UpdateTaskInput) => {
-    const response = await api<TaskEnvelope>(`/api/tasks/${id}`, {
+    const task = await api<Task>(`/api/tasks/${id}`, {
       method: 'PATCH',
       body: payload,
     })
 
     await refresh()
-    return response.data
+    return task
   }
 
   const deleteTask = async (id: string) => {
@@ -141,14 +131,12 @@ export const useTasks = () => {
     patchTaskInCache(id, { completed: nextCompleted })
 
     try {
-      const response = await api<TaskEnvelope>(`/api/tasks/${id}`, {
+      const updated = await api<Task>(`/api/tasks/${id}`, {
         method: 'PATCH',
         body: { completed: nextCompleted },
       })
 
-      if (response.data) {
-        patchTaskInCache(id, response.data)
-      }
+      patchTaskInCache(id, updated)
     } catch (e) {
       patchTaskInCache(id, { completed: previousCompleted })
       throw e

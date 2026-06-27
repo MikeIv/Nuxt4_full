@@ -1,3 +1,4 @@
+import { ApiError } from '#shared/utils/apiError'
 import type { FetchError } from 'ofetch'
 
 interface ApiErrorPayload {
@@ -6,6 +7,10 @@ interface ApiErrorPayload {
 }
 
 export function formatApiError(error: unknown, fallback: string): string {
+  if (error instanceof ApiError) {
+    return error.message
+  }
+
   if (error && typeof error === 'object') {
     const fetchError = error as FetchError<ApiErrorPayload>
 

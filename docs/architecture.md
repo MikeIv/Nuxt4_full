@@ -8,6 +8,8 @@
 
 **Неделя 4 (факт):** Better Auth + Prisma adapter, `User` / `Session` / `Verification`, catch-all `/api/auth/*` (модуль), миграции OK, server middleware на `/api/tasks*`, UI login/register, RBAC USER/ADMIN.
 
+**Неделя 5 (факт):** unified API `{ success, data, error? }` для `/api/tasks*`, `apiHandler`, Zod (`shared/validations/`), `validateBody` / `validateQuery`, `useApi` unwrap + `ApiError`, глобальный `nitro.errorHandler` для `/api/*` (кроме auth).
+
 ---
 
 ## Обзор потока данных
@@ -82,7 +84,9 @@ server/utils/health.ts                   ← readHealthPostBody, getHealthPayloa
 | ------------------------------------- | -------------------------------------------------------- |
 | `shared/types/health.ts`              | `HealthResponse`, `HealthPostBody`, `HealthPostResponse` |
 | `shared/types/task.ts`                | `Task`, `CreateTaskInput`, `UpdateTaskInput`             |
-| `shared/types/api.ts`                 | Общие HTTP-типы (заготовка)                              |
+| `shared/types/api.ts`                 | `ApiResponse<T>`, unified envelope                       |
+| `shared/utils/apiError.ts`            | `ApiError`, `unwrapApiResponse` (client)                 |
+| `shared/validations/task.ts`          | Zod-схемы tasks + `z.infer` типы                         |
 | `shared/utils/normalizeApiBaseUrl.ts` | `apiBase` для `useApi` и `serverApi`                     |
 | `shared/constants/roadmapWeeks.ts`    | Данные страницы `/roadmap`                               |
 
@@ -133,6 +137,33 @@ export default defineEventHandler(async (): Promise<HealthResponse> => {
 1. Вход — `getQuery`, `readBody`, method guard
 2. Вызов `server/utils/*`
 3. Типизированный return из `#shared/types/`
+
+---
+
+## Unified API (неделя 5)
+
+Контракт для `/api/tasks*` и новых routes (legacy `/api/health`, `/api/notebook` — без envelope, постепенная миграция).
+
+```
+Client  useApi / useApiFetch
+    │  unwrapApiResponse → data или ApiError
+    ▼
+server/api/*.ts  apiHandler(handler)
+    │  try/catch → successResponse / errorResponse
+    ▼
+server/utils/*   бизнес-логика, Prisma
+```
+
+| Файл                         | Роль                                                   |
+| ---------------------------- | ------------------------------------------------------ |
+| `server/utils/response.ts`   | `successResponse`, `errorResponse`, `sendApiResponse`  |
+| `server/utils/apiHandler.ts` | Обёртка handler, маппинг `createError`                 |
+| `server/utils/validation.ts` | `validateBody`, `validateQuery` (Zod → 400)            |
+| `server/error-handler.ts`    | Необработанные ошибки `/api/*` (не auth) → тот же JSON |
+| `shared/utils/apiError.ts`   | `ApiError`, `unwrapApiResponse` на клиенте             |
+
+Ответ успеха: `{ success: true, data: T, statusCode: 200 }`.  
+Ошибка: `{ success: false, error: { message, code?, details? }, statusCode }`.
 
 ---
 

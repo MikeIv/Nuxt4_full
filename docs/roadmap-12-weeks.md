@@ -263,4 +263,4 @@ docs/
 2. Адаптируй идеи под Prisma + Better Auth (не копируй Drizzle 1:1).
 3. После недели 6–7 реши, добавить ли `@onmax/nuxt-better-auth` модуль для declarative protection.
 
-**Next step**: Неделя 5 — день 2 (Zod-схемы + `validation.ts`). После каждого дня — checkpoint в `.planning/state.md`.
+**Next step**: Неделя 6 — Advanced CRUD + Projects (relations, пагинация, filters). Checkpoint в `.planning/state.md`.
