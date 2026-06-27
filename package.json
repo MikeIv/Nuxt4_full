@@ -27,7 +27,9 @@
     "db:reset": "prisma migrate reset --force",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
-    "db:check": "node scripts/check-db.mjs"
+    "db:check": "node scripts/check-db.mjs",
+    "roadmap:export-json": "python scripts/export-roadmap-to-json.py",
+    "roadmap:sync": "python scripts/generate-roadmap-weeks.py"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -13,7 +13,7 @@ interface TheoryStep {
 export interface RoadmapCheckItem {
   id: string
   label: string
-  /** Развёрнутый комментарий: Что / Где / Как / Проверка (неделя 1+) */
+  /** Пошаговое описание практики — естественный текст */
   comment?: string
 }
 
@@ -27,10 +27,6 @@ export interface RoadmapWeek {
   doneWhen: RoadmapCheckItem[]
 }
 
-function theoryItems(...titles: string[]): RoadmapTheoryItem[] {
-  return titles.map((title) => ({ title }))
-}
-
 function theorySteps(steps: TheoryStep[]): RoadmapTheoryItem[] {
   return steps.map((step) => ({
     title: step.topic,
@@ -38,26 +34,16 @@ function theorySteps(steps: TheoryStep[]): RoadmapTheoryItem[] {
   }))
 }
 
-function practice(weekId: number, labels: string[]): RoadmapCheckItem[] {
-  return labels.map((label, index) => ({
-    id: `w${weekId}:p:${index}`,
-    label,
-  }))
-}
-
 interface PracticeStep {
   label: string
-  what: string
-  where: string
-  how: string
-  verify: string
+  description: string
 }
 
 function practiceSteps(weekId: number, steps: PracticeStep[]): RoadmapCheckItem[] {
   return steps.map((step, index) => ({
     id: `w${weekId}:p:${index}`,
     label: step.label,
-    comment: `Что: ${step.what}\n\nГде: ${step.where}\n\nКак: ${step.how}\n\nПроверка: ${step.verify}`,
+    comment: step.description,
   }))
 }
 
@@ -124,68 +110,48 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     practice: practiceSteps(1, [
       {
         label: '✅ Контракт: HealthResponse в shared/types/',
-        what: 'Зафиксировать форму JSON-ответа /api/health.',
-        where: 'shared/types/health.ts (#shared).',
-        how: 'export interface HealthResponse { status, timestamp, version, … }.',
-        verify: 'typecheck OK. Тип используется в handler, utils и useApiFetch.',
+        description:
+          'Зафиксировать форму JSON-ответа /api/health — shared/types/health.ts (#shared).\n\nexport interface HealthResponse { status, timestamp, version, … }.\n\nПроверка: typecheck OK. Тип используется в handler, utils и useApiFetch.',
       },
       {
         label: '✅ Thin handler: health.get.ts + server/utils/health.ts',
-        what: 'Тонкий handler, логика в getHealthPayload().',
-        where: 'server/api/health.get.ts + server/utils/health.ts.',
-        how: 'Handler: return getHealthPayload(). Utils: полный HealthResponse.',
-        verify: '/api/health → JSON. Handler без бизнес-логики.',
+        description:
+          'Тонкий handler, логика в getHealthPayload() — server/api/health.get.ts + server/utils/health.ts.\n\nHandler: return getHealthPayload(). Utils: полный HealthResponse.\n\nПроверка: /api/health → JSON. Handler без бизнес-логики.',
       },
       {
         label: '✅ End-to-end: health на главной (useApiFetch + SSR)',
-        what: 'Те же данные health на UI — полный цикл client ↔ server.',
-        where: 'app/pages/index.vue.',
-        how: 'useApiFetch<HealthResponse>("/api/health") + pending/error.',
-        verify: 'Главная и /api/health — одни поля. SSR в View Source.',
+        description:
+          'Те же данные health на UI — полный цикл client ↔ server — app/pages/index.vue.\n\nuseApiFetch<HealthResponse>("/api/health") + pending/error.\n\nПроверка: Главная и /api/health — одни поля. SSR в View Source.',
       },
       {
         label: '✅ POST /api/health',
-        what: 'Учебный POST на тот же путь — readBody, naming convention Nitro.',
-        where: 'server/api/health.post.ts (не _health.post.ts).',
-        how: 'readHealthPostBody → buildHealthPostResponse. Типы в shared/types/health.ts.',
-        verify: `curl -X POST …/api/health -d '{"ping":1}' → JSON с received + echo. GET без регрессий.`,
+        description:
+          'Учебный POST на тот же путь — readBody, naming convention Nitro — server/api/health.post.ts (не _health.post.ts).\n\nreadHealthPostBody → buildHealthPostResponse. Типы в shared/types/health.ts.\n\nПроверка: curl -X POST …/api/health -d \'{"ping":1}\' → JSON с received + echo. GET без регрессий.',
       },
       {
         label: '✅ Middleware: лог каждого запроса',
-        what: 'Лог method + path; понимание порядка middleware → handler.',
-        where: 'server/middleware/log.ts.',
-        how: 'console.log("[nitro]", event.method, event.path). Без секретов.',
-        verify: 'Логи при запросах /, /api/health и POST /api/health.',
+        description:
+          'Лог method + path; понимание порядка middleware → handler — server/middleware/log.ts.\n\nconsole.log("[nitro]", event.method, event.path). Без секретов.\n\nПроверка: Логи при запросах /, /api/health и POST /api/health.',
       },
       {
         label: '✅ runtimeConfig + типизация',
-        what: 'Финализировать apiBase, nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
-        where:
-          'nuxt.config.ts, types/nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.',
-        how: 'useServerRuntimeConfig в utils. warnIfExampleSecretMissing в 00-boot.ts (dev). version в health из config.',
-        verify:
-          'useRuntimeConfig() на клиенте — только public.*. TS без ошибок на config.public.appVersion.',
+        description:
+          'Финализировать apiBase, nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts — nuxt.config.ts, types/nuxt-public.d.ts, .env.example, server/utils/runtimeConfig.ts.\n\nuseServerRuntimeConfig в utils. warnIfExampleSecretMissing в 00-boot.ts (dev). version в health из config.\n\nПроверка: useRuntimeConfig() на клиенте — только public.*. TS без ошибок на config.public.appVersion.',
       },
       {
         label: '✅ Актуализировать docs/architecture.md',
-        what: 'Схема потока данных и роли папок — по фактическому коду недели.',
-        where: 'docs/architecture.md.',
-        how: 'GET/POST потоки, дерево server/, shared/types/, runtimeConfig.',
-        verify: 'Объясняешь путь /api/health без открытия кода.',
+        description:
+          'Схема потока данных и роли папок — по фактическому коду недели — docs/architecture.md.\n\nGET/POST потоки, дерево server/, shared/types/, runtimeConfig.\n\nПроверка: Объясняешь путь /api/health без открытия кода.',
       },
       {
         label: '✅ Boot plugin 00-boot.ts',
-        what: 'Лог один раз при старте Nitro.',
-        where: 'server/plugins/00-boot.ts',
-        how: 'defineNitroPlugin + useServerRuntimeConfig; dev-only console.log.',
-        verify: 'Сообщение [nitro] boot при pnpm dev; не на каждый запрос.',
+        description:
+          'Лог один раз при старте Nitro — server/plugins/00-boot.ts.\n\ndefineNitroPlugin + useServerRuntimeConfig; dev-only console.log.\n\nПроверка: Сообщение [nitro] boot при pnpm dev; не на каждый запрос.',
       },
       {
         label: '✅ apiResponse.ok(data)',
-        what: 'Заготовка единого формата ответа; на нед. 2 — в CRUD tasks.',
-        where: 'server/utils/apiResponse.ts',
-        how: 'ok<T>(data: T) => ({ data }).',
-        verify: 'typecheck OK; health не использует ok().',
+        description:
+          'Заготовка единого формата ответа; на нед. 2 — в CRUD tasks — server/utils/apiResponse.ts.\n\nok<T>(data: T) => ({ data }).\n\nПроверка: typecheck OK; health не использует ok().',
       },
     ]),
     doneWhen: doneWhen(1, [
@@ -233,52 +199,38 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     practice: practiceSteps(2, [
       {
         label: '✅ День 1: docker-compose.yml + PostgreSQL',
-        what: 'Локальная БД в Docker с persistent volume.',
-        where: 'docker-compose.yml, .env, .env.example.',
-        how: 'PostgreSQL 16; docker compose up -d; DATABASE_URL в .env.',
-        verify: 'Checkpoint: docker compose ps — postgres healthy.',
+        description:
+          'Локальная БД в Docker с persistent volume — docker-compose.yml, .env, .env.example.\n\nPostgreSQL 16; docker compose up -d; DATABASE_URL в .env.\n\nCheckpoint: docker compose ps — postgres healthy.',
       },
       {
         label: '✅ День 2: Prisma init + prisma.ts singleton',
-        what: 'ORM подключён к Nitro; Client не на каждый запрос.',
-        where: 'prisma/schema.prisma, server/utils/prisma.ts, scripts db:migrate, db:studio.',
-        how: 'pnpm add prisma @prisma/client; prisma init; singleton + runtimeConfig private.',
-        verify: 'Checkpoint: dev стартует; prisma $connect() OK.',
+        description:
+          'ORM подключён к Nitro; Client не на каждый запрос — prisma/schema.prisma, server/utils/prisma.ts, scripts db:migrate, db:studio.\n\npnpm add prisma @prisma/client; prisma init; singleton + runtimeConfig private.\n\nCheckpoint: dev стартует; prisma $connect() OK.',
       },
       {
         label: '✅ День 3: модель Task + migrate + seed',
-        what: 'Таблица Task и 3–5 seed-задач для быстрого GET.',
-        where: 'prisma/schema.prisma, prisma/seed.ts, package.json db:seed.',
-        how: 'model Task { id, title, description, completed, createdAt, updatedAt }; prisma db seed.',
-        verify: 'Checkpoint: Prisma Studio — seed-данные видны.',
+        description:
+          'Таблица Task и 3–5 seed-задач для быстрого GET — prisma/schema.prisma, prisma/seed.ts, package.json db:seed.\n\nmodel Task { id, title, description, completed, createdAt, updatedAt }; prisma db seed.\n\nCheckpoint: Prisma Studio — seed-данные видны.',
       },
       {
         label: '✅ День 4: types + utils + GET/POST',
-        what: 'Первые endpoints после слоёв types/utils — не наоборот.',
-        where: 'shared/types/task.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.',
-        how: 'getAllTasks/createTask в utils; thin handlers (без Prisma в api).',
-        verify: 'Checkpoint: POST добавляет строку в БД (Postman); GET возвращает данные.',
+        description:
+          'Первые endpoints после слоёв types/utils — не наоборот — shared/types/task.ts, server/utils/tasks.ts, tasks.get.ts, tasks.post.ts.\n\ngetAllTasks/createTask в utils; thin handlers (без Prisma в api).\n\nCheckpoint: POST добавляет строку в БД (Postman); GET возвращает данные.',
       },
       {
         label: '✅ День 5: PATCH/DELETE + ошибки',
-        what: 'Оставшийся CRUD + 404/400.',
-        where: 'server/utils/tasks.ts, tasks/[id].get|patch|delete.ts.',
-        how: 'getTaskById/updateTask/deleteTask; createError 404; Zod на PATCH.',
-        verify: 'Checkpoint: patch/delete curl; bad id → 404 JSON.',
+        description:
+          'Оставшийся CRUD + 404/400 — server/utils/tasks.ts, tasks/[id].get|patch|delete.ts.\n\ngetTaskById/updateTask/deleteTask; createError 404; Zod на PATCH.\n\nCheckpoint: patch/delete curl; bad id → 404 JSON.',
       },
       {
         label: '✅ День 6: curl-чеклист + persistence',
-        what: 'Обязательная ручная verify всего CRUD.',
-        where: 'terminal + docker compose restart.',
-        how: 'create → list → patch → delete → restart → list (см. roadmap).',
-        verify: 'Checkpoint: все 5 шагов OK; данные в volume после restart.',
+        description:
+          'Обязательная ручная verify всего CRUD — terminal + docker compose restart.\n\ncreate → list → patch → delete → restart → list (см. roadmap).\n\nCheckpoint: все 5 шагов OK; данные в volume после restart.',
       },
       {
         label: '✅ День 7: architecture.md + lint/build',
-        what: 'Handlers без Prisma; документ потока данных.',
-        where: 'docs/architecture.md, все server/api/tasks*.',
-        how: 'Рефактор если нужно; pnpm lint:all && pnpm build.',
-        verify: 'Checkpoint: architecture.md актуален; сборка зелёная.',
+        description:
+          'Handlers без Prisma; документ потока данных — docs/architecture.md, все server/api/tasks*.\n\nРефактор если нужно; pnpm lint:all && pnpm build.\n\nCheckpoint: architecture.md актуален; сборка зелёная.',
       },
     ]),
     doneWhen: doneWhen(2, [
@@ -329,49 +281,33 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     practice: practiceSteps(3, [
       {
         label: '✅ День 1: app/composables/useTasks.ts',
-        what: 'Composable-обёртка над API задач с кэшированием.',
-        where: 'app/composables/useTasks.ts.',
-        how: 'useApiFetch для списка; useApi для мутаций. Типы из shared/types/task.ts.',
-        verify:
-          'Composable возвращает tasks + pending/error + actions. Используется без дублирования fetch в компонентах.',
+        description:
+          'Composable-обёртка над API задач с кэшированием — app/composables/useTasks.ts.\n\nuseApiFetch для списка; useApi для мутаций. Типы из shared/types/task.ts.\n\nПроверка: Composable возвращает tasks + pending/error + actions. Используется без дублирования fetch в компонентах.',
       },
       {
         label: '✅ День 2: Страница /tasks — список и создание',
-        what: 'Базовый CRUD-интерфейс: список + форма добавления.',
-        where: 'app/pages/tasks.vue (+ опц. мелкие компоненты в app/components/).',
-        how: 'Карточки или таблица на $style. Форма (title + description). Кнопки Toggle / Edit / Delete. Подключить useTasks().',
-        verify: 'Можно создать задачу через UI; список обновляется; данные приходят из БД.',
+        description:
+          'Базовый CRUD-интерфейс: список + форма добавления — app/pages/tasks.vue (+ опц. мелкие компоненты в app/components/).\n\nКарточки или таблица на $style. Форма (title + description). Кнопки Toggle / Edit / Delete. Подключить useTasks().\n\nПроверка: Можно создать задачу через UI; список обновляется; данные приходят из БД.',
       },
       {
         label: '✅ День 3: Loading / Empty / Error + toast',
-        what: 'Обязательные состояния интерфейса и обратная связь.',
-        where: 'app/pages/tasks.vue + простой toast (composable или inline).',
-        how: 'Skeleton при pending; Empty когда нет задач; Error + «Повторить»; уведомления об успехе/ошибке.',
-        verify:
-          'При ошибке сети — показывается error state с кнопкой. При пустом списке — empty. Toast появляется.',
+        description:
+          'Обязательные состояния интерфейса и обратная связь — app/pages/tasks.vue + простой toast (composable или inline).\n\nSkeleton при pending; Empty когда нет задач; Error + «Повторить»; уведомления об успехе/ошибке.\n\nПроверка: При ошибке сети — показывается error state с кнопкой. При пустом списке — empty. Toast появляется.',
       },
       {
         label: '✅ День 4: Optimistic toggle + rollback',
-        what: 'UX без задержек: мгновенное изменение + безопасный откат.',
-        where: 'useTasks.ts + tasks.vue (локальный список + mutate).',
-        how: 'При toggle: сразу обновить completed в UI, вызвать API; при ошибке — откатить и показать toast. refresh после мутаций.',
-        verify:
-          'Toggle работает мгновенно. При сетевой ошибке состояние возвращается; данные консистентны.',
+        description:
+          'UX без задержек: мгновенное изменение + безопасный откат — useTasks.ts + tasks.vue (локальный список + mutate).\n\nПри toggle: сразу обновить completed в UI, вызвать API; при ошибке — откатить и показать toast. refresh после мутаций.\n\nПроверка: Toggle работает мгновенно. При сетевой ошибке состояние возвращается; данные консистентны.',
       },
       {
         label: '✅ День 5: SSR, persistence, фильтры',
-        what: 'Проверка fullstack после перезапусков + удобство.',
-        where: 'app/pages/tasks.vue + docker compose.',
-        how: 'Проверить HTML при SSR (данные видны до гидратации). docker compose restart postgres + nuxt dev → данные на месте. Добавить фильтр (все/активные/завершённые) и сортировку.',
-        verify: 'После рестарта БД и сервера список задач прежний. Фильтр работает, UI отзывается.',
+        description:
+          'Проверка fullstack после перезапусков + удобство — app/pages/tasks.vue + docker compose.\n\nПроверить HTML при SSR (данные видны до гидратации). docker compose restart postgres + nuxt dev → данные на месте. Добавить фильтр (все/активные/завершённые) и сортировку.\n\nПроверка: После рестарта БД и сервера список задач прежний. Фильтр работает, UI отзывается.',
       },
       {
         label: '✅ День 6-7: Рефакторинг + docs',
-        what: 'Чистота кода и актуализация документации.',
-        where: 'useTasks.ts, tasks.vue, docs/architecture.md.',
-        how: 'Вынести дубли (если есть); добавить комментарии; обновить architecture.md (поток /tasks, useTasks → api → utils → prisma); полный ручной тест флоу.',
-        verify:
-          'lint + build зелёные. architecture.md содержит секцию по UI tasks. Полный цикл работает.',
+        description:
+          'Чистота кода и актуализация документации — useTasks.ts, tasks.vue, docs/architecture.md.\n\nВынести дубли (если есть); добавить комментарии; обновить architecture.md (поток /tasks, useTasks → api → utils → prisma); полный ручной тест флоу.\n\nПроверка: lint + build зелёные. architecture.md содержит секцию по UI tasks. Полный цикл работает.',
       },
     ]),
     doneWhen: doneWhen(3, [
@@ -426,138 +362,98 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     practice: practiceSteps(4, [
       {
         label: '✅ День 1 — Шаг 1: Установка пакетов',
-        what: 'Основной пакет, Prisma adapter и Nuxt-модуль.',
-        where: 'package.json.',
-        how: 'pnpm add better-auth @better-auth/prisma-adapter @onmax/nuxt-better-auth@alpha.',
-        verify: 'Пакеты в dependencies; pnpm install без ошибок.',
+        description:
+          'Основной пакет, Prisma adapter и Nuxt-модуль — package.json.\n\npnpm add better-auth @better-auth/prisma-adapter @onmax/nuxt-better-auth@alpha.\n\nПроверка: Пакеты в dependencies; pnpm install без ошибок.',
       },
       {
         label: '✅ День 1 — Шаг 2: Prisma schema (User + Session + Task.userId)',
-        what: 'Модели Better Auth + role для RBAC + связь Task → User.',
-        where: 'prisma/schema.prisma.',
-        how: 'User (id, email, emailVerified, image, role @default("USER"), sessions, tasks). Session (token, expiresAt, userId, ipAddress, userAgent). Task: userId + relation onDelete Cascade.',
-        verify: 'schema.prisma валиден; связи User ↔ Session ↔ Task согласованы.',
+        description:
+          'Модели Better Auth + role для RBAC + связь Task → User — prisma/schema.prisma.\n\nUser (id, email, emailVerified, image, role @default("USER"), sessions, tasks). Session (token, expiresAt, userId, ipAddress, userAgent). Task: userId + relation onDelete Cascade.\n\nПроверка: schema.prisma валиден; связи User ↔ Session ↔ Task согласованы.',
       },
       {
         label: '✅ День 1 — Шаг 3: server/utils/auth.ts',
-        what: 'Better Auth instance с prismaAdapter и emailAndPassword.',
-        where: 'server/utils/auth.ts.',
-        how: 'betterAuth({ database: prismaAdapter(prisma, { provider: "postgresql" }), emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 8 }, appName: "Task Board", secret: process.env.AUTH_SECRET }).',
-        verify: 'typecheck OK; импорт prisma из server/utils/prisma.ts.',
+        description:
+          'Better Auth instance с prismaAdapter и emailAndPassword — server/utils/auth.ts.\n\nbetterAuth({ database: prismaAdapter(prisma, { provider: "postgresql" }), emailAndPassword: { enabled: true, autoSignIn: true, minPasswordLength: 8 }, appName: "Task Board", secret: process.env.AUTH_SECRET }).\n\nПроверка: typecheck OK; импорт prisma из server/utils/prisma.ts.',
       },
       {
         label: '✅ День 1 — Шаг 4: nuxt.config.ts — модуль',
-        what: 'Подключить @onmax/nuxt-better-auth.',
-        where: 'nuxt.config.ts.',
-        how: "modules: ['@onmax/nuxt-better-auth']; секция betterAuth: { … } по доке модуля.",
-        verify: 'Nuxt стартует; модуль в списке modules.',
+        description:
+          "Подключить @onmax/nuxt-better-auth — nuxt.config.ts.\n\nmodules: ['@onmax/nuxt-better-auth']; секция betterAuth: { … } по доке модуля.\n\nПроверка: Nuxt стартует; модуль в списке modules.",
       },
       {
         label: '✅ День 1 — Шаг 5: Переменные окружения',
-        what: 'DATABASE_URL и AUTH_SECRET (мин. 32 символа).',
-        where: '.env, .env.example, nuxt.config runtimeConfig (private).',
-        how: 'openssl rand -hex 32 для AUTH_SECRET. DATABASE_URL=postgresql://…. Не коммитить .env.',
-        verify: 'AUTH_SECRET в private runtimeConfig; .env.example обновлён.',
+        description:
+          'DATABASE_URL и AUTH_SECRET (мин. 32 символа) — .env, .env.example, nuxt.config runtimeConfig (private).\n\nopenssl rand -hex 32 для AUTH_SECRET. DATABASE_URL=postgresql://…. Не коммитить .env.\n\nПроверка: AUTH_SECRET в private runtimeConfig; .env.example обновлён.',
       },
       {
         label: '✅ День 1 — Шаг 6: Миграция + generate',
-        what: 'Применить схему к PostgreSQL.',
-        where: 'prisma/migrations/.',
-        how: 'pnpm exec prisma migrate dev --name add_better_auth && pnpm exec prisma generate.',
-        verify: 'Миграция применена; Prisma Client сгенерирован.',
+        description:
+          'Применить схему к PostgreSQL — prisma/migrations/.\n\npnpm exec prisma migrate dev --name add_better_auth && pnpm exec prisma generate.\n\nПроверка: Миграция применена; Prisma Client сгенерирован.',
       },
       {
         label: '✅ День 1 — Шаг 7: Проверка старта',
-        what: 'Сервер без ошибок Prisma/auth; таблицы в Studio.',
-        where: 'терминал, Prisma Studio.',
-        how: 'pnpm dev — смотреть логи Nitro. pnpm prisma studio — таблицы User и Session.',
-        verify: 'Checkpoint: pnpm dev без ошибок auth/Prisma; User и Session видны в Studio.',
+        description:
+          'Сервер без ошибок Prisma/auth; таблицы в Studio — терминал, Prisma Studio.\n\npnpm dev — смотреть логи Nitro. pnpm prisma studio — таблицы User и Session.\n\nCheckpoint: pnpm dev без ошибок auth/Prisma; User и Session видны в Studio.',
       },
       {
         label: '✅ День 2 — Шаг 1: Catch-all /api/auth/*',
-        what: 'Проксировать все auth-запросы в Better Auth handler.',
-        where: 'server/api/auth/[...all].ts, server/utils/auth.ts.',
-        how: 'import { auth } from "../../utils/auth"; auth.handler(toWebRequest(event)). Официальная дока Nuxt/Better Auth — с toWebRequest; без него можно только если проверил, что handler отвечает.',
-        verify: 'pnpm dev; GET /api/auth/sign-in/email → 405 (method not allowed) — норма.',
+        description:
+          'Проксировать все auth-запросы в Better Auth handler — server/api/auth/[...all].ts, server/utils/auth.ts.\n\nimport { auth } from "../../utils/auth"; auth.handler(toWebRequest(event)). Официальная дока Nuxt/Better Auth — с toWebRequest; без него можно только если проверил, что handler отвечает.\n\nПроверка: pnpm dev; GET /api/auth/sign-in/email → 405 (method not allowed) — норма.',
       },
       {
         label: '✅ День 2 — Шаг 2: Register / Login / Logout (curl)',
-        what: 'Проверить email/password API без UI.',
-        where: 'терминал / Postman.',
-        how: 'POST /api/auth/sign-up/email { email, password, name }; POST /api/auth/sign-in/email; POST /api/auth/sign-out; GET /api/auth/get-session. Не /api/auth/session — такого endpoint нет.',
-        verify:
-          'sign-up → user в БД; sign-in → Set-Cookie + session; get-session → user; sign-out → null.',
+        description:
+          'Проверить email/password API без UI — терминал / Postman.\n\nPOST /api/auth/sign-up/email { email, password, name }; POST /api/auth/sign-in/email; POST /api/auth/sign-out; GET /api/auth/get-session. Не /api/auth/session — такого endpoint нет.\n\nПроверка: sign-up → user в БД; sign-in → Set-Cookie + session; get-session → user; sign-out → null.',
       },
       {
         label: '✅ День 2 — Шаг 3: getSession в server/utils/auth.ts',
-        what: 'Утилита для чтения сессии из заголовков запроса.',
-        where: 'server/utils/auth.ts.',
-        how: 'export async function getSession(event) { return auth.api.getSession({ headers: event.headers }) }.',
-        verify: 'typecheck OK; после sign-in getSession возвращает { session, user }.',
+        description:
+          'Утилита для чтения сессии из заголовков запроса — server/utils/auth.ts.\n\nexport async function getSession(event) { return auth.api.getSession({ headers: event.headers }) }.\n\nПроверка: typecheck OK; после sign-in getSession возвращает { session, user }.',
       },
       {
         label: '✅ День 2 — Шаг 4: server/middleware/auth.ts',
-        what: '401 для защищённых API без сессии.',
-        where: 'server/middleware/auth.ts.',
-        how: 'Пропускать /api/auth/**, /api/health, /api/notes-access/**. Иначе getSession → 401. event.context.session и event.context.user для handlers.',
-        verify: 'GET /api/tasks без cookie → 401 JSON Unauthorized.',
+        description:
+          '401 для защищённых API без сессии — server/middleware/auth.ts.\n\nПропускать /api/auth/**, /api/health, /api/notes-access/**. Иначе getSession → 401. event.context.session и event.context.user для handlers.\n\nПроверка: GET /api/tasks без cookie → 401 JSON Unauthorized.',
       },
       {
         label: '✅ День 2 — Шаг 5: /api/tasks* → userId из сессии',
-        what: 'Thin handlers читают user из context; Prisma-фильтр в utils.',
-        where: 'server/api/tasks*.ts, server/utils/tasks.ts.',
-        how: 'const userId = event.context.user?.id; getAllTasks(userId), createTask(body, userId). Убрать resolveDefaultTaskUserId после проверки.',
-        verify: 'С сессией — только свои задачи; без сессии — 401 (middleware).',
+        description:
+          'Thin handlers читают user из context; Prisma-фильтр в utils — server/api/tasks*.ts, server/utils/tasks.ts.\n\nconst userId = event.context.user?.id; getAllTasks(userId), createTask(body, userId). Убрать resolveDefaultTaskUserId после проверки.\n\nПроверка: С сессией — только свои задачи; без сессии — 401 (middleware).',
       },
       {
         label: '✅ День 3 — Шаг 1: Проверка всех tasks routes',
-        what: '401 на GET/POST/PATCH/DELETE без cookie.',
-        where: 'curl / Postman.',
-        how: 'Прогнать все /api/tasks* без cookie → 401. С cookie после login → 200/201.',
-        verify: 'Checkpoint: 5 endpoints tasks защищены одинаково.',
+        description:
+          '401 на GET/POST/PATCH/DELETE без cookie — curl / Postman.\n\nПрогнать все /api/tasks* без cookie → 401. С cookie после login → 200/201.\n\nCheckpoint: 5 endpoints tasks защищены одинаково.',
       },
       {
         label: '✅ День 3 — Шаг 2: Owner checks в utils',
-        what: 'PATCH/DELETE чужой задачи → 404 (не раскрывать существование).',
-        where: 'server/utils/tasks.ts, server/api/tasks/[id].*.',
-        how: 'getTaskById/updateTask/deleteTask с userId; handler → createError 404 если null.',
-        verify: 'User A не видит и не меняет задачи User B.',
+        description:
+          'PATCH/DELETE чужой задачи → 404 (не раскрывать существование) — server/utils/tasks.ts, server/api/tasks/[id].*.\n\ngetTaskById/updateTask/deleteTask с userId; handler → createError 404 если null.\n\nПроверка: User A не видит и не меняет задачи User B.',
       },
       {
         label: '✅ День 3 — Шаг 3: Типизация event.context',
-        what: 'session и user в Nitro context без any.',
-        where: 'types/nuxt-h3.d.ts или server/types/.',
-        how: 'declare module h3 { interface H3EventContext { session?: …; user?: … } } — типы из auth.$Infer.Session.',
-        verify: 'typecheck OK; handlers используют event.context.user.id.',
+        description:
+          'session и user в Nitro context без any — types/nuxt-h3.d.ts или server/types/.\n\ndeclare module h3 { interface H3EventContext { session?: …; user?: … } } — типы из auth.$Infer.Session.\n\nПроверка: typecheck OK; handlers используют event.context.user.id.',
       },
       {
         label: '✅ День 4: useAuth + Login/Register pages',
-        what: 'Composable + формы; редиректы и loading states.',
-        where:
-          'app/composables/useAuth.ts (или composables модуля @onmax/nuxt-better-auth), app/pages/login.vue, app/pages/register.vue.',
-        how: 'useApi для POST sign-in/email, sign-up/email; useApiFetch get-session при старте; редирект после логина → /tasks; CSS Modules.',
-        verify: 'Checkpoint: полный флоу в браузере — register → login → задачи.',
+        description:
+          'Composable + формы; редиректы и loading states — app/composables/useAuth.ts (или composables модуля @onmax/nuxt-better-auth), app/pages/login.vue, app/pages/register.vue.\n\nuseApi для POST sign-in/email, sign-up/email; useApiFetch get-session при старте; редирект после логина → /tasks; CSS Modules.\n\nCheckpoint: полный флоу в браузере — register → login → задачи.',
       },
       {
         label: '✅ День 5: User menu + Pages middleware',
-        what: 'Защита /tasks; условный UI; меню пользователя.',
-        where: 'app/middleware/auth.ts, layout/header.',
-        how: '/tasks без сессии → /login; /login|/register с сессией → /tasks. Имя + «Выйти». routeRules — опционально.',
-        verify: 'Checkpoint: без логина /tasks недоступна; с логином /login редиректит.',
+        description:
+          'Защита /tasks; условный UI; меню пользователя — app/middleware/auth.ts, layout/header.\n\n/tasks без сессии → /login; /login|/register с сессией → /tasks. Имя + «Выйти». routeRules — опционально.\n\nCheckpoint: без логина /tasks недоступна; с логином /login редиректит.',
       },
       {
         label: '✅ День 6: RBAC + owner checks',
-        what: 'Поле role; requireRole; ограничение DELETE.',
-        where: 'prisma/schema.prisma (User.role), server/utils/auth.ts.',
-        how: 'DELETE task — владелец или ADMIN; опц. GET /api/admin/users.',
-        verify: 'Checkpoint: USER → admin-действия 403; ADMIN удаляет чужие задачи.',
+        description:
+          'Поле role; requireRole; ограничение DELETE — prisma/schema.prisma (User.role), server/utils/auth.ts.\n\nDELETE task — владелец или ADMIN; опц. GET /api/admin/users.\n\nCheckpoint: USER → admin-действия 403; ADMIN удаляет чужие задачи.',
       },
       {
         label: '✅ День 7: Refactor + security + architecture.md',
-        what: 'Thin handlers, lint/build, полный тест auth flow.',
-        where: 'server/utils/, docs/architecture.md.',
-        how: 'pnpm lint:all && pnpm build; секция auth в architecture.md.',
-        verify: 'Checkpoint: register → CRUD tasks → logout → 401; architecture.md с секцией auth.',
+        description:
+          'Thin handlers, lint/build, полный тест auth flow — server/utils/, docs/architecture.md.\n\npnpm lint:all && pnpm build; секция auth в architecture.md.\n\nCheckpoint: register → CRUD tasks → logout → 401; architecture.md с секцией auth.',
       },
     ]),
     doneWhen: doneWhen(4, [
@@ -614,76 +510,53 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     practice: practiceSteps(5, [
       {
         label: '✅ День 1 — Шаг 1: server/utils/response.ts',
-        what: 'Утилиты successResponse, errorResponse, sendApiResponse — единый контракт { data, success, error? }.',
-        where: 'server/utils/response.ts (рядом с apiResponse.ts; постепенная миграция с ok()).',
-        how: 'successResponse(data) → { data, success: true }; errorResponse(message, code?) → { success: false, error }; sendApiResponse(event, payload, status?).',
-        verify: 'typecheck OK; импорт из Nitro handler без циклических deps.',
+        description:
+          'Утилиты successResponse, errorResponse, sendApiResponse — единый контракт { data, success, error? } — server/utils/response.ts (рядом с apiResponse.ts; постепенная миграция с ok()).\n\nsuccessResponse(data) → { data, success: true }; errorResponse(message, code?) → { success: false, error }; sendApiResponse(event, payload, status?).\n\nПроверка: typecheck OK; импорт из Nitro handler без циклических deps.',
       },
       {
         label: '✅ День 1 — Шаг 2: server/utils/apiHandler.ts',
-        what: 'Главная обёртка handler: try/catch, маппинг createError → errorResponse, успех → successResponse.',
-        where: 'server/utils/apiHandler.ts.',
-        how: 'export function apiHandler<T>(fn: (event: H3Event) => Promise<T>) => defineEventHandler(async (event) => { … }).',
-        verify:
-          'Тестовый handler через apiHandler возвращает { success: true, data } или { success: false, error }.',
+        description:
+          'Главная обёртка handler: try/catch, маппинг createError → errorResponse, успех → successResponse — server/utils/apiHandler.ts.\n\nexport function apiHandler<T>(fn: (event: H3Event) => Promise<T>) => defineEventHandler(async (event) => { … }).\n\nПроверка: Тестовый handler через apiHandler возвращает { success: true, data } или { success: false, error }.',
       },
       {
         label: '✅ День 1 — Шаг 3: nuxt.config (при необходимости)',
-        what: 'Подключить alias, env, nitro.errorHandler hook — только если нужно для дня 1.',
-        where: 'nuxt.config.ts, shared/config/env.ts (опц.).',
-        how: 'Без лишних изменений srcDir/ESLint. errorHandler — заготовка на день 6.',
-        verify: 'pnpm dev стартует; checkpoint: есть apiHandler, ответы идут через response utils.',
+        description:
+          'Подключить alias, env, nitro.errorHandler hook — только если нужно для дня 1 — nuxt.config.ts, shared/config/env.ts (опц.).\n\nБез лишних изменений srcDir/ESLint. errorHandler — заготовка на день 6.\n\nПроверка: pnpm dev стартует; checkpoint: есть apiHandler, ответы идут через response utils.',
       },
       {
         label: '✅ День 2 — Шаг 1: Zod + схемы tasks',
-        what: 'CreateTaskSchema, UpdateTaskSchema (+ опц. query). Типы через z.infer.',
-        where: 'shared/validations/task.ts (или shared/validations/tasks.ts).',
-        how: 'pnpm add zod (если ещё нет). title min(1), description optional, completed boolean optional.',
-        verify: 'typecheck: export type CreateTaskInput = z.infer<typeof CreateTaskSchema>.',
+        description:
+          'CreateTaskSchema, UpdateTaskSchema (+ опц. query). Типы через z.infer — shared/validations/task.ts (или shared/validations/tasks.ts).\n\npnpm add zod (если ещё нет). title min(1), description optional, completed boolean optional.\n\nПроверка: typecheck: export type CreateTaskInput = z.infer<typeof CreateTaskSchema>.',
       },
       {
         label: '✅ День 2 — Шаг 2: server/utils/validation.ts',
-        what: 'validateBody, validateQuery — parse + createError 400 с Zod issues.',
-        where: 'server/utils/validation.ts.',
-        how: 'schema.safeParse(body) → throw createError({ statusCode: 400, data: { issues } }) при fail.',
-        verify: 'Invalid JSON body → 400 с issues в ответе (через apiHandler на день 3+).',
+        description:
+          'validateBody, validateQuery — parse + createError 400 с Zod issues — server/utils/validation.ts.\n\nschema.safeParse(body) → throw createError({ statusCode: 400, data: { issues } }) при fail.\n\nПроверка: Invalid JSON body → 400 с issues в ответе (через apiHandler на день 3+).',
       },
       {
         label: '✅ День 3 — GET и POST /api/tasks',
-        what: 'Переписать tasks.get.ts и tasks.post.ts на apiHandler + Zod.',
-        where: 'server/api/tasks.get.ts, server/api/tasks.post.ts.',
-        how: 'export default apiHandler(async (event) => { requireAuthUser; validateBody для POST; return success data из utils }).',
-        verify:
-          'Checkpoint: GET/POST с сессией — { success: true, data }; POST invalid body → 400.',
+        description:
+          'Переписать tasks.get.ts и tasks.post.ts на apiHandler + Zod — server/api/tasks.get.ts, server/api/tasks.post.ts.\n\nexport default apiHandler(async (event) => { requireAuthUser; validateBody для POST; return success data из utils }).\n\nCheckpoint: GET/POST с сессией — { success: true, data }; POST invalid body → 400.',
       },
       {
         label: '✅ День 4 — PATCH, DELETE, GET [id] + owner checks',
-        what: 'Остальные tasks routes в едином стиле; owner/RBAC без регрессий.',
-        where: 'server/api/tasks/[id].get.ts, [id].patch.ts, [id].delete.ts.',
-        how: 'apiHandler + validateBody на PATCH; 404 чужой задачи; DELETE — владелец или ADMIN.',
-        verify: 'Checkpoint: полный CRUD curl/браузер; чужая задача → 404; USER не удаляет чужие.',
+        description:
+          'Остальные tasks routes в едином стиле; owner/RBAC без регрессий — server/api/tasks/[id].get.ts, [id].patch.ts, [id].delete.ts.\n\napiHandler + validateBody на PATCH; 404 чужой задачи; DELETE — владелец или ADMIN.\n\nCheckpoint: полный CRUD curl/браузер; чужая задача → 404; USER не удаляет чужие.',
       },
       {
         label: '✅ День 5 — useApi / useApiFetch',
-        what: 'Клиент разворачивает success: true → data; иначе throw ApiError.',
-        where: 'app/composables/useApi.ts, useApiFetch (если отдельно).',
-        how: 'После $fetch проверить payload.success; типизировать ApiResponse<T>. useTasks без ручного .data.data.',
-        verify:
-          'Checkpoint: useTasks/createTask возвращает чистые данные или кидает ошибку с message.',
+        description:
+          'Клиент разворачивает success: true → data; иначе throw ApiError — app/composables/useApi.ts, useApiFetch (если отдельно).\n\nПосле $fetch проверить payload.success; типизировать ApiResponse<T>. useTasks без ручного .data.data.\n\nCheckpoint: useTasks/createTask возвращает чистые данные или кидает ошибку с message.',
       },
       {
         label: '✅ День 6 — Глобальный error handler',
-        what: 'nitro.errorHandler + маппинг Zod, Prisma, Auth → unified JSON.',
-        where: 'server/error-handler.ts, nuxt.config.ts nitro.errorHandler.',
-        how: 'H3Error → errorResponse; Prisma P2025 → 404; P2002 → 409; необработанное → 500 без stack в prod.',
-        verify: 'Checkpoint: throw без catch в handler → тот же { success: false, error } формат.',
+        description:
+          'nitro.errorHandler + маппинг Zod, Prisma, Auth → unified JSON — server/error-handler.ts, nuxt.config.ts nitro.errorHandler.\n\nH3Error → errorResponse; Prisma P2025 → 404; P2002 → 409; необработанное → 500 без stack в prod.\n\nCheckpoint: throw без catch в handler → тот же { success: false, error } формат.',
       },
       {
         label: '✅ День 7 — Verify + docs + commit',
-        what: 'Полный auth + tasks flow; lint, typecheck, build; architecture.md.',
-        where: 'docs/architecture.md, docs/api-conventions.md (опц.).',
-        how: 'register → CRUD tasks → invalid body → logout; pnpm verify && pnpm build; секция API conventions.',
-        verify: 'Checkpoint: pnpm lint:all && pnpm typecheck && pnpm build — чисто; коммит нед. 5.',
+        description:
+          'Полный auth + tasks flow; lint, typecheck, build; architecture.md — docs/architecture.md, docs/api-conventions.md (опц.).\n\nregister → CRUD tasks → invalid body → logout; pnpm verify && pnpm build; секция API conventions.\n\nCheckpoint: pnpm lint:all && pnpm typecheck && pnpm build — чисто; коммит нед. 5.',
       },
     ]),
     doneWhen: doneWhen(5, [
@@ -740,139 +613,39 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     ]),
     practice: practiceSteps(6, [
       {
-        label: 'День 1 — Шаг 1: Модель Project в schema.prisma',
-        what: 'Project + projectId в Task; связи User → Projects, Project → Tasks.',
-        where: 'prisma/schema.prisma.',
-        how: 'model Project { id, name, description?, userId, user, tasks, createdAt, updatedAt }. Task: projectId? + relation onDelete SetNull или Cascade — по решению.',
-        verify: 'schema.prisma валиден; связи User ↔ Project ↔ Task согласованы.',
+        label: 'День 1 — Relations + Prisma Schema',
+        description:
+          'Открой prisma/schema.prisma и добавь модель Project:\n\nmodel Project {\n  id          String   @id @default(cuid())\n  name        String\n  description String?\n  ownerId     String\n  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)\n  tasks       Task[]\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nВ модели Task добавь:\n\nprojectId String?\nproject   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)\n\n(SetNull — чтобы задача осталась, если проект удалили.)\n\nСоздай миграцию:\npnpm prisma migrate dev --name add_projects\npnpm prisma generate\n\nПроверь в Prisma Studio: создай проект, задачу с projectId, убедись что связь видна.\n\nОбнови shared/types/: Project, CreateProjectDto, UpdateProjectDto.\n\nДобавь Zod в shared/validations/: name — не пустой, до 100; description — опционально, до 2000.',
       },
       {
-        label: 'День 1 — Шаг 2: Миграция + generate + Studio',
-        what: 'Применить схему; проверить relations в Prisma Studio.',
-        where: 'prisma/migrations/, терминал.',
-        how: 'pnpm prisma migrate dev --name add_projects && pnpm prisma generate. pnpm prisma studio.',
-        verify: 'Checkpoint: в Studio видны Project и Tasks с relations.',
+        label: 'День 2 — Server Utils + CRUD Projects',
+        description:
+          'Создай server/utils/projects.ts:\n• createProject(data, userId) — валидирует, сохраняет, возвращает проект\n• getAllProjects(userId, query) — проекты пользователя с фильтрами\n• getProjectWithTasks(id, userId) — проверяет владельца, include: { tasks: true }\n• updateProject, deleteProject — с проверкой ownerId === userId\n\nСоздай роуты server/api/projects/:\n• .get.ts → getAllProjects\n• .post.ts → validate body → createProject\n• [id].get.ts, [id].patch.ts, [id].delete.ts\n\nОбнови server/utils/tasks.ts:\n• projectId при создании задачи\n• фильтр по проекту в getAllTasks\n\nOwner checks: project.ownerId === userId, иначе 403.',
       },
       {
-        label: 'День 1 — Шаг 3: shared/types + validations для Project',
-        what: 'Типы и Zod-схемы CreateProject / UpdateProject / ProjectQuery.',
-        where: 'shared/types/project.ts, shared/validations/project.ts.',
-        how: 'z.infer для типов; name min(1); опц. description. Обновить task-схемы — projectId optional/required по контракту.',
-        verify: 'typecheck OK; схемы экспортируются из shared/validations/.',
+        label: 'День 3 — Пагинация + Filters (Server)',
+        description:
+          'В shared/validations/ создай ProjectQuerySchema и TaskQuerySchema:\n• page, limit, search, status, sortBy, order\n• page > 0, limit 1–100, sortBy только из белого списка\n\nОбнови getAllProjects и getAllTasks:\n• распарси query через Zod\n• построй where из фильтров\n• пагинация через skip и take\n• верни { items, total }\n\nОбнови GET-роуты:\n• validateQuery → utils → { success: true, data: { items, total } }',
       },
       {
-        label: 'День 2 — Шаг 1: server/utils/projects.ts',
-        what: 'getAllProjects, createProject, getProjectWithTasks, updateProject, deleteProject.',
-        where: 'server/utils/projects.ts (аналог tasks.ts).',
-        how: 'Prisma include: { tasks: true } где нужно; фильтр по userId (owner). Thin utils — без HTTP-логики.',
-        verify: 'typecheck OK; функции принимают userId для owner scope.',
+        label: 'День 4 — Client-side Composables',
+        description:
+          'Создай app/composables/useProjects.ts:\n• состояние: projects, loading, error\n• методы: fetchProjects(query), createProject, updateProject, deleteProject\n• optimistic: snapshot → мутация → rollback в catch\n\nОбнови app/composables/useTasks.ts:\n• параметр projectId\n• optimistic create/delete — добавь/убери из локального массива до ответа API\n\nПодключи: const { projects, fetchProjects } = useProjects()',
       },
       {
-        label: 'День 2 — Шаг 2: requireProjectOwner',
-        what: 'Guard: проект принадлежит текущему пользователю.',
-        where: 'server/utils/projects.ts или server/utils/auth.ts.',
-        how: 'findFirst where { id, userId }; 404 если не найден (не раскрывать чужие id).',
-        verify: 'Чужой projectId → 404; свой → данные.',
+        label: 'День 5 — UI + Pages (Projects + Tasks)',
+        description:
+          'Страницы:\n• /projects — список с фильтрами и таблицей (Nuxt UI Table)\n• /projects/[id] — карточка проекта + таблица задач\n• обнови /tasks — фильтр по проекту\n\nSidebar или tabs — useProjects() для переключения проектов.\n\nСостояния: spinner при loading; «Нет проектов» при empty; error + «Повторить».\n\nNuxt UI: Table, Card, Modal для create/edit.',
       },
       {
-        label: 'День 2 — Шаг 3: API routes Projects',
-        what: 'GET/POST /api/projects; GET/PATCH/DELETE /api/projects/[id].',
-        where: 'server/api/projects.get.ts, projects.post.ts, projects/[id].*.ts.',
-        how: 'apiHandler + requireAuthUser + validateBody/Query (нед. 5). POST создаёт проект для текущего user.',
-        verify: 'Checkpoint: CRUD Projects через curl/браузер с сессией.',
+        label: 'День 6 — Optimistic Updates + Refactor',
+        description:
+          'Доработай useTasks и useProjects:\n• перед мутацией — snapshot текущего списка\n• при успехе — обнови UI; при ошибке — верни snapshot\n\nInvalidate-стратегия:\n• после create project → fetchProjects()\n• для tasks: create — добавь в список; delete — убери локально\n\nРефакторинг: единообразный optimistic без дублирования.\n\nОбнови docs/architecture.md — relations, pagination, optimistic flow.',
       },
       {
-        label: 'День 2 — Шаг 4: tasks.ts — привязка к проекту',
-        what: 'createTask / getAllTasks учитывают projectId; owner check через project.',
-        where: 'server/utils/tasks.ts, server/api/tasks.*.',
-        how: 'При create — validate projectId через requireProjectOwner. GET tasks фильтр ?projectId=.',
-        verify:
-          'Checkpoint: задачи создаются внутри проекта; без projectId — по старому контракту или 400.',
-      },
-      {
-        label: 'День 3 — Шаг 1: Query-схемы пагинации и фильтров',
-        what: 'TaskQuerySchema, ProjectQuerySchema: page, limit, cursor, search, status.',
-        where: 'shared/validations/task.ts, shared/validations/project.ts.',
-        how: 'z.coerce.number для page/limit; cursor optional string; search optional; status enum для tasks.',
-        verify: 'Invalid query → 400 с issues через validateQuery.',
-      },
-      {
-        label: 'День 3 — Шаг 2: Пагинация в getAllTasks / getAllProjects',
-        what: 'Offset (page+limit) и/или cursor-based; meta: total, nextCursor.',
-        where: 'server/utils/tasks.ts, server/utils/projects.ts.',
-        how: 'Prisma take/skip или cursor: { id }. where для search (contains) и status. Вернуть { items, meta }.',
-        verify:
-          'GET /api/tasks?limit=10&page=1 — ≤10 items + meta. cursor= работает для следующей страницы.',
-      },
-      {
-        label: 'День 3 — Шаг 3: Обновить GET-роуты',
-        what: 'Прокинуть query-параметры в utils.',
-        where: 'server/api/tasks.get.ts, server/api/projects.get.ts.',
-        how: 'validateQuery(TaskQuerySchema); return successResponse(result).',
-        verify: 'Checkpoint: ?limit=10&search=foo&status=active — фильтры работают.',
-      },
-      {
-        label: 'День 4 — Шаг 1: app/composables/useProjects.ts',
-        what: 'fetchProjects, createProject, updateProject, deleteProject, currentProject.',
-        where: 'app/composables/useProjects.ts.',
-        how: 'useApi / useApiFetch; ref для списка и loading/error; projectId через route или ref.',
-        verify: 'Composable экспортирует reactive state; typecheck OK.',
-      },
-      {
-        label: 'День 4 — Шаг 2: useTasks — projectId + базовый optimistic',
-        what: 'Фильтр задач по projectId; optimistic create/delete (простой вариант).',
-        where: 'app/composables/useTasks.ts.',
-        how: 'watch projectId → refetch. createTask: добавить в список до ответа; delete: убрать сразу; rollback в catch.',
-        verify: 'Checkpoint: на клиенте можно переключать проект и видеть его задачи.',
-      },
-      {
-        label: 'День 5 — Шаг 1: Страница /projects',
-        what: 'Список проектов, создание, переход в проект.',
-        where: 'app/pages/projects/index.vue.',
-        how: 'useProjects(); Nuxt UI Card/Table; loading, empty, error states; auth middleware.',
-        verify: 'Создание проекта → появляется в списке; клик → /projects/[id].',
-      },
-      {
-        label: 'День 5 — Шаг 2: Страница /projects/[id]',
-        what: 'Задачи внутри проекта + CRUD tasks.',
-        where: 'app/pages/projects/[id].vue.',
-        how: 'useProjects + useTasks(projectId); sidebar/tabs для других проектов. Обновить /tasks — опц. redirect или global view.',
-        verify: 'Checkpoint: пользователь создаёт проект и управляет задачами внутри него.',
-      },
-      {
-        label: 'День 5 — Шаг 3 (опц.): Drag & drop между проектами',
-        what: 'Перенос задачи в другой project через PATCH projectId.',
-        where: 'projects/[id].vue + useTasks.moveTask.',
-        how: 'HTML5 DnD или @vueuse/core useDraggable; PATCH с новым projectId.',
-        verify: 'Задача меняет проект в UI и в БД (если успел).',
-      },
-      {
-        label: 'День 6 — Шаг 1: Optimistic create/update/delete',
-        what: 'Полный цикл: UI → rollback → re-fetch при ошибке.',
-        where: 'useTasks.ts, useProjects.ts.',
-        how: 'Snapshot списка перед мутацией; restore в catch; invalidate() после успеха. updateTask — optimistic toggle/edit.',
-        verify: 'Checkpoint: UI обновляется мгновенно; при ошибке — откат к snapshot.',
-      },
-      {
-        label: 'День 6 — Шаг 2: Рефакторинг общей логики',
-        what: 'Вынести duplicate: optimisticListMutation, invalidate helpers.',
-        where: 'app/composables/ (опц. useOptimisticList.ts).',
-        how: 'Общий helper для add/remove/update с rollback; без over-engineering.',
-        verify: 'useTasks и useProjects используют общий паттерн; lint чистый.',
-      },
-      {
-        label: 'День 6 — Шаг 3: docs/architecture.md — relations',
-        what: 'Секция Projects, relations, pagination, optimistic flow.',
-        where: 'docs/architecture.md.',
-        how: 'Диаграмма User → Project → Task; query params; composable → API → utils → prisma.',
-        verify: 'architecture.md описывает нед. 6 без пробелов.',
-      },
-      {
-        label: 'День 7 — Smoke-test + verify + commit',
-        what: 'register → project → tasks → filters → optimistic; lint, typecheck, build.',
-        where: 'браузер, терминал, docs/.',
-        how: 'pnpm lint:all && pnpm typecheck && pnpm build. Обновить roadmap-12-weeks.md (✅ нед. 6), .planning/state.md. Коммит: feat(week-6): Advanced CRUD + Projects…',
-        verify: 'Checkpoint: verify + build чисто; smoke-test пройден; коммит недели.',
+        label: 'День 7 — Testing, Polish + Commit',
+        description:
+          'Smoke-test:\n• register → login → create project → tasks in project\n• filters и pagination\n• optimistic create/delete + rollback при ошибке\n\npnpm lint:all\npnpm typecheck\npnpm build\n\nОбнови docs/architecture.md, roadmap-12-weeks.md (✅ нед. 6), .planning/state.md.\n\nКоммит: feat(week-6): Advanced CRUD + Projects with relations, pagination and optimistic updates',
       },
     ]),
     doneWhen: doneWhen(6, [
@@ -889,83 +662,537 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 7,
     title: 'Testing + File Uploads',
-    theme: 'Vitest, avatars',
-    goal: 'Vitest + file uploads (аватары, как в Travel Log).',
-    theory: theoryItems('Vitest + @nuxt/test-utils', 'Upload и лимиты размера'),
-    practice: practice(7, [
-      'Vitest + @nuxt/test-utils',
-      'Тесты: health, auth, task CRUD',
-      'Upload avatar → POST /api/users/avatar',
-      '/profile',
+    theme: 'Vitest, avatars, attachments',
+    goal: 'Vitest + file uploads: аватары пользователей и attachments к задачам. Базовый слой тестов на utils, API и upload. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Введение в Testing с Vitest (40–60 мин)',
+        description:
+          'Тестирование — важная часть профессиональной разработки. Помогает ловить баги раньше и уверенно рефакторить код.\n\nVitest + Nuxt Test Utils — стандартный стек для Nuxt 4. Unit tests проверяют изолированные функции (validation, response helpers); integration tests — API routes и composables.\n\nMocking Prisma и auth — ключ к тестам server/utils без реальной БД. Checkpoint дня: несколько работающих тестов и команда pnpm test.',
+      },
+      {
+        topic: 'День 2 — Тестирование API Routes (35–55 мин)',
+        description:
+          'Тестируем серверную часть — самое важное в fullstack-приложении.\n\ndefineEventHandler / apiHandler можно вызывать через @nuxt/test-utils или supertest-подход. Mock session для protected routes; тесты на 401 без cookie, 400 при invalid body, 403/404 при owner checks.\n\nПокрыть CRUD /api/tasks, health, auth-guarded endpoints. Checkpoint: основные API-роуты покрыты тестами.',
+      },
+      {
+        topic: 'День 3 — File Uploads: теория и базовая настройка (40–60 мин)',
+        description:
+          'Безопасный приём, валидация и хранение файлов.\n\nmultipart/form-data — формат загрузки; Nitro readMultipartFormData для парсинга. Ограничения size/MIME на сервере; хранение локально (public/uploads) или облако (S3, Vercel Blob).\n\nБезопасность: sanitize filename, защита от path traversal, лимиты размера. Checkpoint: файл загружается через API и сохраняется.',
+      },
+      {
+        topic: 'День 4 — Аватары пользователей + Storage (35–50 мин)',
+        description:
+          'Привязываем загрузку файлов к пользователям.\n\nОбновление модели User (avatarUrl / image); уникальные имена файлов; POST /api/users/avatar сохраняет путь в БД.\n\nОбновление useAuth и user menu; отображение на /profile. Опционально: оптимизация изображений (sharp). Checkpoint: пользователь загружает и видит свой аватар.',
+      },
+      {
+        topic: 'День 5 — Attachments к задачам (35–50 мин)',
+        description:
+          'Расширяем задачи — прикрепление файлов.\n\nOne-to-many Task ↔ Attachment: новая модель Attachment в Prisma, миграция, API upload/list/delete attachments.\n\nЗагрузка нескольких файлов к задаче; отображение в интерфейсе задач. Owner checks: только владелец задачи может прикреплять файлы.',
+      },
+      {
+        topic: 'День 6 — Тесты на File Uploads + Refactor (30–45 мин)',
+        description:
+          'Тестируем upload и проводим рефакторинг storage-слоя.\n\nMock files в Vitest; integration tests auth + upload; рефакторинг server/utils/storage.ts — единая точка save/delete/validate.\n\nОбновление docs/architecture.md — секция uploads и storage.',
+      },
+      {
+        topic: 'День 7 — Полный Verify + Commit недели (30–45 мин)',
+        description:
+          'Закрепление недели: полный прогон pnpm test, lint, typecheck, build.\n\nSmoke-test: upload avatar → виден в UI; attach file к задаче → list attachments. Коммит week-7: testing + file uploads; обновить roadmap и .planning/state.md.',
+      },
     ]),
-    doneWhen: doneWhen(7, ['pnpm test проходит', 'Upload с лимитом размера']),
+    practice: practiceSteps(7, [
+      {
+        label: 'День 1 — Vitest setup + первые unit-тесты',
+        description:
+          'Настрой Vitest в проекте: vitest.config.ts, скрипт pnpm test в package.json.\n\nНапиши первые тесты для validateBody, response helpers (successResponse, errorResponse) и простых utils. Опционально — тест composable useTasks с mock fetch.\n\nПроверка: pnpm test проходит; несколько green tests в CI-ready формате.',
+      },
+      {
+        label: 'День 2 — Integration tests API routes',
+        description:
+          'Добавь тесты для /api/tasks (CRUD): create → list → patch → delete с mock session.\n\nТесты protected routes — GET /api/tasks без cookie → 401. Тесты на 400 (invalid body через Zod), 404 (чужая задача), 403 где применимо.\n\nMock getSession / event.context.user для авторизованных запросов.',
+      },
+      {
+        label: 'День 3 — Upload API + storage + лимиты',
+        description:
+          'Создай server/api/upload.post.ts и server/utils/storage.ts.\n\nИспользуй readMultipartFormData; проверяй MIME (image/*, pdf) и max size (например 5 MB). Сохраняй в public/uploads с uuid-именем; возвращай URL через apiHandler.\n\nПроверка: curl/Postman multipart upload → файл на диске + JSON с url.',
+      },
+      {
+        label: 'День 4 — User avatars — API + UI',
+        description:
+          'Добавь POST /api/users/avatar — принимает файл, сохраняет через storage.ts, обновляет User.avatarUrl в Prisma.\n\nСтраница /profile или форма в user menu: input type=file, preview, loading state.\n\nОбнови useAuth — refetch user после upload; аватар в header/layout.',
+      },
+      {
+        label: 'День 5 — Attachment model + task attachments',
+        description:
+          'Миграция: модель Attachment (id, taskId, filename, url, size, mimeType, createdAt).\n\nAPI: POST /api/tasks/[id]/attachments, GET list, DELETE [attachmentId]. Owner check через task.userId.\n\nUI на /tasks или /projects/[id]: список attachments, кнопка upload, удаление файла.',
+      },
+      {
+        label: 'День 6 — Upload tests + refactor storage',
+        description:
+          'Vitest-тесты upload endpoints с mock multipart и mock storage.\n\nРефактор server/utils/storage.ts: validateFile, saveFile, deleteFile, buildPublicUrl. Убери дубли из avatar и attachment handlers.\n\nОбнови docs/architecture.md — uploads, storage, лимиты.',
+      },
+      {
+        label: 'День 7 — pnpm test + verify + commit',
+        description:
+          'Полный прогон: pnpm test && pnpm lint:all && pnpm typecheck && pnpm build.\n\nSmoke: register → upload avatar → create task → attach file → list → delete.\n\nКоммит: week-7: testing + file uploads. Обнови roadmap-12-weeks.md (✅ нед. 7).',
+      },
+    ]),
+    doneWhen: doneWhen(7, [
+      'Vitest настроен; pnpm test проходит (utils + API + upload)',
+      'POST upload с лимитом size/MIME; storage.ts без дублирования',
+      'Аватар: POST /api/users/avatar + отображение в UI',
+      'Attachment model + API + UI для задач',
+      'Protected upload routes — только авторизованный owner',
+      'docs/architecture.md — секция file uploads',
+      'pnpm lint:all, typecheck, build — чисто',
+    ]),
   },
   {
     id: 8,
     title: 'Logging, Cache, Deploy',
-    theme: 'Pino, health, production',
-    goal: 'Pino logging, health checks, deploy (Vercel/Railway + Prisma), migrations on start.',
-    theory: theoryItems('Structured logging', 'Health check с DB', 'Deploy Nuxt + Postgres'),
-    practice: practice(8, [
-      'Pino в server/utils/logger.ts',
-      '(Optional) Redis cache',
-      'Health + DB check',
-      'Deploy (Railway / Hetzner / Vercel)',
-      'docs/deployment-production.md',
+    theme: 'Pino, Nitro cache, deploy',
+    goal: 'Pino logging, Nitro cache, production deploy (Vercel/Railway + PostgreSQL), health checks и migrations on start. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Logging с Pino (35–55 мин)',
+        description:
+          'Хорошее логирование — ключ к пониманию приложения в production.\n\nPino — быстрый structured logger с JSON-логами и уровнями (info, warn, error). Dev: pino-pretty; prod: JSON для агрегаторов.\n\nMiddleware для автологирования запросов: method, path, duration, status, userId (без секретов). Логи ключевых событий: auth, CRUD errors.',
+      },
+      {
+        topic: 'День 2 — Cache (Nitro Cache) (35–50 мин)',
+        description:
+          'Кэш ускоряет приложение и снижает нагрузку на БД.\n\nNitro Cache API: routeRules, defineCachedEventHandler. Cache keys с учётом auth — не кэшировать персональные данные чужого пользователя.\n\nTTL для GET tasks/projects; invalidation при POST/PATCH/DELETE мутациях. Trade-off: stale data vs performance.',
+      },
+      {
+        topic: 'День 3 — Environment + Config (30–45 мин)',
+        description:
+          'Правильная работа с окружениями — основа безопасного деплоя.\n\n.env vs runtimeConfig: public (appVersion) vs private (DATABASE_URL, AUTH_SECRET, STRIPE_KEY). development, staging, production — разные .env.example секции.\n\nuseRuntimeConfig() на клиенте — только public.*; useServerRuntimeConfig() на сервере.',
+      },
+      {
+        topic: 'День 4 — Production Build & Optimization (35–55 мин)',
+        description:
+          'Что происходит при pnpm build и как оптимизировать сборку.\n\nNitro presets: vercel, node-server. Code splitting, tree shaking. Security headers в routeRules (X-Frame-Options, CSP basics). Compression.\n\nАнализ .output/ — понимание server/client bundles.',
+      },
+      {
+        topic: 'День 5 — Deploy (Vercel + VPS/Railway) (40–60 мин)',
+        description:
+          'Платформы деплоя и production БД.\n\nVercel (serverless) vs Railway/VPS (Node server) — trade-offs для Prisma/long connections. Managed PostgreSQL: Neon, Supabase, Railway.\n\nEnvironment variables на хостинге; prisma migrate deploy при деплое. CI/CD basics — GitHub Actions preview.',
+      },
+      {
+        topic: 'День 6 — Monitoring + Health Checks (30–45 мин)',
+        description:
+          'Как понимать, что приложение «живое» в production.\n\nHealth check /api/health + db status (Prisma $queryRaw SELECT 1). UptimeRobot / Better Stack — внешний ping.\n\nОпционально: Sentry для error tracking. Логи на production-хостинге.',
+      },
+      {
+        topic: 'День 7 — Polish + Commit недели (30–45 мин)',
+        description:
+          'Финальный рефакторинг logger/cache config; docs/deployment-production.md.\n\npnpm lint:all && pnpm typecheck && pnpm build. Staging URL доступен; health db: connected. Коммит week-8: logging, cache, production deploy.',
+      },
     ]),
-    doneWhen: doneWhen(8, ['Staging URL, health db: connected', 'Migrations on deploy']),
+    practice: practiceSteps(8, [
+      {
+        label: 'День 1 — Pino + request logging',
+        description:
+          'Создай server/utils/logger.ts — pino instance с level из env.\n\nРасширь server/middleware/log.ts: duration, statusCode, userId из context. Замени console.log на logger.info/warn/error.\n\nDev: pino-pretty; prod: JSON. Проверка: структурированные логи при каждом запросе.',
+      },
+      {
+        label: 'День 2 — Nitro cache + invalidation',
+        description:
+          'Добавь cache rules в nuxt.config.ts для безопасных GET (например public health).\n\ndefineCachedEventHandler для GET /api/projects с ключом userId + query hash. При POST/PATCH/DELETE projects — invalidate cache (clearNitroCache или custom key bust).\n\nНе кэшируй персональные tasks без user scope в ключе.',
+      },
+      {
+        label: 'День 3 — Environment + runtimeConfig',
+        description:
+          'Обнови .env.example: DATABASE_URL, AUTH_SECRET, NODE_ENV, LOG_LEVEL, APP_URL.\n\nПроверь types/nuxt-public.d.ts и server/utils/runtimeConfig.ts — warnIfMissingSecrets в dev boot plugin.\n\nРаздели dev/prod конфиги в nuxt.config (sourcemap, devtools off in prod).',
+      },
+      {
+        label: 'День 4 — Production build + security headers',
+        description:
+          'pnpm build — проанализируй .output/server и .output/public.\n\nrouteRules: security headers (X-Content-Type-Options, Referrer-Policy). Выбери nitro preset под целевой хостинг.\n\nCheckpoint: production build без ошибок; размер bundles разумный.',
+      },
+      {
+        label: 'День 5 — Deploy + PostgreSQL + migrations',
+        description:
+          'Задеплой на Vercel или Railway; подключи managed PostgreSQL.\n\nНастрой env vars на хостинге. Добавь postbuild или start script: prisma migrate deploy.\n\nПроверка: публичный URL открывается; login + CRUD работают на staging.',
+      },
+      {
+        label: 'День 6 — Health check + external monitoring',
+        description:
+          'Расширь GET /api/health: status, version, db: connected | error, timestamp.\n\nPrisma ping в getHealthPayload. Настрой UptimeRobot ping каждые 5 мин.\n\nПроверь логи на хостинге после деплоя.',
+      },
+      {
+        label: 'День 7 — docs + verify + commit',
+        description:
+          'Напиши docs/deployment-production.md: env, migrate deploy, cache, logging.\n\npnpm lint:all && pnpm typecheck && pnpm build.\n\nКоммит: week-8: logging, cache, production deploy. Staging URL + health db: connected.',
+      },
+    ]),
+    doneWhen: doneWhen(8, [
+      'Pino structured logging; request duration в middleware',
+      'Nitro cache на безопасных GET + invalidation при мутациях',
+      'Production build зелёный; security headers в routeRules',
+      'Deploy на Vercel/Railway; staging URL доступен',
+      'Health check с db: connected',
+      'prisma migrate deploy при деплое',
+      'docs/deployment-production.md актуален',
+    ]),
   },
   {
     id: 9,
     title: 'Admin Dashboard',
     theme: 'Nuxt UI tables + /admin',
-    goal: 'Admin Dashboard (@nuxt/ui + protected /admin).',
-    theory: theoryItems('@nuxt/ui', 'Admin layout и таблицы'),
-    practice: practice(9, [
-      '@nuxt/ui, layout /admin',
-      'Users, tasks, projects tables',
-      'GET /api/admin/stats',
+    goal: 'Admin Dashboard (@nuxt/ui + protected /admin): users, projects, tasks tables, bulk actions, dashboard stats. Только ADMIN. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Admin layout + navigation (45–60 мин)',
+        description:
+          'Админ-панель как отдельный «контекст» приложения: свой layout, навигация, права доступа и отдельный набор компонентов. В Nuxt — app/layouts/admin.vue и middleware.\n\nProtected admin routes (/admin/*): middleware выполняется до рендера; нельзя полагаться только на скрытие ссылок — URL должен блокироваться на сервере.\n\nRole guard (только ADMIN): на сервере getSession → role === ADMIN → иначе 403/redirect. Nuxt UI AppBar, Sidebar, Card — SSR/CSR нюансы интерактивности.',
+      },
+      {
+        topic: 'День 2 — Users management table (50–70 мин)',
+        description:
+          'Таблицы в админке: пагинация, сортировка и поиск на сервере — не «fetch всё и sort в JS».\n\nПараметры page, pageSize, sortBy, order, search → API → Prisma skip/take → { items, total }.\n\nCRUD-действия (изменить роль, удалить) — отдельные PATCH/DELETE; сервер повторно проверяет ADMIN. Modal confirm перед destructive actions.',
+      },
+      {
+        topic: 'День 3 — Projects & tasks admin (45–60 мин)',
+        description:
+          "Связанные данные в админке: задачи внутри проекта, статусы, исполнители — JOIN или include на бэкенде.\n\nФильтры: status, projectId, assignee, date range. Переиспользуй server/utils/projects.ts и tasks.ts с requireRole('ADMIN').\n\nUI: на странице проекта — список задач; у задачи — название проекта.",
+      },
+      {
+        topic: 'День 4 — Advanced table features (45–60 мин)',
+        description:
+          'Bulk actions — операции над несколькими строками; confirm modal обязателен.\n\nAdvanced filters: sync query в URL — состояние сохраняется при пагинации. Export CSV на бэкенде с теми же фильтрами (Content-Type: text/csv).\n\nInline editing: input on click, PATCH on blur, toast при ошибке без full refetch.',
+      },
+      {
+        topic: 'День 5 — Forms + modals + Zod (40–60 мин)',
+        description:
+          'Формы в админке: валидация на клиенте (UX) и на сервере (security).\n\nZod-схемы в shared/validations/ — userSchema, projectSchema; один источник для client + server. AdminModal: props title, open, onClose; UForm + Save/Cancel.\n\nFile upload в админке (cover/avatar) — FormData, связь с entity (нед. 7).',
+      },
+      {
+        topic: 'День 6 — Analytics + dashboard overview (35–50 мин)',
+        description:
+          'Статистика: counts users/projects/tasks; breakdown по статусам; активность за неделю.\n\nRecent activity — лента последних изменений (audit). Charts: tasks by status (Chart.js или Nuxt UI Charts).\n\nGET /api/admin/stats — requireRole ADMIN; dashboard cards + loading states.',
+      },
+      {
+        topic: 'День 7 — Polish + security + commit (30–45 мин)',
+        description:
+          'UI pass: empty states, error + retry, mobile responsive. Security: /admin без auth → redirect; API без ADMIN → 403.\n\npnpm lint:all && pnpm typecheck && pnpm build. docs/architecture.md — admin section. Коммит week-9: admin dashboard with Nuxt UI.',
+      },
     ]),
-    doneWhen: doneWhen(9, ['ADMIN в /admin', 'USER → 403']),
+    practice: practiceSteps(9, [
+      {
+        label: 'День 1 — Admin layout + sidebar + middleware',
+        description:
+          "Создай app/layouts/admin.vue: NLayout, NAppBar, NSidebar со ссылками /admin, /admin/users, /admin/projects, /admin/tasks, /admin/dashboard.\n\napp/middleware/admin.ts: user.role === ADMIN, иначе navigateTo('/login'). app/pages/admin/index.vue: definePageMeta({ layout: 'admin', middleware: 'admin' }).\n\nПроверка: /admin без auth → redirect; под ADMIN → страница открывается; active link подсветка.",
+      },
+      {
+        label: 'День 2 — Users table (server pagination, actions)',
+        description:
+          "server/api/admin/users.get.ts — query page, pageSize, search, sortBy, order; Prisma + requireRole('ADMIN'); return { items, total }.\n\napp/pages/admin/users/index.vue — useFetch/composable, Nuxt UI DataTable, pagination UI.\n\nActions: PATCH role, DELETE user с modal confirm; server/api/admin/users/[id].patch.ts.",
+      },
+      {
+        label: 'День 3 — Projects & tasks admin + relations',
+        description:
+          'Admin API: server/api/admin/projects.* и admin/tasks.* — CRUD + filters projectId, status.\n\napp/pages/admin/projects/index.vue и admin/tasks/index.vue — таблицы + фильтры.\n\nСвязи в UI: на странице проекта список задач; у задачи — название проекта (include).',
+      },
+      {
+        label: 'День 4 — Bulk actions, filters, CSV (опц.)',
+        description:
+          'Чекбоксы выбора строк в таблицах users, projects, tasks.\n\nBulk delete — массив ID → server endpoint; confirm «Удалить N записей?». Bulk change status для tasks. Sync filters в URL query.\n\nОпц.: Export CSV endpoint + кнопка Download; inline edit PATCH on blur.',
+      },
+      {
+        label: 'День 5 — Forms + modals + Zod',
+        description:
+          'Zod: userSchema (name, email, role), projectSchema в shared/validations/.\n\nКомпонент AdminModal — create/edit user и project: client Zod → POST/PATCH через useApi.\n\nПри успехе закрыть modal и refetch таблицы; при ошибке показать issues. Опц.: upload cover/avatar через FormData.',
+      },
+      {
+        label: 'День 6 — Dashboard stats + recent activity',
+        description:
+          'server/api/admin/stats.get.ts — counts, breakdown по статусам, recent 10 changes.\n\napp/pages/admin/dashboard/index.vue — UCard metrics, activity feed, loading skeleton.\n\nОпц.: chart tasks by status. Сетка карточек с заголовками.',
+      },
+      {
+        label: 'День 7 — Security polish + commit',
+        description:
+          'UI pass: empty «Нет данных», error + «Повторить», mobile. Security audit: curl /api/admin/* без ADMIN cookie → 403.\n\npnpm lint:all && pnpm typecheck && pnpm build. docs/architecture.md admin section. Коммит week-9: admin dashboard with Nuxt UI.',
+      },
+    ]),
+    doneWhen: doneWhen(9, [
+      '/admin и /api/admin/* только для ADMIN; USER → 403',
+      'Admin layout + sidebar + middleware блокирует не-админов',
+      'Users table: server pagination, search, sort, role patch, delete',
+      'Projects & tasks admin CRUD + filters + relations в UI',
+      'Bulk actions с confirm; filters sync в URL',
+      'Dashboard stats GET /api/admin/stats',
+      'pnpm lint:all, typecheck, build — чисто',
+    ]),
   },
   {
     id: 10,
     title: 'Real-time (SSE)',
     theme: 'Live updates задач',
-    goal: 'SSE live updates на /tasks.',
-    theory: theoryItems('SSE vs WebSocket в Nitro', 'Подписка на изменения tasks'),
-    practice: practice(10, [
-      'SSE /api/tasks/stream или WebSocket',
-      'Live update на /tasks',
-      'docs/realtime.md',
+    goal: 'SSE live updates на /tasks: broadcaster, useSSE, merge в useTasks. Два браузера — изменения синхронизируются. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Теория Real-time в Nuxt (35–55 мин)',
+        description:
+          'Real-time — приложение мгновенно реагирует на изменения других пользователей.\n\nSSE vs WebSockets: SSE — односторонний поток server→client по HTTP; проще для уведомлений. WebSocket — двусторонний, для чата позже.\n\nNitro streaming: text/event-stream, data: {...}\\n\\n. Heartbeat для keep-alive. Trade-off: проще деплой vs только server→client.',
+      },
+      {
+        topic: 'День 2 — Server-side broadcasting (40–60 мин)',
+        description:
+          'Event emitter / broadcaster — server/utils/events.ts: register, unregister, broadcast.\n\nХранение активных соединений: Set/Map writers; cleanup при disconnect. После CRUD в tasks.ts — task:created, task:updated, task:deleted.\n\nСвязь /api/events ↔ broadcaster — подписчики получают JSON payload.',
+      },
+      {
+        topic: 'День 3 — Client-side SSE handling (35–50 мин)',
+        description:
+          "EventSource API: new EventSource('/api/events'), onmessage, onerror — только client-side.\n\nReconnection с exponential backoff; не дублировать подписки. useSSE composable: connect, disconnect, events ref.\n\nТипы событий: heartbeat, task:*, project:* — парсинг JSON → callback в useTasks.",
+      },
+      {
+        topic: 'День 4 — Real-time updates в UI (35–55 мин)',
+        description:
+          'Optimistic + real-time: свои действия — optimistic; чужие — merge из SSE.\n\nLive список: upsert/delete по id без full refetch. Toast «Задача обновлена другим пользователем» — без спама на свои правки.\n\nФильтр событий по projectId — только релевантные updates на /tasks.',
+      },
+      {
+        topic: 'День 5 — Advanced real-time (typing, comments) (30–50 мин)',
+        description:
+          '«Пользователь пишет…» — typing:start/stop с таймаутом.\n\nОпц.: real-time комментарии comment:created broadcast. Presence — кто онлайн в проекте; heartbeat + lastSeen.\n\nТест нескольких вкладок / пользователей.',
+      },
+      {
+        topic: 'День 6 — Performance + error handling SSE (30–45 мин)',
+        description:
+          'Reconnection strategy: backoff, max retries, UI «переподключение…».\n\nCleanup: onUnmounted → close EventSource; server remove connection. Rate limiting broadcast; debounce/throttle; разумный heartbeat interval.\n\nЛогирование SSE подключений в dev/Pino.',
+      },
+      {
+        topic: 'День 7 — Polish + testing + commit (30–45 мин)',
+        description:
+          'Тест: 2 браузера — create/update/delete/reconnect. docs/realtime.md — архитектура, типы событий.\n\npnpm lint:all && pnpm typecheck && pnpm build. Коммит week-10: real-time updates with SSE.',
+      },
     ]),
-    doneWhen: doneWhen(10, ['Два браузера — изменения синхронизируются']),
+    practice: practiceSteps(10, [
+      {
+        label: 'День 1 — SSE theory + /api/events heartbeat',
+        description:
+          'Изучи Nitro SSE API — Content-Type: text/event-stream.\n\nСоздай server/api/events.get.ts — базовый stream с heartbeat каждые 30s (event: heartbeat\\ndata: {"ts":...}\\n\\n).\n\nТест: EventSource в браузере DevTools или curl -N — события приходят.',
+      },
+      {
+        label: 'День 2 — Server broadcaster + CRUD hooks',
+        description:
+          "server/utils/events.ts — registerClient(writer), unregister, broadcast(event, payload).\n\nИнтегрируй в server/utils/tasks.ts: после create/update/delete → broadcast('task:created' | 'task:updated' | 'task:deleted', { id, ... }).\n\nСвяжи /api/events с register при connect и cleanup on close.",
+      },
+      {
+        label: 'День 3 — useSSE composable + event handling',
+        description:
+          'app/composables/useSSE.ts — connect(), disconnect(), events ref, onEvent(type, handler).\n\nReconnection с backoff (1s, 2s, 4s, max 30s). Парсинг JSON из event.data.\n\nПодключи в layout или /tasks page — auto connect on mount.',
+      },
+      {
+        label: 'День 4 — Live UI updates + toasts',
+        description:
+          'Обнови useTasks — merge SSE events: upsert task by id, remove on deleted.\n\nLive обновление списка на /tasks без full refetch. Toast через Nuxt UI при чужих изменениях (ignore own userId).\n\nФильтр по текущему projectId.',
+      },
+      {
+        label: 'День 5 — Typing, comments, presence (опц.)',
+        description:
+          'Индикатор «пользователь пишет…» в форме задачи — broadcast typing:start/stop.\n\nОпц.: Comment model + comment:created SSE. Presence: online users в project header.\n\nТест: 2 вкладки — typing indicator и live comments видны.',
+      },
+      {
+        label: 'День 6 — Reconnect, cleanup, rate limit',
+        description:
+          'Улучши стабильность: onUnmounted close EventSource; server remove stale writers.\n\nUI banner «Переподключение…» при onerror. Debounce broadcast при bulk updates.\n\nЛоги connect/disconnect в Pino (dev).',
+      },
+      {
+        label: 'День 7 — Testing + docs + commit',
+        description:
+          'Manual test: 2 браузера/профиля — create task в A → появляется в B; delete, reconnect.\n\nНапиши docs/realtime.md — flow, event types, broadcaster diagram.\n\npnpm lint:all && pnpm typecheck && pnpm build. Коммит week-10: real-time updates with SSE.',
+      },
+    ]),
+    doneWhen: doneWhen(10, [
+      'GET /api/events — SSE stream с heartbeat',
+      'server/utils/events.ts broadcaster + hooks в tasks CRUD',
+      'useSSE composable с reconnect backoff',
+      'Live merge в useTasks на /tasks',
+      'Два браузера — create/update/delete синхронизируются',
+      'docs/realtime.md актуален',
+      'pnpm lint:all, typecheck, build — чисто',
+    ]),
   },
   {
     id: 11,
     title: 'SaaS Core (Workspaces + Billing)',
     theme: 'Multi-tenant, Stripe',
-    goal: 'Workspaces (multi-tenant) + Stripe webhooks.',
-    theory: theoryItems('Workspace + members', 'Stripe test checkout', 'Free plan limits'),
-    practice: practice(11, [
-      'Workspace, WorkspaceMember',
-      'Stripe test checkout + webhook',
-      'Free plan: max 3 projects',
+    goal: 'Workspaces (multi-tenant) + Stripe webhooks, invites, data isolation, plan limits. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Workspace model + multi-tenant (40–60 мин)',
+        description:
+          'Multi-tenant — одно приложение обслуживает много независимых организаций (workspaces).\n\nМодель Workspace: name, slug, plan. User ↔ Workspace many-to-many через WorkspaceMember (userId, workspaceId, role).\n\nRow-level scope: каждый query фильтруется по workspaceId. Контекст workspace — переключатель в UI; current workspace в session/composable.',
+      },
+      {
+        topic: 'День 2 — Membership & invites (35–55 мин)',
+        description:
+          'WorkspaceMember роли: owner, admin, member.\n\nПриглашения по email: token, expiry, status pending/accepted. Accept flow: /invite/[token] → WorkspaceMember.\n\nRBAC внутри workspace: owner — billing; admin — members; member — tasks/projects.',
+      },
+      {
+        topic: 'День 3 — Data isolation (multi-tenant logic) (40–60 мин)',
+        description:
+          'Automatic filtering by workspaceId — helper getWorkspaceScope() во всех utils.\n\nОбновление tasks.ts, projects.ts — только текущий workspace. Security: нет workspace в context → 403; чужой id → 404 (не раскрывать).\n\nТесты изоляции: user A не видит workspace B.',
+      },
+      {
+        topic: 'День 4 — Stripe integration basics (40–60 мин)',
+        description:
+          'Stripe Products и Prices — Free / Pro в test mode.\n\nCheckout Session — redirect на Stripe Hosted Checkout. Webhooks: verify signature; checkout.session.completed.\n\nSubscription model: Stripe Customer + Subscription привязаны к workspace.',
+      },
+      {
+        topic: 'День 5 — Subscription management (35–55 мин)',
+        description:
+          'Сохранение subscription в БД: plan, status, stripeSubscriptionId на Workspace.\n\nПроверка активной подписки перед premium features. Upgrade/downgrade/cancel — Customer Portal или новый checkout.\n\nWebhook handler /api/stripe/webhook — idempotent processing.',
+      },
+      {
+        topic: 'День 6 — Limits & feature gates (30–50 мин)',
+        description:
+          'Feature flags по подписке — plan определяет возможности.\n\nFree plan limits: max 3 projects, N members. Soft limits (warning) vs hard limits (block + Upgrade UI).\n\nserver/utils/limits.ts — check перед create project/member.',
+      },
+      {
+        topic: 'День 7 — Polish + security review + commit (30–45 мин)',
+        description:
+          'Аудит multi-tenant: все API scoped by workspaceId. SaaS flow test: workspace → invite → pay → limits.\n\npnpm lint:all && pnpm typecheck && pnpm build. Коммит week-11: workspaces + stripe billing.',
+      },
     ]),
-    doneWhen: doneWhen(11, ['Stripe test session работает', 'Workspace изолирован от других']),
+    practice: practiceSteps(11, [
+      {
+        label: 'День 1 — Workspace model + switcher',
+        description:
+          'Prisma: Workspace, WorkspaceMember; миграция. workspaceId на Project (и Task через project).\n\nserver/utils/workspaces.ts + CRUD API. useWorkspace composable + switcher в header.\n\nMiddleware определяет current workspace из cookie/header. Проверка: создать workspace, переключиться между двумя.',
+      },
+      {
+        label: 'День 2 — Members + invites + workspace RBAC',
+        description:
+          'API: invite member by email → token link; POST /api/invites/accept.\n\nСтраница /invite/[token]. RBAC checks: owner/admin/member в workspace utils.\n\nUI: members list, invite form, role dropdown. Accept invite → join workspace.',
+      },
+      {
+        label: 'День 3 — Data isolation (workspaceId scope)',
+        description:
+          'getWorkspaceScope(event) во всех utils — фильтр workspaceId в every Prisma query.\n\nОбнови tasks.ts, projects.ts — scope + tests: user A не видит workspace B data.\n\n403 без workspace context; 404 при чужом resource id.',
+      },
+      {
+        label: 'День 4 — Stripe products + checkout',
+        description:
+          'server/utils/stripe.ts; env STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET.\n\nProducts/Prices в Stripe Dashboard (test). Страница /pricing — Free vs Pro.\n\nPOST /api/billing/checkout — create Checkout Session для current workspace → redirect URL.',
+      },
+      {
+        label: 'День 5 — Subscription + webhooks + billing UI',
+        description:
+          'Поля plan, stripeCustomerId, stripeSubscriptionId на Workspace (или Subscription model).\n\nPOST /api/stripe/webhook — verify signature, handle checkout.session.completed, customer.subscription.updated/deleted.\n\nСтраница /settings/billing — plan status, Customer Portal link.',
+      },
+      {
+        label: 'День 6 — Limits + feature gates',
+        description:
+          'server/utils/limits.ts — canCreateProject(workspace), canInviteMember(workspace).\n\nFree: max 3 projects — block + Upgrade modal. Pro: unlimited.\n\nUpgrade prompts: banner на /projects при лимите. Тест Free vs Pro flows.',
+      },
+      {
+        label: 'День 7 — Security audit + commit',
+        description:
+          'Security audit: все admin/billing/tasks/projects API проверяют workspaceId scope.\n\nE2E: create workspace → invite → accept → checkout (test card) → Pro limits lifted.\n\npnpm lint:all && pnpm typecheck && pnpm build. Коммит week-11: workspaces + stripe billing.',
+      },
+    ]),
+    doneWhen: doneWhen(11, [
+      'Workspace + WorkspaceMember; switcher в UI',
+      'Invites: create, accept, RBAC owner/admin/member',
+      'Data isolation — workspaceId scope во всех utils',
+      'Stripe test checkout session работает',
+      'Webhook обновляет plan на workspace',
+      'Free plan: max 3 projects (limits.ts)',
+      'Security audit multi-tenant пройден',
+    ]),
   },
   {
     id: 12,
     title: 'Polish + CI/CD + Docs',
     theme: 'Финальный релиз',
-    goal: 'Polish, CI/CD, README — финальный релиз Task Board.',
-    theory: theoryItems('CI pipeline', 'README и demo', 'Edge cases UX'),
-    practice: practice(12, [
-      '.github/workflows/ci.yml',
-      'README: demo, stack, screenshots',
-      'Полировка UX, edge cases',
+    goal: 'Polish, CI/CD, README — финальный релиз Task Board. Production-ready UX, GitHub Actions, docs. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — UX/UI polish & accessibility (40–60 мин)',
+        description:
+          'Хороший продукт — функциональный и приятный.\n\nДизайн-система и consistency — единые паттерны на tasks, projects, admin. Accessibility: ARIA labels, контраст, keyboard nav, focus-visible.\n\nMobile responsiveness: sidebar collapse, touch targets. Micro-interactions без перегруза.',
+      },
+      {
+        topic: 'День 2 — Error boundaries & user feedback (30–50 мин)',
+        description:
+          'Global error boundary — error.vue, NuxtErrorBoundary.\n\nToast-уведомления — единый feedback из API errors (useApi). Empty states с CTA; fallback «Повторить» при ошибках.\n\nUser-friendly сообщения — без stack trace в UI.',
+      },
+      {
+        topic: 'День 3 — CI/CD + GitHub Actions (40–60 мин)',
+        description:
+          'GitHub Actions workflow на push и PR.\n\nPipeline: lint + typecheck + build + test (Vitest). Merge только при green CI. Автоматический deploy Vercel: preview на PR, production на main.\n\nSecrets в GitHub Actions — не в коде.',
+      },
+      {
+        topic: 'День 4 — Documentation & README (35–55 мин)',
+        description:
+          'README.md — stack, demo URL, screenshots, env setup, scripts.\n\nAPI documentation — ключевые endpoints. Architecture overview в docs/architecture.md. One-command start: docker compose up + migrate + pnpm dev.\n\nНовый разработчик запускает проект за 10 минут.',
+      },
+      {
+        topic: 'День 5 — Performance audit & optimizations (30–50 мин)',
+        description:
+          'Lighthouse audit: performance, a11y, best practices на /tasks, /projects, /admin.\n\nBundle size — nuxt analyze; lazy load тяжёлых компонентов. DB: indexes, N+1 fix. Cache review — без утечки personal data.\n\nЦелевые метрики Lighthouse > 80.',
+      },
+      {
+        topic: 'День 6 — Security review + final testing (35–55 мин)',
+        description:
+          'Security checklist: auth, upload, multi-tenant, admin, Stripe webhook signature.\n\nRate limiting на auth и sensitive endpoints. Zod на всех inputs. Regression test всех фич недель 1–11 — full user journey.\n\nFix critical bugs before release.',
+      },
+      {
+        topic: 'День 7 — Финальный релиз + рефлексия (30–45 мин)',
+        description:
+          'Production deploy — smoke test live URL. Рефлексия по 12-недельному пути — .planning/PROJECT.md.\n\nКоммит week-12: final polish, ci/cd, documentation. Portfolio-ready case study: кнопка → API → БД → UI.',
+      },
     ]),
-    doneWhen: doneWhen(12, ['CI зелёный', 'Можешь объяснить путь: кнопка → API → БД → UI']),
+    practice: practiceSteps(12, [
+      {
+        label: 'День 1 — UX/UI polish + a11y + mobile',
+        description:
+          'Полировка страниц tasks, projects, admin — единые отступы, typography, colors.\n\nAccessibility audit: axe DevTools или Lighthouse a11y. Fix: aria-label на icon buttons, focus-visible, contrast.\n\nMobile: responsive sidebar, tables scroll, touch-friendly buttons. Опц.: dark mode.',
+      },
+      {
+        label: 'День 2 — Error boundaries + empty states',
+        description:
+          'Улучши app/error.vue и NuxtErrorBoundary на ключевых страницах.\n\nEmpty states для всех списков: tasks, projects, admin tables — иконка + CTA. Единый toast composable для success/error из useApi.\n\nПроверка: simulate 500 → user sees friendly message + retry.',
+      },
+      {
+        label: 'День 3 — GitHub Actions CI + preview deploy',
+        description:
+          'Создай .github/workflows/ci.yml — on push/pull_request:\n\njobs: lint (pnpm lint:all), typecheck, build, test (pnpm test). Node 20, pnpm cache.\n\nПодключи Vercel GitHub integration — preview deploy на PR. Проверка: PR → green checks.',
+      },
+      {
+        label: 'День 4 — README + API docs + quick setup',
+        description:
+          'Полное обновление README.md: badges, demo link, stack table, screenshots, env vars table, pnpm scripts.\n\ndocs/api.md или секция в architecture — endpoints list. Setup script или Makefile: docker up, migrate, seed, dev.\n\nПроверка: clone fresh → follow README → app runs.',
+      },
+      {
+        label: 'День 5 — Performance audit + optimizations',
+        description:
+          'Lighthouse на /, /tasks, /projects — fix top issues.\n\npnpm nuxt analyze — lazy import admin charts, heavy modals. Prisma: add indexes on userId, workspaceId, projectId; fix N+1 with include.\n\nReview Nitro cache keys — no cross-user leakage.',
+      },
+      {
+        label: 'День 6 — Security review + regression',
+        description:
+          'Пройди security checklist: AUTH_SECRET server-only, upload limits, workspace isolation, admin RBAC, Stripe webhook verify.\n\nRegression: register → workspace → project → tasks → SSE → billing → admin. Fix critical bugs.\n\nОпц.: rate limit /api/auth/* in middleware.',
+      },
+      {
+        label: 'День 7 — Production deploy + reflection',
+        description:
+          'Production deploy; smoke: health, login, CRUD, billing webhook test.\n\nОбнови .planning/PROJECT.md — reflection, next steps. Final commit week-12: final polish, ci/cd, documentation.\n\nCelebrate: fullstack Nuxt 4 case study ready for portfolio/demo.',
+      },
+    ]),
+    doneWhen: doneWhen(12, [
+      'UX polish + a11y fixes на основных страницах',
+      'error.vue + empty states + toast feedback',
+      '.github/workflows/ci.yml — lint, typecheck, build, test green',
+      'README: demo, stack, screenshots, setup instructions',
+      'Lighthouse performance/a11y — хорошие показатели',
+      'Security checklist пройден; regression test OK',
+      'Production deploy live; CI зелёный',
+      'Можешь объяснить путь: кнопка → API → БД → UI',
+    ]),
   },
 ]
 

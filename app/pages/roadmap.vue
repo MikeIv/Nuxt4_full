@@ -61,6 +61,17 @@ const activeWeekHasDays = computed(() =>
           снятие галочки сохраняется локально в браузере.
         </p>
 
+        <aside :class="$style.memo" aria-label="Памятка: обновление roadmap">
+          <p :class="$style.memoText">
+            <strong :class="$style.memoLabel">Обновление плана.</strong>
+            Источник —
+            <code :class="$style.code">scripts/roadmap-weeks.json</code>, затем
+            <code :class="$style.code">pnpm roadmap:sync</code>
+            (UI и docs). После правок TS —
+            <code :class="$style.code">pnpm roadmap:export-json</code>.
+          </p>
+        </aside>
+
         <div :class="$style.stats">
           <div :class="$style.stat">
             <span :class="$style.statLabel">Пункты</span>
@@ -176,6 +187,35 @@ const activeWeekHasDays = computed(() =>
   margin: var(--fs-margin-title-subtitle-block) 0 0;
   color: var(--fs-color-text-muted);
   @include typo.fs-text-h5-subtitle;
+}
+
+.memo {
+  max-width: fn.rem(720);
+  margin: var(--fs-space-2) 0 0;
+  padding: var(--fs-space-2) var(--fs-space-3);
+  border: 1px solid rgb(23 53 87 / 0.12);
+  border-radius: var(--fs-radius-md);
+  background: rgb(23 53 87 / 0.04);
+}
+
+.memoLabel {
+  color: var(--fs-color-primary-strong);
+  font-weight: 600;
+}
+
+.memoText {
+  margin: 0;
+  color: var(--fs-color-text-muted);
+  @include typo.fs-text-body;
+}
+
+.code {
+  padding: fn.rem(1) fn.rem(5);
+  border-radius: var(--fs-radius-sm);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--fs-color-primary-strong);
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+  font-size: 0.9em;
 }
 
 .stats {

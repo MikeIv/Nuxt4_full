@@ -18,6 +18,8 @@ logs
 .DS_Store
 .fleet
 .idea
+__pycache__/
+*.py[cod]
 
 # Legacy / export (не используем в этом проекте)
 .cursorrules

@@ -13,7 +13,11 @@ alwaysApply: true
 
 ```bash
 pnpm dev | typecheck | verify | build | lint:all
+pnpm roadmap:sync          # scripts/roadmap-weeks.json → TS + docs (нед. 1–12)
+pnpm roadmap:export-json   # TS → JSON (после ручных правок roadmapWeeks.ts)
 ```
+
+**Roadmap нед. 1–12:** единый источник — `scripts/roadmap-weeks.json`. UI: `shared/constants/roadmapWeeks.ts`; план: `docs/roadmap-12-weeks.md`. Генератор: `scripts/generate-roadmap-weeks.py`.
 
 ## Эталоны (читать, не искать)
 

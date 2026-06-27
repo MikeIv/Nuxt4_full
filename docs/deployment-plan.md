@@ -3,7 +3,7 @@
 Проект создан из шаблона `d:\_WEB\_Work\_NUXT4_Template\`.
 Remote: https://github.com/MikeIv/Nuxt4_full.git
 
-**Done when:** ~~проект развёрнут локально, связан с remote, `dev` / `build` / `lint:all` проходят~~ **выполнено.** Следующий шаг: [неделя 1](roadmap-12-weeks.md#неделя-1--nitro-и-первый-backend).
+**Done when:** ~~проект развёрнут локально, связан с remote, `dev` / `build` / `lint:all` проходят~~ **выполнено.** Следующий шаг: [неделя 1](roadmap-12-weeks.md#неделя-1--основы-nitro--prisma--tasks-ui).
 
 ---
 
