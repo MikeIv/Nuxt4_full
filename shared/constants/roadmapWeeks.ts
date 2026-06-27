@@ -577,7 +577,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 5,
     title: 'Error Handling + API + Zod',
-    theme: 'День 1 ✓ — response + apiHandler; день 2: Zod + validation',
+    theme: 'День 1–2 ✓ — response, apiHandler, Zod + validation; день 3: tasks API',
     goal: 'Единый стиль API: { data, success, error? }, apiHandler, Zod для tasks, глобальный errorHandler, адаптация useApi. ~7 дней.',
     theory: theorySteps([
       {
@@ -635,14 +635,14 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'pnpm dev стартует; checkpoint: есть apiHandler, ответы идут через response utils.',
       },
       {
-        label: 'День 2 — Шаг 1: Zod + схемы tasks',
+        label: '✅ День 2 — Шаг 1: Zod + схемы tasks',
         what: 'CreateTaskSchema, UpdateTaskSchema (+ опц. query). Типы через z.infer.',
         where: 'shared/validations/task.ts (или shared/validations/tasks.ts).',
         how: 'pnpm add zod (если ещё нет). title min(1), description optional, completed boolean optional.',
         verify: 'typecheck: export type CreateTaskInput = z.infer<typeof CreateTaskSchema>.',
       },
       {
-        label: 'День 2 — Шаг 2: server/utils/validation.ts',
+        label: '✅ День 2 — Шаг 2: server/utils/validation.ts',
         what: 'validateBody, validateQuery — parse + createError 400 с Zod issues.',
         where: 'server/utils/validation.ts.',
         how: 'schema.safeParse(body) → throw createError({ statusCode: 400, data: { issues } }) при fail.',
@@ -688,7 +688,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     ]),
     doneWhen: doneWhen(5, [
       'apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
-      'CreateTaskSchema / UpdateTaskSchema + validateBody',
+      '✅ CreateTaskSchema / UpdateTaskSchema + validateBody',
       'GET/POST/PATCH/DELETE /api/tasks — { data, success, error? }',
       'useApi разворачивает success и бросает на error',
       'nitro.errorHandler — необработанные ошибки в едином формате',

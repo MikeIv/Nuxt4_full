@@ -8,17 +8,7 @@ export interface Task {
   updatedAt: string | Date
 }
 
-export interface CreateTaskInput {
-  title: string
-  description?: string
-  completed?: boolean
-}
-
-export interface UpdateTaskInput {
-  title?: string
-  description?: string
-  completed?: boolean
-}
+export type { CreateTaskInput, UpdateTaskInput, TaskQueryInput } from '../validations/task'
 
 export interface TaskResponse extends Omit<Task, 'createdAt' | 'updatedAt'> {
   createdAt: string

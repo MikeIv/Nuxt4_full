@@ -1,20 +1,14 @@
-type EchoBody = {
-  message?: string
-}
+import { CreateTaskSchema } from '#shared/validations/task'
 
-/** Учебный route нед. 5 день 1 — проверка apiHandler + unified JSON. Публичный (см. auth middleware). */
+import { apiHandler } from '../utils/apiHandler'
+import { validateBody } from '../utils/validation'
+
+/** Учебный route нед. 5 день 2 — apiHandler + validateBody + CreateTaskSchema. Публичный (auth middleware). */
 export default apiHandler(async (event) => {
-  const body = await readBody<EchoBody>(event)
-
-  if (!body?.message) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'message is required',
-    })
-  }
+  const body = await validateBody(event, CreateTaskSchema)
 
   return {
-    echo: body.message,
+    echo: body,
     receivedAt: new Date().toISOString(),
   }
 })
