@@ -1,23 +1,18 @@
-import type { Task, UpdateTaskInput } from '#shared/types/task'
-import { requireBody } from '../../utils/requestBody'
+import { UpdateTaskSchema } from '#shared/validations/task'
 
-export default defineEventHandler(async (event): Promise<{ data: Task | null }> => {
+export default apiHandler(async (event) => {
   const { id } = getRouterParams(event)
 
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'ID is required' })
   }
 
-  const body = await requireBody<UpdateTaskInput>(event)
-  const userId = requireAuthUser(event).id
-  const task = await updateTask(id, body, userId)
+  const body = await validateBody(event, UpdateTaskSchema)
+  const task = await updateTask(id, body, requireAuthUser(event).id)
 
   if (!task) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Task not found',
-    })
+    throw createError({ statusCode: 404, statusMessage: 'Task not found' })
   }
 
-  return { data: task }
+  return task
 })

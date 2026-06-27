@@ -577,7 +577,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 5,
     title: 'Error Handling + API + Zod',
-    theme: 'День 1–3 ✓ — apiHandler, Zod, GET/POST tasks; день 4: [id] routes',
+    theme: 'День 1–4 ✓ — tasks CRUD на apiHandler; день 5: useApi',
     goal: 'Единый стиль API: { data, success, error? }, apiHandler, Zod для tasks, глобальный errorHandler, адаптация useApi. ~7 дней.',
     theory: theorySteps([
       {
@@ -657,7 +657,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
           'Checkpoint: GET/POST с сессией — { success: true, data }; POST invalid body → 400.',
       },
       {
-        label: 'День 4 — PATCH, DELETE, GET [id] + owner checks',
+        label: '✅ День 4 — PATCH, DELETE, GET [id] + owner checks',
         what: 'Остальные tasks routes в едином стиле; owner/RBAC без регрессий.',
         where: 'server/api/tasks/[id].get.ts, [id].patch.ts, [id].delete.ts.',
         how: 'apiHandler + validateBody на PATCH; 404 чужой задачи; DELETE — владелец или ADMIN.',
@@ -689,7 +689,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     doneWhen: doneWhen(5, [
       'apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
       '✅ CreateTaskSchema / UpdateTaskSchema + validateBody',
-      '✅ GET/POST /api/tasks — { data, success, error? }',
+      '✅ GET/POST/PATCH/DELETE /api/tasks — { data, success, error? }',
       'useApi разворачивает success и бросает на error',
       'nitro.errorHandler — необработанные ошибки в едином формате',
       'pnpm lint:all, typecheck, build — чисто',
