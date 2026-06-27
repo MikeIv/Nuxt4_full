@@ -44,7 +44,7 @@
 ### Явное разделение с нед. 5+
 
 На нед. 2 — минимальный Zod + `createError`.
-**`apiHandler.ts` и unified API** — [неделя 5](roadmap-12-weeks.md#недели-5-12-коротко-с-акцентом-на-cj). **Auth (Better Auth + RBAC)** — [неделя 4](roadmap-12-weeks.md#неделя-4--better-auth--rbac--protected-routes-старт-сегодня) (обновлено 2026-06-10).
+**`apiHandler.ts` и unified API** — [неделя 5](roadmap-12-weeks.md#недели-5-12-коротко-с-акцентом-на-cj). **Auth (Better Auth + RBAC)** — [неделя 4](roadmap-12-weeks.md#неделя-4--better-auth--rbac--protected-routes) (✓).
 
 ### curl-чеклист (день 6)
 

@@ -129,8 +129,8 @@ git config --get core.hooksPath   # → .husky/_
 - [x] `origin` → `MikeIv/Nuxt4_full`, push выполнен
 - [x] `pnpm dev` / `build` / `lint:all` — OK
 - [x] Документация в `docs/` на месте
-- [x] В `.planning/PROJECT.md` указана **текущая неделя** (старт: неделя 1)
-- [x] Следующие шаги: Docker + Prisma (неделя 3) — не делать раньше времени
+- [x] В `.planning/PROJECT.md` указана **текущая неделя** (актуально: неделя 6; см. `.planning/state.md`)
+- [x] Следующие шаги: Projects + пагинация (неделя 6)
 
 ---
 
@@ -138,9 +138,9 @@ git config --get core.hooksPath   # → .husky/_
 
 1. **Стек:** Nuxt 4 + Nitro + Prisma + PostgreSQL.
 2. **API:** собственные `server/api/*`; `NUXT_PUBLIC_API_BASE` пустой → same-origin.
-3. **Auth (неделя 4):** **Better Auth** + Prisma; session-based, plugins (email/OAuth позже).
+3. **Auth (неделя 4 ✓):** **Better Auth** + Prisma; session-based, plugins (email/OAuth позже).
 4. **ORM:** Prisma.
-5. **Валидация:** Zod для auth — нед. 4; tasks/API — нед. 6.
+5. **Валидация:** Zod — tasks API (нед. 5 ✓); query/Projects — нед. 6+.
 6. **Клиент:** только `useApi` / `useApiFetch`, не сырой `fetch` в компонентах.
 
 ---

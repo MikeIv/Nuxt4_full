@@ -5,7 +5,7 @@
 
 **Главный продукт**: мини-SaaS «Task Board» (задачи, проекты, workspaces, роли, Stripe).
 
-**Темп**: 7–10 ч/неделю. Сегодня старт **Недели 4**.
+**Темп**: 7–10 ч/неделю. **Текущая неделя: 6** (недели 1–5 ✓).
 
 ---
 
@@ -19,7 +19,7 @@
 **Правила проекта:**
 
 - API на клиенте — только `useApi` / `useApiFetch`.
-- Server routes — `server/api/`; auth — [неделя 4](#неделя-4--better-auth--rbac--protected-routes); Zod + unified API — [неделя 5](#неделя-5--error-handling--api--zod).
+- Server routes — `server/api/`; auth — [неделя 4](#неделя-4--better-auth--rbac--protected-routes) ✓; Zod + unified API — [неделя 5](#неделя-5--error-handling--api--zod) ✓.
 - Минимальный diff.
 
 **Структура папок:** [architecture.md](architecture.md) — зачем `shared/`, куда класть handlers/utils/plugins, слои типов.
@@ -31,9 +31,9 @@
 | Нед | Тема                             | Ключевой результат                        |
 | --- | -------------------------------- | ----------------------------------------- |
 | 1–3 | ✅ Nitro + Prisma + Tasks UI     | Health, CRUD Tasks, useTasks + optimistic |
-| 4   | **Better Auth** + Protected UI   | Полная auth, RBAC, protected routes       |
-| 5   | Error Handling + API + Zod       | Unified responses, валидация              |
-| 6   | Advanced CRUD + Projects         | Relations, пагинация, filters             |
+| 4   | ✅ Better Auth + Protected UI    | Полная auth, RBAC, protected routes       |
+| 5   | ✅ Error Handling + API + Zod    | Unified responses, валидация              |
+| 6   | **Advanced CRUD + Projects**     | Relations, пагинация, filters             |
 | 7   | Testing + File Uploads           | Vitest, avatars                           |
 | 8   | Logging, Cache, Deploy           | Production-ready                          |
 | 9   | Admin Dashboard                  | Nuxt UI tables + admin                    |
@@ -43,7 +43,7 @@
 
 ---
 
-## Неделя 4 — Better Auth + RBAC + Protected Routes (старт сегодня)
+## Неделя 4 — Better Auth + RBAC + Protected Routes ✅
 
 **Цель**: Современная, production-ready авторизация с минимальным boilerplate (как в CJ).
 
@@ -148,7 +148,7 @@
 
 ---
 
-## Неделя 5 — Error Handling + API + Zod
+## Неделя 5 — Error Handling + API + Zod ✅
 
 **Цель недели:** единый контракт `{ data, success, error? }`, `apiHandler`, Zod-валидация tasks, адаптация `useApi`, глобальный `nitro.errorHandler`.
 

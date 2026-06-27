@@ -7,7 +7,7 @@ alwaysApply: true
 
 **Пакет:** `nuxt4-full` · **Remote:** GitHub `MikeIv/Nuxt4_full` · **SSR:** по умолчанию.
 
-**Фаза:** нед. 4 — Better Auth + RBAC. Детали: `.planning/PROJECT.md`, `docs/architecture.md`, `docs/roadmap-12-weeks.md`.
+**Фаза:** нед. 6 — Advanced CRUD + Projects (нед. 1–5 ✓). Детали: `.planning/PROJECT.md`, `.planning/state.md`, `docs/architecture.md`, `docs/roadmap-12-weeks.md`.
 
 ## Команды
 
@@ -22,7 +22,8 @@ pnpm dev | typecheck | verify | build | lint:all
 | Thin handler    | `server/api/health.get.ts` → `server/utils/health.ts` |
 | API client      | `app/composables/useApi.ts`                           |
 | CRUD composable | `app/composables/useTasks.ts`                         |
-| API response    | `server/utils/apiResponse.ts`                         |
+| API response    | `server/utils/response.ts` + `server/utils/apiHandler.ts` |
+| Zod validation  | `shared/validations/`, `server/utils/validation.ts`       |
 | Типы API        | `shared/types/`                                       |
 
 Стек и код-стиль — `nuxt-template.mdc` (при правках `app/`, `server/`, `shared/`).
