@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { tryParseEnv } from '#shared/utils/tryParseEnv'
+
 /** Zod-схема env. Валидация — lazy через getEnv() (не при import / nuxt prepare). */
 export const envSchema = z.object({
   DATABASE_URL: z.string().url(),
@@ -27,14 +29,6 @@ export function getEnv(): Env {
     return cachedEnv
   }
 
-  const parsed = envSchema.safeParse(process.env)
-
-  if (!parsed.success) {
-    console.error('❌ Ошибка валидации .env:')
-    console.dir(parsed.error.format(), { depth: null })
-    throw new Error('Invalid environment variables. Check .env file.')
-  }
-
-  cachedEnv = parsed.data
+  cachedEnv = tryParseEnv(envSchema)
   return cachedEnv
 }
