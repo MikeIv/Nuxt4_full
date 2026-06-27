@@ -699,17 +699,192 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 6,
     title: 'Advanced CRUD + Projects',
-    theme: 'Relations, пагинация, filters, optimistic',
-    goal: 'Projects + relations, пагинация, filters, optimistic updates (CJ-style).',
-    theory: theoryItems('Zod на границе API', 'Пагинация и фильтры в query'),
-    practice: practice(6, [
-      'readValidatedBody / переиспользовать server/utils/validation.ts (нед. 5)',
-      'Zod query-схемы: page, limit, q (фильтры)',
-      'Пагинация ?page=&limit=&q=',
-      'Модель Project, relation с Task',
-      '/projects, /projects/[id]',
+    theme: 'Relations, Pagination, Filters, Optimistic',
+    goal: 'Перейти от простых задач к полноценной модели Projects с отношениями: CRUD проектов и задач внутри проекта, пагинация, фильтры и optimistic updates на клиенте. ~7 дней.',
+    theory: theorySteps([
+      {
+        topic: 'День 1 — Prisma Relations + Schema (30–60 мин)',
+        description:
+          'One-to-many / many-to-one: @relation, onDelete: Cascade. include / select для nested data. Cursor-based vs offset pagination. Naming conventions для relations (Project.tasks, Task.project).',
+      },
+      {
+        topic: 'День 2 — Server Utils + Owner Checks',
+        description:
+          'Расширение server/utils/ для новых сущностей по образцу tasks.ts. Owner checks на уровне проекта (requireProjectOwner). Nested queries в Prisma — getProjectWithTasks.',
+      },
+      {
+        topic: 'День 3 — Пагинация + Filters (Server)',
+        description:
+          'Cursor-based pagination (лучше для infinite scroll) vs offset. Filtering + searching. Prisma take, skip, cursor, where. Расширение TaskQuerySchema / ProjectQuerySchema.',
+      },
+      {
+        topic: 'День 4 — Composables (useProjects, useTasks)',
+        description:
+          'Reactivity в Nuxt (ref, computed). Optimistic updates — обновить UI до ответа сервера. Error handling в composables. projectId в useTasks; загрузка задач внутри проекта.',
+      },
+      {
+        topic: 'День 5 — UI + Nested Routes',
+        description:
+          'Nested routes: /projects, /projects/[id]. State через composables (не Pinia). Loading + error states. Nuxt UI: Table, Card. Sidebar или tabs для переключения проектов.',
+      },
+      {
+        topic: 'День 6 — Optimistic Updates + Refactor',
+        description:
+          'useMutation-стиль вручную (без TanStack Query): optimistic create/update/delete, rollback при ошибке, invalidate / re-fetch. Вынести общую логику между useTasks и useProjects.',
+      },
+      {
+        topic: 'День 7 — Smoke-test + Docs',
+        description:
+          'Полный flow: register → create project → create tasks → filters. pnpm lint:all && typecheck && build. Обновить architecture.md и roadmap.',
+      },
     ]),
-    doneWhen: doneWhen(6, ['Invalid body → 400 с issues', 'Пагинация на 20+ seed']),
+    practice: practiceSteps(6, [
+      {
+        label: 'День 1 — Шаг 1: Модель Project в schema.prisma',
+        what: 'Project + projectId в Task; связи User → Projects, Project → Tasks.',
+        where: 'prisma/schema.prisma.',
+        how: 'model Project { id, name, description?, userId, user, tasks, createdAt, updatedAt }. Task: projectId? + relation onDelete SetNull или Cascade — по решению.',
+        verify: 'schema.prisma валиден; связи User ↔ Project ↔ Task согласованы.',
+      },
+      {
+        label: 'День 1 — Шаг 2: Миграция + generate + Studio',
+        what: 'Применить схему; проверить relations в Prisma Studio.',
+        where: 'prisma/migrations/, терминал.',
+        how: 'pnpm prisma migrate dev --name add_projects && pnpm prisma generate. pnpm prisma studio.',
+        verify: 'Checkpoint: в Studio видны Project и Tasks с relations.',
+      },
+      {
+        label: 'День 1 — Шаг 3: shared/types + validations для Project',
+        what: 'Типы и Zod-схемы CreateProject / UpdateProject / ProjectQuery.',
+        where: 'shared/types/project.ts, shared/validations/project.ts.',
+        how: 'z.infer для типов; name min(1); опц. description. Обновить task-схемы — projectId optional/required по контракту.',
+        verify: 'typecheck OK; схемы экспортируются из shared/validations/.',
+      },
+      {
+        label: 'День 2 — Шаг 1: server/utils/projects.ts',
+        what: 'getAllProjects, createProject, getProjectWithTasks, updateProject, deleteProject.',
+        where: 'server/utils/projects.ts (аналог tasks.ts).',
+        how: 'Prisma include: { tasks: true } где нужно; фильтр по userId (owner). Thin utils — без HTTP-логики.',
+        verify: 'typecheck OK; функции принимают userId для owner scope.',
+      },
+      {
+        label: 'День 2 — Шаг 2: requireProjectOwner',
+        what: 'Guard: проект принадлежит текущему пользователю.',
+        where: 'server/utils/projects.ts или server/utils/auth.ts.',
+        how: 'findFirst where { id, userId }; 404 если не найден (не раскрывать чужие id).',
+        verify: 'Чужой projectId → 404; свой → данные.',
+      },
+      {
+        label: 'День 2 — Шаг 3: API routes Projects',
+        what: 'GET/POST /api/projects; GET/PATCH/DELETE /api/projects/[id].',
+        where: 'server/api/projects.get.ts, projects.post.ts, projects/[id].*.ts.',
+        how: 'apiHandler + requireAuthUser + validateBody/Query (нед. 5). POST создаёт проект для текущего user.',
+        verify: 'Checkpoint: CRUD Projects через curl/браузер с сессией.',
+      },
+      {
+        label: 'День 2 — Шаг 4: tasks.ts — привязка к проекту',
+        what: 'createTask / getAllTasks учитывают projectId; owner check через project.',
+        where: 'server/utils/tasks.ts, server/api/tasks.*.',
+        how: 'При create — validate projectId через requireProjectOwner. GET tasks фильтр ?projectId=.',
+        verify:
+          'Checkpoint: задачи создаются внутри проекта; без projectId — по старому контракту или 400.',
+      },
+      {
+        label: 'День 3 — Шаг 1: Query-схемы пагинации и фильтров',
+        what: 'TaskQuerySchema, ProjectQuerySchema: page, limit, cursor, search, status.',
+        where: 'shared/validations/task.ts, shared/validations/project.ts.',
+        how: 'z.coerce.number для page/limit; cursor optional string; search optional; status enum для tasks.',
+        verify: 'Invalid query → 400 с issues через validateQuery.',
+      },
+      {
+        label: 'День 3 — Шаг 2: Пагинация в getAllTasks / getAllProjects',
+        what: 'Offset (page+limit) и/или cursor-based; meta: total, nextCursor.',
+        where: 'server/utils/tasks.ts, server/utils/projects.ts.',
+        how: 'Prisma take/skip или cursor: { id }. where для search (contains) и status. Вернуть { items, meta }.',
+        verify:
+          'GET /api/tasks?limit=10&page=1 — ≤10 items + meta. cursor= работает для следующей страницы.',
+      },
+      {
+        label: 'День 3 — Шаг 3: Обновить GET-роуты',
+        what: 'Прокинуть query-параметры в utils.',
+        where: 'server/api/tasks.get.ts, server/api/projects.get.ts.',
+        how: 'validateQuery(TaskQuerySchema); return successResponse(result).',
+        verify: 'Checkpoint: ?limit=10&search=foo&status=active — фильтры работают.',
+      },
+      {
+        label: 'День 4 — Шаг 1: app/composables/useProjects.ts',
+        what: 'fetchProjects, createProject, updateProject, deleteProject, currentProject.',
+        where: 'app/composables/useProjects.ts.',
+        how: 'useApi / useApiFetch; ref для списка и loading/error; projectId через route или ref.',
+        verify: 'Composable экспортирует reactive state; typecheck OK.',
+      },
+      {
+        label: 'День 4 — Шаг 2: useTasks — projectId + базовый optimistic',
+        what: 'Фильтр задач по projectId; optimistic create/delete (простой вариант).',
+        where: 'app/composables/useTasks.ts.',
+        how: 'watch projectId → refetch. createTask: добавить в список до ответа; delete: убрать сразу; rollback в catch.',
+        verify: 'Checkpoint: на клиенте можно переключать проект и видеть его задачи.',
+      },
+      {
+        label: 'День 5 — Шаг 1: Страница /projects',
+        what: 'Список проектов, создание, переход в проект.',
+        where: 'app/pages/projects/index.vue.',
+        how: 'useProjects(); Nuxt UI Card/Table; loading, empty, error states; auth middleware.',
+        verify: 'Создание проекта → появляется в списке; клик → /projects/[id].',
+      },
+      {
+        label: 'День 5 — Шаг 2: Страница /projects/[id]',
+        what: 'Задачи внутри проекта + CRUD tasks.',
+        where: 'app/pages/projects/[id].vue.',
+        how: 'useProjects + useTasks(projectId); sidebar/tabs для других проектов. Обновить /tasks — опц. redirect или global view.',
+        verify: 'Checkpoint: пользователь создаёт проект и управляет задачами внутри него.',
+      },
+      {
+        label: 'День 5 — Шаг 3 (опц.): Drag & drop между проектами',
+        what: 'Перенос задачи в другой project через PATCH projectId.',
+        where: 'projects/[id].vue + useTasks.moveTask.',
+        how: 'HTML5 DnD или @vueuse/core useDraggable; PATCH с новым projectId.',
+        verify: 'Задача меняет проект в UI и в БД (если успел).',
+      },
+      {
+        label: 'День 6 — Шаг 1: Optimistic create/update/delete',
+        what: 'Полный цикл: UI → rollback → re-fetch при ошибке.',
+        where: 'useTasks.ts, useProjects.ts.',
+        how: 'Snapshot списка перед мутацией; restore в catch; invalidate() после успеха. updateTask — optimistic toggle/edit.',
+        verify: 'Checkpoint: UI обновляется мгновенно; при ошибке — откат к snapshot.',
+      },
+      {
+        label: 'День 6 — Шаг 2: Рефакторинг общей логики',
+        what: 'Вынести duplicate: optimisticListMutation, invalidate helpers.',
+        where: 'app/composables/ (опц. useOptimisticList.ts).',
+        how: 'Общий helper для add/remove/update с rollback; без over-engineering.',
+        verify: 'useTasks и useProjects используют общий паттерн; lint чистый.',
+      },
+      {
+        label: 'День 6 — Шаг 3: docs/architecture.md — relations',
+        what: 'Секция Projects, relations, pagination, optimistic flow.',
+        where: 'docs/architecture.md.',
+        how: 'Диаграмма User → Project → Task; query params; composable → API → utils → prisma.',
+        verify: 'architecture.md описывает нед. 6 без пробелов.',
+      },
+      {
+        label: 'День 7 — Smoke-test + verify + commit',
+        what: 'register → project → tasks → filters → optimistic; lint, typecheck, build.',
+        where: 'браузер, терминал, docs/.',
+        how: 'pnpm lint:all && pnpm typecheck && pnpm build. Обновить roadmap-12-weeks.md (✅ нед. 6), .planning/state.md. Коммит: feat(week-6): Advanced CRUD + Projects…',
+        verify: 'Checkpoint: verify + build чисто; smoke-test пройден; коммит недели.',
+      },
+    ]),
+    doneWhen: doneWhen(6, [
+      'Модель Project + relation Task ↔ Project; миграция применена',
+      'CRUD Projects + задачи внутри проекта (API + owner checks)',
+      'GET /api/tasks?limit=10&cursor=… и фильтры (search, status) работают',
+      'useProjects + useTasks с projectId на клиенте',
+      'Страницы /projects и /projects/[id]; управление задачами в проекте',
+      'Optimistic create/update/delete с rollback при ошибке',
+      'pnpm lint:all, typecheck, build — чисто',
+      'docs/architecture.md обновлён (relations, pagination, optimistic)',
+    ]),
   },
   {
     id: 7,

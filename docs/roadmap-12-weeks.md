@@ -219,11 +219,134 @@
 
 ---
 
-## Недели 5–12 (коротко, с акцентом на CJ)
+## Неделя 6 — Advanced CRUD + Projects (Relations, Pagination, Filters)
+
+**Цель недели:** перейти от простых задач к полноценной модели Projects с отношениями; CRUD проектов и задач внутри проекта; пагинация, фильтры и optimistic updates на клиенте.
+
+**Ключевые результаты:**
+
+- Модель Project + отношение Task ↔ Project
+- Полноценный CRUD Projects + Tasks внутри проекта
+- Пагинация + базовые фильтры
+- Optimistic updates в `useTasks` / `useProjects`
+- Обновлённая архитектура (relations handling)
+
+| День | Checkpoint                                                        |
+| ---- | ----------------------------------------------------------------- |
+| 1    | Prisma schema: Project, projectId, миграция, types/validations    |
+| 2    | `server/utils/projects.ts`, API routes, tasks привязаны к проекту |
+| 3    | Пагинация + filters в GET `/api/tasks` и `/api/projects`          |
+| 4    | `useProjects`, `useTasks` с projectId и базовым optimistic        |
+| 5    | UI: `/projects`, `/projects/[id]`, sidebar/tabs                   |
+| 6    | Полный optimistic + rollback, refactor, `architecture.md`         |
+| 7    | Smoke-test, verify + build, docs, commit недели                   |
+
+### День 1 — Теория Relations + Prisma Schema
+
+**Теория (30–60 мин):** Prisma relations (one-to-many, many-to-one); `@relation`, `onDelete: Cascade`, `include` / `select`; querying nested data; пагинация (cursor-based vs offset); naming conventions для relations.
+
+**Практика:**
+
+1. Обновить `prisma/schema.prisma`: модель `Project`, `projectId` в `Task`; связи User → Projects, Project → Tasks.
+2. `pnpm prisma migrate dev --name add_projects` → `pnpm prisma generate`.
+3. Проверить в Prisma Studio.
+4. Обновить `shared/types/` и `shared/validations/` (схемы для Project).
+
+**Done when (день 1):** миграция прошла; в Studio видны Project и Tasks с relations.
+
+### День 2 — Server Utils + CRUD Projects
+
+**Теория:** расширение `server/utils/` для новых сущностей; owner checks на уровне проекта; nested queries в Prisma.
+
+**Практика:**
+
+1. `server/utils/projects.ts` — `getAllProjects`, `createProject`, `getProjectWithTasks` (аналог `tasks.ts`).
+2. Routes: `server/api/projects.get.ts`, `server/api/projects.post.ts` (+ `[id]` по необходимости).
+3. Обновить `tasks.ts` — задачи привязываются к проекту.
+4. Owner checks: `requireProjectOwner`.
+
+**Done when (день 2):** CRUD Projects работает; задачи можно создавать внутри проекта.
+
+### День 3 — Пагинация + Filters (Server)
+
+**Теория:** cursor-based vs offset pagination; filtering + searching; Prisma `take`, `skip`, `cursor`, `where`.
+
+**Практика:**
+
+1. Расширить `TaskQuerySchema` и `ProjectQuerySchema`.
+2. Пагинация в `getAllTasks` / `getAllProjects`.
+3. Query-параметры: `page`, `limit`, `cursor`, `search`, `status`.
+4. Обновить соответствующие GET-роуты.
+
+**Done when (день 3):** `GET /api/tasks?limit=10&cursor=...` и фильтры работают.
+
+### День 4 — Client-side Composables (useProjects, useTasks)
+
+**Теория:** reactivity в Nuxt (`ref`, `computed`); optimistic updates (UI до ответа сервера); error handling в composables.
+
+**Практика:**
+
+1. `app/composables/useProjects.ts`.
+2. Обновить `useTasks.ts` — `projectId`, optimistic create/delete.
+3. Загрузка задач внутри проекта.
+
+**Done when (день 4):** на клиенте можно создавать/переключать проекты и видеть задачи.
+
+### День 5 — UI + Pages (Projects + Tasks)
+
+**Теория:** nested routes (`projects/[id]/tasks`); state через composables; loading + error states.
+
+**Практика:**
+
+1. Страницы: `/projects`, `/projects/[id]`; обновить `/tasks`.
+2. Sidebar или tabs для переключения проектов.
+3. Nuxt UI (Table, Card и т.д.).
+4. _(Опц.)_ Drag & drop задач между проектами.
+
+**Done when (день 5):** пользователь может создавать проекты и управлять задачами внутри них.
+
+### День 6 — Optimistic Updates + Refactor
+
+**Теория:** useMutation-стиль вручную (без TanStack Query); rollback при ошибке; инвалидация кэша (re-fetch).
+
+**Практика:**
+
+1. Optimistic create/update/delete в `useTasks` / `useProjects`.
+2. `invalidate` функции; вынести общую логику.
+3. Обновить `docs/architecture.md`.
+
+**Done when (день 6):** UI обновляется мгновенно; при ошибке — откат.
+
+### День 7 — Testing, Polish + Commit недели
+
+**Практика:**
+
+1. Smoke-test: register → create project → create tasks → filters.
+2. `pnpm lint:all && pnpm typecheck && pnpm build`.
+3. Обновить `docs/architecture.md`, `roadmap-12-weeks.md` (✅), `.planning/state.md`.
+4. Большой коммит:
+
+```bash
+feat(week-6): Advanced CRUD + Projects with relations, pagination and optimistic updates
+```
+
+**Done when (неделя):**
+
+- Project + relations в Prisma; CRUD Projects + tasks in project
+- Пагинация и фильтры на API
+- `useProjects` / `useTasks` с optimistic updates
+- UI `/projects`, `/projects/[id]`
+- verify + build чисто
+
+**Связь с нед. 5:** `apiHandler`, `validateQuery`, unified `{ data, success, error? }` — все новые routes в том же стиле.
+
+---
+
+## Недели 7–12 (коротко, с акцентом на CJ)
 
 **Неделя 5**: см. [детальный план выше](#неделя-5--error-handling--api--zod).
 
-**Неделя 6**: Projects + relations, пагинация, filters, optimistic updates (очень близко к CJ).
+**Неделя 6**: см. [детальный план выше](#неделя-6--advanced-crud--projects-relations-pagination-filters).
 
 **Неделя 7**: Vitest + file uploads (аватары, как в Travel Log).
 
