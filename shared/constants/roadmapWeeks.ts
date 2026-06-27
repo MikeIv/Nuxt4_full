@@ -577,7 +577,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 5,
     title: 'Error Handling + API + Zod',
-    theme: 'День 1–2 ✓ — response, apiHandler, Zod + validation; день 3: tasks API',
+    theme: 'День 1–3 ✓ — apiHandler, Zod, GET/POST tasks; день 4: [id] routes',
     goal: 'Единый стиль API: { data, success, error? }, apiHandler, Zod для tasks, глобальный errorHandler, адаптация useApi. ~7 дней.',
     theory: theorySteps([
       {
@@ -649,7 +649,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
         verify: 'Invalid JSON body → 400 с issues в ответе (через apiHandler на день 3+).',
       },
       {
-        label: 'День 3 — GET и POST /api/tasks',
+        label: '✅ День 3 — GET и POST /api/tasks',
         what: 'Переписать tasks.get.ts и tasks.post.ts на apiHandler + Zod.',
         where: 'server/api/tasks.get.ts, server/api/tasks.post.ts.',
         how: 'export default apiHandler(async (event) => { requireAuthUser; validateBody для POST; return success data из utils }).',
@@ -689,7 +689,7 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
     doneWhen: doneWhen(5, [
       'apiHandler + response.ts — все новые/рефакторенные handlers через обёртку',
       '✅ CreateTaskSchema / UpdateTaskSchema + validateBody',
-      'GET/POST/PATCH/DELETE /api/tasks — { data, success, error? }',
+      '✅ GET/POST /api/tasks — { data, success, error? }',
       'useApi разворачивает success и бросает на error',
       'nitro.errorHandler — необработанные ошибки в едином формате',
       'pnpm lint:all, typecheck, build — чисто',

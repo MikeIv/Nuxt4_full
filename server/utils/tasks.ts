@@ -1,12 +1,20 @@
 import type { AuthUser } from '#nuxt-better-auth'
-import { prisma } from './prisma'
-import type { CreateTaskInput, Task, UpdateTaskInput } from '#shared/types/task'
+import type { CreateTaskInput, Task, TaskQueryInput, UpdateTaskInput } from '#shared/types/task'
 
-export async function getAllTasks(userId: string): Promise<Task[]> {
+import { prisma } from './prisma'
+
+export async function getAllTasks(userId: string, query: TaskQueryInput = {}): Promise<Task[]> {
   const tasks = await prisma.task.findMany({
-    where: { userId },
+    where: {
+      userId,
+      ...(query.completed !== undefined && { completed: query.completed }),
+      ...(query.search && {
+        title: { contains: query.search, mode: 'insensitive' },
+      }),
+    },
     orderBy: { createdAt: 'desc' },
   })
+
   return tasks.map(mapTaskDates)
 }
 
@@ -19,6 +27,7 @@ export async function createTask(data: CreateTaskInput, userId: string): Promise
       userId,
     },
   })
+
   return mapTaskDates(task)
 }
 

@@ -1,8 +1,8 @@
-import type { Task } from '#shared/types/task'
+import { TaskQuerySchema } from '#shared/validations/task'
 
-// Thin handler — logic lives in server/utils/tasks.ts (Prisma only there).
-export default defineEventHandler(async (event): Promise<{ data: Task[] }> => {
-  const userId = requireAuthUser(event).id
-  const tasks = await getAllTasks(userId)
-  return { data: tasks }
+export default apiHandler(async (event) => {
+  const user = await requireAuthUser(event)
+  const query = await validateQuery(event, TaskQuerySchema)
+
+  return getAllTasks(user.id, query)
 })

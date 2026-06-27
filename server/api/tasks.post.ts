@@ -1,18 +1,8 @@
-import type { Task, CreateTaskInput } from '#shared/types/task'
-import { requireBody } from '../utils/requestBody'
+import { CreateTaskSchema } from '#shared/validations/task'
 
-// Thin handler — validation minimal, business logic in server/utils/tasks.ts.
-export default defineEventHandler(async (event): Promise<{ data: Task }> => {
-  const body = await requireBody<CreateTaskInput>(event)
+export default apiHandler(async (event) => {
+  const user = await requireAuthUser(event)
+  const body = await validateBody(event, CreateTaskSchema)
 
-  if (!body.title?.trim()) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title is required',
-    })
-  }
-
-  const userId = requireAuthUser(event).id
-  const task = await createTask(body, userId)
-  return { data: task }
+  return createTask(body, user.id)
 })
