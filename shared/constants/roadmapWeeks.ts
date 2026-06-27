@@ -699,43 +699,43 @@ export const ROADMAP_WEEKS: RoadmapWeek[] = [
   {
     id: 6,
     title: 'Advanced CRUD + Projects',
-    theme: 'Relations, Pagination, Filters, Optimistic',
-    goal: 'Перейти от простых задач к полноценной модели Projects с отношениями: CRUD проектов и задач внутри проекта, пагинация, фильтры и optimistic updates на клиенте. ~7 дней.',
+    theme: 'Relations, Pagination, Filters, Optimistic Updates',
+    goal: 'Перейти от простых задач к реальной многосущностной системе: связи между таблицами, пагинация, фильтры и отзывчивый интерфейс с optimistic updates. ~7 дней.',
     theory: theorySteps([
       {
-        topic: 'День 1 — Prisma Relations + Schema (30–60 мин)',
+        topic: 'День 1 — Теория Relations + Prisma Schema (40–60 мин)',
         description:
-          'One-to-many / many-to-one: @relation, onDelete: Cascade. include / select для nested data. Cursor-based vs offset pagination. Naming conventions для relations (Project.tasks, Task.project).',
+          'В реальных приложениях данные почти всегда связаны: один пользователь владеет несколькими проектами, один проект содержит много задач.\n\n• Виды связей (one-to-many, many-to-one) — как описывать «один ко многим»\n• @relation в Prisma — как ORM понимает связи между таблицами\n• onDelete: Cascade — автоматическое удаление задач при удалении проекта (без «сирот»)\n• include / select — один запрос: проект + все его задачи\n• Пагинация: cursor-based (эффективнее на больших списках) vs offset (проще для page/limit)\n• Naming conventions — projectId, tasks, userId (owner)',
       },
       {
-        topic: 'День 2 — Server Utils + Owner Checks',
+        topic: 'День 2 — Server Utils + CRUD Projects (30–50 мин)',
         description:
-          'Расширение server/utils/ для новых сущностей по образцу tasks.ts. Owner checks на уровне проекта (requireProjectOwner). Nested queries в Prisma — getProjectWithTasks.',
+          'Хорошая архитектура — минимум кода в роутах. Вся бизнес-логика и запросы к БД живут в server/utils/ (эталон: tasks.ts).\n\n• Thin handlers — route только вызывает utils и возвращает unified response\n• Организация server/utils/projects.ts — getAll, create, getById, update, delete\n• Owner checks — пользователь видит и меняет только свои проекты (requireProjectOwner)\n• Nested queries — getProjectWithTasks через Prisma include\n• Привязка Task → Project при create/update задачи',
       },
       {
-        topic: 'День 3 — Пагинация + Filters (Server)',
+        topic: 'День 3 — Пагинация + Filters (Server) (40–60 мин)',
         description:
-          'Cursor-based pagination (лучше для infinite scroll) vs offset. Filtering + searching. Prisma take, skip, cursor, where. Расширение TaskQuerySchema / ProjectQuerySchema.',
+          'Когда данных много, их загружают порциями и фильтруют на сервере — клиент не должен тянуть весь список.\n\n• Cursor-based pagination — стабильнее при добавлении новых записей; nextCursor в meta\n• Offset pagination (page + limit) — проще для таблиц с номерами страниц\n• Фильтры и поиск через Prisma where (contains, equals, in)\n• Комбинирование: пагинация + search + status + projectId\n• Zod query-схемы — валидация ?limit=&cursor=&search= на границе API',
       },
       {
-        topic: 'День 4 — Composables (useProjects, useTasks)',
+        topic: 'День 4 — Client-side Composables (35–50 мин)',
         description:
-          'Reactivity в Nuxt (ref, computed). Optimistic updates — обновить UI до ответа сервера. Error handling в composables. projectId в useTasks; загрузка задач внутри проекта.',
+          'Composables инкапсулируют загрузку данных и состояние — страницы остаются тонкими, логика переиспользуется.\n\n• useProjects() — список проектов, CRUD, loading/error/pending\n• useTasks() — фильтр по projectId, refetch при смене проекта\n• Reactivity: ref, computed, watch(route.params.id)\n• Интеграция с useApi / useApiFetch (unified { data, success })\n• Подготовка к optimistic: snapshot списка перед мутацией',
       },
       {
-        topic: 'День 5 — UI + Nested Routes',
+        topic: 'День 5 — UI + Pages (Projects + Tasks) (40–60 мин)',
         description:
-          'Nested routes: /projects, /projects/[id]. State через composables (не Pinia). Loading + error states. Nuxt UI: Table, Card. Sidebar или tabs для переключения проектов.',
+          'Интерфейс для работы с несколькими проектами: навигация, контекст текущего проекта, задачи внутри него.\n\n• Nested routing — /projects, /projects/[id] (file-based routing Nuxt)\n• Shared layouts и компоненты — sidebar или tabs для переключения проектов\n• UX: loading skeleton, empty state («нет проектов»), error + retry\n• Nuxt UI — Card, Table, Button для списков и форм\n• Опционально: drag & drop задач между проектами (PATCH projectId)',
       },
       {
-        topic: 'День 6 — Optimistic Updates + Refactor',
+        topic: 'День 6 — Optimistic Updates + Refactor (30–50 мин)',
         description:
-          'useMutation-стиль вручную (без TanStack Query): optimistic create/update/delete, rollback при ошибке, invalidate / re-fetch. Вынести общую логику между useTasks и useProjects.',
+          'Optimistic updates — UI обновляется сразу, сервер работает в фоне. При ошибке — откат к snapshot и toast.\n\n• Optimistic create — добавить элемент с temp-id до ответа API\n• Optimistic update/delete — мгновенный toggle, edit, remove\n• Rollback в catch — восстановить предыдущий массив\n• invalidate / refresh — синхронизация с сервером после успеха\n• Общий паттерн для useTasks и useProjects — без TanStack Query, вручную',
       },
       {
-        topic: 'День 7 — Smoke-test + Docs',
+        topic: 'День 7 — Testing, Polish + Commit недели',
         description:
-          'Полный flow: register → create project → create tasks → filters. pnpm lint:all && typecheck && build. Обновить architecture.md и roadmap.',
+          'Закрепление недели: полный пользовательский сценарий, проверки качества, документация.\n\n• Smoke-test: register → create project → create tasks → filters → optimistic toggle\n• pnpm lint:all && pnpm typecheck && pnpm build\n• docs/architecture.md — relations, pagination, optimistic flow\n• roadmap-12-weeks.md (✅ нед. 6), .planning/state.md\n• Коммит: feat(week-6): Advanced CRUD + Projects with relations, pagination and optimistic updates',
       },
     ]),
     practice: practiceSteps(6, [

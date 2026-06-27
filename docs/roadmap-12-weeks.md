@@ -219,17 +219,16 @@
 
 ---
 
-## Неделя 6 — Advanced CRUD + Projects (Relations, Pagination, Filters)
+## Неделя 6 — Advanced CRUD + Projects (Relations, Pagination, Filters, Optimistic Updates)
 
-**Цель недели:** перейти от простых задач к полноценной модели Projects с отношениями; CRUD проектов и задач внутри проекта; пагинация, фильтры и optimistic updates на клиенте.
+**Цель недели:** перейти от простых задач к реальной многосущностной системе. Научиться работать со связями между таблицами, добавлять пагинацию, фильтры и делать интерфейс быстрым и отзывчивым.
 
-**Ключевые результаты:**
+**Ключевые результаты недели:**
 
-- Модель Project + отношение Task ↔ Project
-- Полноценный CRUD Projects + Tasks внутри проекта
-- Пагинация + базовые фильтры
-- Optimistic updates в `useTasks` / `useProjects`
-- Обновлённая архитектура (relations handling)
+- Полноценная модель **Project** с связями с Tasks и User
+- CRUD проектов + задач внутри проекта
+- Пагинация и фильтры
+- Optimistic updates (изменения в UI до ответа сервера)
 
 | День | Checkpoint                                                        |
 | ---- | ----------------------------------------------------------------- |
@@ -243,7 +242,16 @@
 
 ### День 1 — Теория Relations + Prisma Schema
 
-**Теория (30–60 мин):** Prisma relations (one-to-many, many-to-one); `@relation`, `onDelete: Cascade`, `include` / `select`; querying nested data; пагинация (cursor-based vs offset); naming conventions для relations.
+**Теория (40–60 мин):**
+
+В реальных приложениях данные почти всегда связаны. Один пользователь владеет несколькими проектами, один проект содержит много задач.
+
+- **Виды связей** (one-to-many, many-to-one) — как описывать «один ко многим»
+- `@relation` в Prisma — как Prisma понимает связи между таблицами
+- `onDelete: Cascade` — автоматическое удаление задач при удалении проекта (чтобы не оставалось «сирот»)
+- `include` / `select` — как за один запрос вытащить проект + все его задачи
+- Пагинация: cursor-based (современный и эффективный способ) vs offset
+- Naming conventions — правильные названия полей (`projectId`, `tasks`, `userId`)
 
 **Практика:**
 
@@ -252,11 +260,18 @@
 3. Проверить в Prisma Studio.
 4. Обновить `shared/types/` и `shared/validations/` (схемы для Project).
 
-**Done when (день 1):** миграция прошла; в Studio видны Project и Tasks с relations.
+**Done when (день 1):** миграция прошла; в Studio видны связи User → Project → Task.
 
 ### День 2 — Server Utils + CRUD Projects
 
-**Теория:** расширение `server/utils/` для новых сущностей; owner checks на уровне проекта; nested queries в Prisma.
+**Теория (30–50 мин):**
+
+Хорошая архитектура — когда в роутах минимум кода. Вся бизнес-логика и запросы к базе живут в отдельных утилитах.
+
+- Thin handlers — принцип из нед. 1–5
+- Организация `server/utils/projects.ts` (аналог `tasks.ts`)
+- Owner checks — пользователь видит только свои проекты
+- Nested queries — получение проекта вместе с задачами (`include`)
 
 **Практика:**
 
@@ -265,11 +280,19 @@
 3. Обновить `tasks.ts` — задачи привязываются к проекту.
 4. Owner checks: `requireProjectOwner`.
 
-**Done when (день 2):** CRUD Projects работает; задачи можно создавать внутри проекта.
+**Done when (день 2):** можно создавать проекты и работать с ними через API; задачи создаются внутри проекта.
 
 ### День 3 — Пагинация + Filters (Server)
 
-**Теория:** cursor-based vs offset pagination; filtering + searching; Prisma `take`, `skip`, `cursor`, `where`.
+**Теория (40–60 мин):**
+
+Когда данных становится много, их нужно загружать порциями и уметь фильтровать.
+
+- Cursor-based pagination — лучший подход для больших списков и infinite scroll
+- Offset pagination — когда проще (page + limit)
+- Фильтры и поиск через Prisma `where`
+- Комбинирование пагинации, поиска и сортировки
+- Zod query-схемы на границе API
 
 **Практика:**
 
@@ -278,11 +301,18 @@
 3. Query-параметры: `page`, `limit`, `cursor`, `search`, `status`.
 4. Обновить соответствующие GET-роуты.
 
-**Done when (день 3):** `GET /api/tasks?limit=10&cursor=...` и фильтры работают.
+**Done when (день 3):** API поддерживает `limit`, `cursor`, `search`, `status`.
 
 ### День 4 — Client-side Composables (useProjects, useTasks)
 
-**Теория:** reactivity в Nuxt (`ref`, `computed`); optimistic updates (UI до ответа сервера); error handling в composables.
+**Теория (35–50 мин):**
+
+На клиенте удобно работать через composables — функции, которые инкапсулируют загрузку данных и состояние.
+
+- Создание `useProjects()` и улучшение `useTasks()`
+- Reactivity в Nuxt (`ref`, `computed`, `watch`)
+- Интеграция с `useApi` / unified API
+- Подготовка к мгновенным обновлениям интерфейса (snapshot перед мутацией)
 
 **Практика:**
 
@@ -290,11 +320,18 @@
 2. Обновить `useTasks.ts` — `projectId`, optimistic create/delete.
 3. Загрузка задач внутри проекта.
 
-**Done when (день 4):** на клиенте можно создавать/переключать проекты и видеть задачи.
+**Done when (день 4):** composables готовы; на клиенте можно переключать проекты и видеть задачи.
 
 ### День 5 — UI + Pages (Projects + Tasks)
 
-**Теория:** nested routes (`projects/[id]/tasks`); state через composables; loading + error states.
+**Теория (40–60 мин):**
+
+Как удобно организовать интерфейс работы с несколькими проектами.
+
+- Nested routing — `/projects/[id]`
+- Shared layouts и компоненты
+- UX: переключение проектов, отображение задач, loading / empty / error
+- Nuxt UI — Table, Card для списков и форм
 
 **Практика:**
 
@@ -303,11 +340,18 @@
 3. Nuxt UI (Table, Card и т.д.).
 4. _(Опц.)_ Drag & drop задач между проектами.
 
-**Done when (день 5):** пользователь может создавать проекты и управлять задачами внутри них.
+**Done when (день 5):** пользователь может свободно работать с проектами и задачами.
 
 ### День 6 — Optimistic Updates + Refactor
 
-**Теория:** useMutation-стиль вручную (без TanStack Query); rollback при ошибке; инвалидация кэша (re-fetch).
+**Теория (30–50 мин):**
+
+Optimistic updates — интерфейс обновляется сразу, сервер работает в фоне. Если ошибка — откат изменений.
+
+- Optimistic create / update / delete
+- Rollback при ошибке (восстановление snapshot)
+- invalidate / re-fetch после успеха
+- Общий рефакторинг паттерна в `useTasks` и `useProjects`
 
 **Практика:**
 
@@ -315,13 +359,13 @@
 2. `invalidate` функции; вынести общую логику.
 3. Обновить `docs/architecture.md`.
 
-**Done when (день 6):** UI обновляется мгновенно; при ошибке — откат.
+**Done when (день 6):** UI реагирует мгновенно и gracefully обрабатывает ошибки.
 
 ### День 7 — Testing, Polish + Commit недели
 
 **Практика:**
 
-1. Smoke-test: register → create project → create tasks → filters.
+1. Smoke-test: register → create project → create tasks → filters → optimistic.
 2. `pnpm lint:all && pnpm typecheck && pnpm build`.
 3. Обновить `docs/architecture.md`, `roadmap-12-weeks.md` (✅), `.planning/state.md`.
 4. Большой коммит:
