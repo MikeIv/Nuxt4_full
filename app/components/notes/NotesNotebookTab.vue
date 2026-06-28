@@ -32,6 +32,8 @@ const editTitle = ref('')
 const editDesc = ref('')
 const editCode = ref('')
 
+const expandedIds = ref<Set<string>>(new Set())
+
 const SKELETON_ROWS = 3
 
 const isEntryBusy = (id: string) => isUpdating(id) || isDeleting(id)
@@ -39,6 +41,25 @@ const isEntryBusy = (id: string) => isUpdating(id) || isDeleting(id)
 const isAnyEntryBusy = computed(
   () => editingId.value !== null || isCreating.value || entries.value.some((e) => isEntryBusy(e.id)),
 )
+
+const isExpanded = (id: string) => expandedIds.value.has(id)
+
+const setExpanded = (id: string, expanded: boolean) => {
+  const next = new Set(expandedIds.value)
+  if (expanded) {
+    next.add(id)
+  } else {
+    next.delete(id)
+  }
+  expandedIds.value = next
+}
+
+const toggleExpanded = (id: string) => {
+  if (isAnyEntryBusy.value && editingId.value !== id) return
+  setExpanded(id, !isExpanded(id))
+}
+
+const entryPanelId = (id: string) => `notebook-entry-panel-${id}`
 
 const loadErrorMessage = computed(() =>
   formatApiError(error.value, 'Не удалось загрузить заметки. Проверьте подключение к серверу.'),
@@ -82,6 +103,7 @@ const startEdit = (entry: NotebookEntry) => {
   editTitle.value = entry.title
   editDesc.value = entry.description ?? ''
   editCode.value = entry.code ?? ''
+  setExpanded(entry.id, true)
 }
 
 const cancelEdit = () => {
@@ -125,6 +147,7 @@ const handleDelete = async (id: string) => {
 
   try {
     await deleteEntry(id)
+    setExpanded(id, false)
     toast.success(`Заметка «${entryTitle}» удалена`)
   } catch (e) {
     notifyError(e, 'Не удалось удалить заметку. Попробуйте ещё раз.')
@@ -180,8 +203,8 @@ const handleDelete = async (id: string) => {
           <textarea
             v-model="newDesc"
             :class="$style.textarea"
-            placeholder="Описание"
-            rows="2"
+            placeholder="Описание (Markdown: заголовки, списки, **жирный**, `код`)"
+            rows="6"
             :disabled="isCreating"
           />
 
@@ -272,8 +295,8 @@ const handleDelete = async (id: string) => {
                 <textarea
                   v-model="editDesc"
                   :class="$style.textarea"
-                  placeholder="Описание"
-                  rows="2"
+                  placeholder="Описание (Markdown)"
+                  rows="6"
                   :disabled="isEntryBusy(entry.id)"
                   @keyup.esc="cancelEdit"
                 />
@@ -289,29 +312,66 @@ const handleDelete = async (id: string) => {
               </template>
 
               <template v-else>
-                <h3
-                  :class="[
-                    $style.entryTitle,
-                    (isEntryBusy(entry.id) || isCreating) && $style.entryTitleDisabled,
-                  ]"
-                  title="Нажмите, чтобы редактировать"
-                  @click="startEdit(entry)"
+                <div :class="$style.entryHeader">
+                  <button
+                    type="button"
+                    :class="$style.expandBtn"
+                    :aria-expanded="isExpanded(entry.id)"
+                    :aria-controls="entryPanelId(entry.id)"
+                    :aria-label="isExpanded(entry.id) ? 'Свернуть заметку' : 'Развернуть заметку'"
+                    :disabled="isEntryBusy(entry.id) || isCreating"
+                    @click="toggleExpanded(entry.id)"
+                  >
+                    <svg
+                      :class="[$style.expandIcon, isExpanded(entry.id) && $style.expandIconOpen]"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="m9 6 6 6-6 6"
+                      />
+                    </svg>
+                  </button>
+
+                  <h3
+                    :class="[
+                      $style.entryTitle,
+                      (isEntryBusy(entry.id) || isCreating) && $style.entryTitleDisabled,
+                    ]"
+                  >
+                    {{ entry.title }}
+                  </h3>
+                </div>
+
+                <div
+                  v-if="isExpanded(entry.id)"
+                  :id="entryPanelId(entry.id)"
+                  :class="$style.entryBody"
                 >
-                  {{ entry.title }}
-                </h3>
-                <p v-if="entry.description" :class="$style.entryDesc">
-                  {{ entry.description }}
-                </p>
-                <NotesCodeBlock
-                  v-if="entry.code"
-                  :code="entry.code"
-                  label="Код"
-                  :class="$style.codeBlock"
-                />
+                  <NotesFormattedText
+                    v-if="entry.description"
+                    :text="entry.description"
+                    :class="$style.entryDesc"
+                  />
+                  <NotesCodeBlock
+                    v-if="entry.code"
+                    :code="entry.code"
+                    label="Код"
+                    :class="$style.codeBlock"
+                  />
+                </div>
               </template>
             </div>
 
-            <div :class="$style.entryActions">
+            <div
+              v-if="editingId === entry.id || isExpanded(entry.id)"
+              :class="$style.entryActions"
+            >
               <template v-if="editingId === entry.id">
                 <button
                   type="button"
@@ -531,15 +591,75 @@ const handleDelete = async (id: string) => {
   gap: var(--fs-space-2);
 }
 
+.entryHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--fs-space-1);
+  min-width: 0;
+}
+
+.expandBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: fn.rem(28);
+  height: fn.rem(28);
+  padding: 0;
+  border: 1px solid var(--fs-color-border-light);
+  border-radius: var(--fs-radius-md);
+  background: var(--fs-color-surface);
+  color: var(--fs-color-text-muted);
+  line-height: 0;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--fs-color-border);
+    background: var(--fs-color-bg);
+    color: var(--fs-color-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--fs-color-primary);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.expandIcon {
+  display: block;
+  flex-shrink: 0;
+  width: fn.rem(14);
+  height: fn.rem(14);
+  overflow: visible;
+  transform-origin: 50% 50%;
+  transition: transform 0.2s ease;
+}
+
+.expandIconOpen {
+  transform: rotate(90deg);
+}
+
+.entryBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs-space-2);
+  padding-left: calc(fn.rem(28) + var(--fs-space-1));
+}
+
 .entryTitle {
   margin: 0;
+  min-width: 0;
   color: var(--fs-color-text);
-  cursor: pointer;
   @include typo.fs-text-h4;
-
-  &:hover {
-    color: var(--fs-color-primary-strong);
-  }
 }
 
 .entryTitleDisabled {
@@ -550,8 +670,6 @@ const handleDelete = async (id: string) => {
 
 .entryDesc {
   margin: 0;
-  color: var(--fs-color-text-muted);
-  @include typo.fs-text-body;
 }
 
 .codeBlock {
